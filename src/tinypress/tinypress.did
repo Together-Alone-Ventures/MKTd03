@@ -19,7 +19,7 @@ type TinyPressError = variant {
 
 type Profile = record {
     profile_id   : nat64;
-    principal    : principal;
+    owner        : principal;  // renamed from 'principal' — reserved keyword in Candid
     handle       : text;
     display_name : text;
     bio          : text;
