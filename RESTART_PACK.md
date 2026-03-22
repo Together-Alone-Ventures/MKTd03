@@ -48,4 +48,13 @@ ACCEPTANCE GATES (Phase 1 -- before any code)
   [ ] Interface spec (data structures + failure semantics) written and reviewed
   [ ] Must-Pass checklist (M1-M8) from Design Principles all green
 
-SAFE RESTART PROMPT We are building MKTd03 -- a zombie-delete / GDPR tombstoning protocol on ICP. The toy dApp is TinyPress, a Nuance-inspired single-canister publishing app. TinyPress must be zombie-delete naive (no tombstone awareness in v1). The repo is Together-Alone-Ventures/MKTd03 on GitHub, main branch. TAV Engineering Standards (Playbook + Design Principles) live at Together-Alone-Ventures/TAV-Engineering-Standards. Next task: run TinyPress design review against all 11 TAV Design Principles and produce the ADR and interface spec before any code is written. Please confirm your understanding of the current state before we proceed.
+SAFE RESTART PROMPT
+  Fetch https://raw.githubusercontent.com/Together-Alone-Ventures/MKTd03/main/RESTART_PACK.md
+  and https://raw.githubusercontent.com/Together-Alone-Ventures/MKTd03/main/MILESTONE_LOG.md
+  and confirm your understanding of the current state before we proceed.
+
+  Context if needed: We are building MKTd03 -- a zombie-delete / GDPR tombstoning protocol
+  on ICP. The toy dApp is TinyPress, a Nuance-inspired single-canister publishing app.
+  TinyPress must be zombie-delete naive (no tombstone awareness in v1). The repo is
+  Together-Alone-Ventures/MKTd03 on GitHub, main branch. TAV Engineering Standards
+  (Playbook + Design Principles) live at Together-Alone-Ventures/TAV-Engineering-Standards.
