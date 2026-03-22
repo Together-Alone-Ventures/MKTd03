@@ -1,10 +1,9 @@
-DATE: 2026-03-20
-
-CURRENT GOAL: Run TinyPress design review against TAV Design Principles (all 11), produce ADR
-and interface spec, then begin implementation.
+DATE: 2026-03-23
+CURRENT GOAL: Resolve open toolchain questions (DFX version, ic-cdk version), then begin
+TinyPress Stage 1 implementation (profiles map).
 
 GIT STATE
-  MKTd03:                    main @ 7836102a (use git rev-parse HEAD for full SHA)
+  MKTd03:                    main @ 0f44505 (use git rev-parse HEAD for full SHA)
   TAV-Engineering-Standards: main @ d6c7d17  (use git rev-parse HEAD for full SHA)
 
 NOTE: Always update to full SHAs using git rev-parse HEAD before committing this file.
@@ -13,40 +12,45 @@ FILES OPEN (edited, not yet committed)
   None
 
 DECISIONS MADE THIS SESSION
-  - Repo initialised at Together-Alone-Ventures/MKTd03, SSH auth via WSL, connector verified
-  - TinyPress confirmed as MKTd03 toy dApp (per MILESTONE_LOG_TinyPress_March2026_v2)
-  - Comments as separate StableBTreeMap records (not embedded Vec) -- settled, do not revisit
-  - TAV-Engineering-Standards repo created; Playbook v4 and Design Principles v3 migrated to
-    markdown and committed -- this is now the authoritative version of both documents
-  - Playbook update process established: record lessons in MILESTONE_LOG during project;
-    promote to Playbook at project close with G secondary review
+  - GitHub connector approach replaced by live fetch via raw.githubusercontent.com
+  - Repo made public to enable live fetch
+  - TinyPress design review complete against all 11 TAV Design Principles
+  - TinyPress ADR + interface spec v1.1 produced, reviewed by Claude + G (x2), committed
+  - All Phase 1 Must-Pass gates M1-M8 now green
+  - get_comments_by_post returns variant { Ok: vec Comment; Err } not bare vec
+  - Hydrated query removed from spec (no hydrated queries in v1)
+  - Text field validity rule: handle, display_name, title, content must be non-empty
+    and non-whitespace-only; body and bio may be empty
 
 OPEN QUESTIONS (not yet resolved)
   - ICP/DFX toolchain version to pin for TinyPress
-  - Which canister framework: vanilla Rust + ic-cdk, or scaffold tool?
+  - Which ic-cdk version to pin
 
 KNOWN GOTCHAS FOR NEXT SESSION
   - Git repo (MKTd03) is in WSL at /home/stef_savanah/projects/MKTd03
   - Git repo (standards) is in WSL at /home/stef_savanah/projects/TAV-Engineering-Standards
-  - Windows/Dropbox path: C:\Users\Stef\Dropbox\Van Haas\Bonded\Patents\Zombie Delete\MKTd03
-  - Always delete old file from Downloads before downloading new version from Claude
+  - Windows working folder: C:\Users\Stef\Dropbox\Van Haas\Bonded\Patents\Zombie Delete\MKTd03
+  - WSL Dropbox path: "/mnt/c/Users/Stef/Dropbox/Van Haas/Bonded/Patents/Zombie Delete/MKTd03"
+  - Always move file from Downloads into Windows working folder first, then cp from WSL Dropbox path
   - Always verify filename has no (1) or (2) suffix before running cp
   - Always use full SHA (git rev-parse HEAD) in this file -- not short hash
   - Always verify branch after push: git log --oneline -3 origin/main
-  - Claude reads this file from GitHub at session start -- manual paste is fallback only
-  - Connector access verified in Claude project (Together-Alone-Ventures/MKTd03)
+  - raw.githubusercontent.com /main/ path has CDN cache lag (can be 10+ min after a commit)
+    If Claude fetches stale content, fetch by commit hash instead:
+    https://raw.githubusercontent.com/Together-Alone-Ventures/MKTd03/<short-sha>/RESTART_PACK.md
+    Short SHA is visible on GitHub repo main page next to latest commit
 
 ACCEPTANCE GATES (Phase 1 -- before any code)
   [x] Repo live on GitHub with main branch
   [x] SSH auth working from WSL
-  [x] GitHub connector verified in Claude project
+  [x] GitHub live fetch verified (public repo + raw URL in restart prompt)
   [x] RESTART_PACK.md and MILESTONE_LOG.md committed with real content
   [x] G secondary review of Day 0 -- passed
   [x] TAV-Engineering-Standards repo created with Playbook and Design Principles in markdown
-  [ ] TinyPress design review complete against all 11 TAV Design Principles
-  [ ] ADR committed for each significant design decision
-  [ ] Interface spec (data structures + failure semantics) written and reviewed
-  [ ] Must-Pass checklist (M1-M8) from Design Principles all green
+  [x] TinyPress design review complete against all 11 TAV Design Principles
+  [x] ADR committed for each significant design decision
+  [x] Interface spec (data structures + failure semantics) written and reviewed
+  [x] Must-Pass checklist (M1-M8) from Design Principles all green
 
 SAFE RESTART PROMPT
   Fetch https://raw.githubusercontent.com/Together-Alone-Ventures/MKTd03/main/RESTART_PACK.md
