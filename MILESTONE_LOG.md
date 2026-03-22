@@ -131,3 +131,90 @@ Apply next time:
   - If fetched content looks stale (current goal or decisions don't match expectations),
     paste the commit-hash URL into the chat for Claude to fetch directly.
   - Claude must flag explicitly if fetched content appears stale rather than proceeding silently.
+## 2026-03-23 — MILESTONE: Stage 1 TinyPress profiles map deployed
+
+Decisions made:
+  - Toolchain pinned: DFX 0.30.2 (conservative hold; 0.31.0 skipped — @icp-sdk/core churn),
+    ic-cdk =0.19.0, ic-stable-structures =0.7.2, candid =0.10.24, serde =1.0.228
+  - DFX 0.30.2 is deliberate conservative hold, NOT latest. Revisit at Stage 2 close
+    or when 0.31.x has 4+ weeks community use.
+  - Profile.principal field renamed to Profile.owner — 'principal' is a reserved
+    Candid keyword and cannot be used as a record field name. ADR addendum required.
+  - handle_index (MemoryId 3) added as StableBTreeMap<String, u64> for O(1) handle
+    uniqueness; replaces O(n) iter scan which hit LazyEntry API incompatibility.
+  - #![allow(deprecated)] added; ic_cdk::api::caller() retained (msg_caller does not
+    exist at module root in 0.19.0).
+  - StableCell::init() returns StableCell directly in 0.7.2 — not Result.
+  - StableCell::set() returns old value in 0.7.2 — not Result.
+  - Workflow settled: design gates (ADR + G review) stay as-is; implementation
+    tasks handed to Codex going forward; Claude + G do prompts and review.
+  - CLAUDE.md added to repo root for Claude Code persistent context.
+
+Irreversible actions taken:
+  - Stage 1 deployed to local replica, canister ID uxrrr-q7777-77774-qaaaq-cai
+  - Cargo.lock committed at 3be43fa
+
+Do not revisit:
+  - principal as a Candid field name — it is reserved, owner is the correct name
+  - O(n) iter scan for handle uniqueness — handle_index is the settled approach
+  - ic-cdk 0.19.0 / ic-stable-structures 0.7.2 pins for Stage 1 — settled
+
+---
+
+## 2026-03-23 — SESSION LESSON: Candid reserved keywords
+
+What happened:
+  - Profile struct used 'principal' as a field name. Candid parser rejected it
+    with "Unexpected token" because 'principal' is a reserved type keyword in Candid.
+
+The lesson:
+  - Never use Candid primitive type names as field names: principal, nat, int, text,
+    bool, null, reserved, empty, blob, vec, opt, record, variant, func, service.
+    Use owner, caller_principal, identity, or similar instead.
+
+Category: protocol
+
+Apply next time:
+  - Before writing any .did file, scan all field names against Candid reserved words.
+  - Add to Codex prompt preamble for Stage 2 and Stage 3.
+
+---
+
+## 2026-03-23 — SESSION LESSON: ICP boilerplate belongs in Codex, not Claude
+
+What happened:
+  - Claude generated the Stage 1 lib.rs directly and got multiple ic-cdk/
+    ic-stable-structures version-specific API details wrong across several iterations
+    (msg_caller path, StableCell return types, LazyEntry iter pattern).
+  - Each error required a download-copy-build cycle to discover.
+
+The lesson:
+  - Claude is good at design, spec, review, and prompting. Codex has seen more ICP
+    boilerplate and gets version-specific API details right more reliably.
+  - For implementation tasks: spec done + G-reviewed -> Codex bounded task ->
+    Claude + G review the diff -> commit. Do not ask Claude to generate ICP Rust directly.
+
+Category: process | tooling
+
+Apply next time:
+  - Stage 2 and Stage 3: draft Codex prompt (Claude + G), hand to Codex, review diff.
+  - Add to CLAUDE.md: implementation tasks go to Codex; Claude does design and review.
+
+---
+
+## 2026-03-23 — SESSION LESSON: bash history expansion breaks commit messages
+
+What happened:
+  - Commit message containing #![allow(...)] caused bash to interpret ! as history
+    expansion, producing "-bash: ![allow: event not found". Commit still succeeded
+    but the offending line was dropped from the message.
+
+The lesson:
+  - Avoid ! in git commit messages when running in bash, or wrap the entire
+    git commit -m argument in single quotes.
+
+Category: process
+
+Apply next time:
+  - Claude should not include ! in suggested commit message text.
+  - If ! is needed, instruct operator to use single quotes around the -m argument.
