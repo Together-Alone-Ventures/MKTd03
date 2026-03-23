@@ -4,7 +4,7 @@ CURRENT GOAL: TinyPress repo separation complete. Next: begin Stage 3 (comments 
 in TinyPress repo — draft and review Codex prompt before any code is written.
 
 GIT STATE
-    MKTd03:                    main @ 8f729a486ae657d1e6641d0ac26fabfa9e5c8816
+    MKTd03:                    main @ f55d63615ed6966882484dfaa1c012083bbddc2a
     TinyPress:                 main @ 0652f7f10ee9a13bccbec1980cf1f53cb8c4c73d
     TAV-Engineering-Standards: main @ d6c7d17 (full SHA not yet refreshed this session)
 
