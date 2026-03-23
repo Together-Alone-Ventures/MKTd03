@@ -218,3 +218,34 @@ Category: process
 Apply next time:
   - Claude should not include ! in suggested commit message text.
   - If ! is needed, instruct operator to use single quotes around the -m argument.
+
+## 2026-03-23 — MILESTONE: TinyPress repo separation complete
+
+Decisions made:
+  - TinyPress migrated to dedicated repo (Together-Alone-Ventures/TinyPress) before Stage 3 begins
+  - dfx.json removed from MKTd03 (only referenced TinyPress canister)
+  - Workspace Cargo.toml and Cargo.lock removed from MKTd03 (no longer needed)
+  - claude.md renamed CLAUDE.md in both repos
+
+Irreversible actions taken:
+  - TinyPress repo created and pushed; MKTd03 src/tinypress/ deleted
+
+Do not revisit:
+  - TinyPress lives in its own repo; Stage 3 work happens there, not in MKTd03
+
+## 2026-03-23 — SESSION LESSON: Codex workspace contamination
+
+What happened:
+  - Codex overwrote MKTd03 root Cargo.toml (workspace manifest) with the TinyPress
+    crate manifest, and left stray untracked files (src/src/lib.rs, CLAUDE.md,
+    tinypress.did) at repo root — all uncommitted, discovered during migration cleanup
+
+The lesson:
+  - After any Codex session, run git status --short at repo root before assuming
+    the working tree is clean; Codex can leave untracked or modified files outside
+    its stated scope without warning
+
+Category: tooling
+
+Apply next time:
+  - Make git status --short a mandatory step in the post-Codex checkpoint, not optional
