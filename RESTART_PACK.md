@@ -1,12 +1,12 @@
 DATE: 2026-03-23
 
-CURRENT GOAL: Separate TinyPress into its own repo before Stage 3 begins.
-Next: create TinyPress repo, migrate src/tinypress/, then proceed with Stage 3
-(comments map) in the new TinyPress repo.
+CURRENT GOAL: TinyPress repo separation complete. Next: begin Stage 3 (comments map)
+in TinyPress repo — draft and review Codex prompt before any code is written.
 
 GIT STATE
-  MKTd03:                    main @ 21d214a0ddace317951bdaef049e0a7966b28075
-  TAV-Engineering-Standards: main @ d6c7d17 (full SHA not yet refreshed this session)
+    MKTd03:                    main @ 8f729a486ae657d1e6641d0ac26fabfa9e5c8816
+    TinyPress:                 main @ 0652f7f10ee9a13bccbec1980cf1f53cb8c4c73d
+    TAV-Engineering-Standards: main @ d6c7d17 (full SHA not yet refreshed this session)
 
 FILES OPEN (edited, not yet committed)
   None
@@ -71,11 +71,12 @@ ACCEPTANCE GATES (Stage 3 — before Codex begins)
   [ ] All Stage 3 failure paths tested (NotFound, Forbidden, ProfileNotFound, PostNotFound, InvalidInput)
 
 SAFE RESTART PROMPT
-  Fetch https://raw.githubusercontent.com/Together-Alone-Ventures/MKTd03/main/RESTART_PACK.md
-  and https://raw.githubusercontent.com/Together-Alone-Ventures/MKTd03/main/MILESTONE_LOG.md
-  and confirm your understanding of the current state before we proceed.
-  Context if needed: We are building MKTd03 — a zombie-delete / GDPR tombstoning protocol
-  on ICP. The toy dApp is TinyPress, a Nuance-inspired single-canister publishing app.
-  TinyPress must be zombie-delete naive (no tombstone awareness in v1). The repo is
-  Together-Alone-Ventures/MKTd03 on GitHub, main branch. TAV Engineering Standards
-  (Playbook + Design Principles) live at Together-Alone-Ventures/TAV-Engineering-Standards.
+Fetch https://raw.githubusercontent.com/Together-Alone-Ventures/MKTd03/main/RESTART_PACK.md
+and https://raw.githubusercontent.com/Together-Alone-Ventures/TinyPress/main/RESTART_PACK.md
+(if it exists) and confirm your understanding of the current state before we proceed.
+Context if needed: We are building MKTd03 — a zombie-delete / GDPR tombstoning protocol
+on ICP. The toy dApp is TinyPress, a Nuance-inspired single-canister publishing app.
+TinyPress must be zombie-delete naive (no tombstone awareness in v1). TinyPress repo:
+Together-Alone-Ventures/TinyPress on GitHub, main branch. MKTd03 repo:
+Together-Alone-Ventures/MKTd03 on GitHub, main branch. TAV Engineering Standards
+(Playbook + Design Principles) live at Together-Alone-Ventures/TAV-Engineering-Standards.
