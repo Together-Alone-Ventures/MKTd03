@@ -1,11 +1,12 @@
 DATE: 2026-03-23
 
-CURRENT GOAL: Stage 2 complete. Next: hand off to Codex for Stage 3
-(comments map: create_comment, get_comments_by_post, get_comments_by_author, delete_comment).
+CURRENT GOAL: Separate TinyPress into its own repo before Stage 3 begins.
+Next: create TinyPress repo, migrate src/tinypress/, then proceed with Stage 3
+(comments map) in the new TinyPress repo.
 
 GIT STATE
-  MKTd03:                    main @ cda623fc8cb40a032c176e59f22912bc7ce2676f
-  TAV-Engineering-Standards: main @ d6c7d17 (use git rev-parse HEAD for full SHA)
+  MKTd03:                    main @ 21d214a0ddace317951bdaef049e0a7966b28075
+  TAV-Engineering-Standards: main @ d6c7d17 (full SHA not yet refreshed this session)
 
 FILES OPEN (edited, not yet committed)
   None
@@ -24,6 +25,8 @@ DECISIONS MADE THIS SESSION
   - Post ID counter is at 1 after acceptance testing (post 1 created then deleted);
     next create_post will return 2
   - All Stage 2 acceptance gates passed
+  - TinyPress repo separation decided: TinyPress must be a separate repo before
+    Stage 3 begins; G and Claude agreed separation enforces the integration boundary correctly
 
 OPEN QUESTIONS (not yet resolved)
   - claude.md should be renamed to CLAUDE.md for consistency (minor)
