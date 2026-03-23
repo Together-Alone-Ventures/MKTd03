@@ -4,18 +4,17 @@
 // Spec: TinyPress ADR + Interface Spec v1.1
 //
 // HARD CONSTRAINTS (from ADR):
-//   - Zero knowledge of MKTd03 tombstoning mechanics (ADR §1)
 //   - Author identity derived from caller principal; never caller-supplied (ADR-03)
-//   - No deletion-aware terminology anywhere in this file (ADR-06)
 //   - handle is immutable after creation (spec §4.2)
-//   - delete_profile does NOT cascade to posts/comments — orphaning is intentional (ADR-05)
 //
 // Memory layout (MemoryManager IDs — do not change without migration):
 //   MemoryId(0) — profiles:         StableBTreeMap<u64, Profile>
 //   MemoryId(1) — principal_index:  StableBTreeMap<StorablePrincipal, u64>
 //   MemoryId(2) — profile_counter:  StableCell<u64>
 //   MemoryId(3) — handle_index:     StableBTreeMap<String, u64>  (handle -> profile_id)
-//   MemoryId(4..6) — reserved for Stage 2 (posts)
+//   MemoryId(4) — posts:            StableBTreeMap<u64, Post>
+//   MemoryId(5) — post_counter:     StableCell<u64>
+//   MemoryId(6) — posts_by_author:  StableBTreeMap<PostAuthorKey, ()>
 //   MemoryId(7..9) — reserved for Stage 3 (comments)
 //
 // ic-cdk 0.19.0 notes:
@@ -83,6 +82,27 @@ thread_local! {
         RefCell::new(StableBTreeMap::init(
             MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(3))),
         ));
+
+    // MemoryId(4): posts map — primary record store
+    static POSTS: RefCell<StableBTreeMap<u64, Post, Memory>> = RefCell::new(
+        StableBTreeMap::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(4))),
+        )
+    );
+
+    // MemoryId(5): monotonic post ID counter
+    static POST_COUNTER: RefCell<StableCell<u64, Memory>> = RefCell::new(
+        StableCell::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(5))),
+            0u64,
+        )
+    );
+
+    // MemoryId(6): secondary index author_profile_id + post_id -> ()
+    static POSTS_BY_AUTHOR: RefCell<StableBTreeMap<PostAuthorKey, (), Memory>> =
+        RefCell::new(StableBTreeMap::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(6))),
+        ));
 }
 
 // ---------------------------------------------------------------------------
@@ -93,7 +113,7 @@ thread_local! {
 struct StorablePrincipal(Principal);
 
 impl Storable for StorablePrincipal {
-    fn to_bytes(&self) -> Cow<[u8]> {
+    fn to_bytes(&self) -> Cow<'_, [u8]> {
         Cow::Owned(self.0.as_slice().to_vec())
     }
 
@@ -128,7 +148,7 @@ pub struct Profile {
 }
 
 impl Storable for Profile {
-    fn to_bytes(&self) -> Cow<[u8]> {
+    fn to_bytes(&self) -> Cow<'_, [u8]> {
         Cow::Owned(candid::encode_one(self).expect("Profile serialisation failed"))
     }
 
@@ -141,6 +161,78 @@ impl Storable for Profile {
     }
 
     const BOUND: Bound = Bound::Unbounded;
+}
+
+#[derive(CandidType, Deserialize, Clone, Debug)]
+pub struct Post {
+    pub post_id:           u64,
+    pub author_profile_id: u64,
+    pub title:             String,
+    pub body:              String,
+    pub created_at:        u64,
+    pub creator_handle:    String,
+}
+
+impl Storable for Post {
+    fn to_bytes(&self) -> Cow<'_, [u8]> {
+        Cow::Owned(candid::encode_one(self).expect("Post serialisation failed"))
+    }
+
+    fn into_bytes(self) -> Vec<u8> {
+        candid::encode_one(&self).expect("Post serialisation failed")
+    }
+
+    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+        candid::decode_one(bytes.as_ref()).expect("Post deserialisation failed")
+    }
+
+    const BOUND: Bound = Bound::Unbounded;
+}
+
+#[derive(CandidType, Deserialize, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub struct PostAuthorKey {
+    pub author_profile_id: u64,
+    pub post_id:           u64,
+}
+
+impl Storable for PostAuthorKey {
+    fn to_bytes(&self) -> Cow<'_, [u8]> {
+        let mut bytes = Vec::with_capacity(16);
+        bytes.extend_from_slice(&self.author_profile_id.to_be_bytes());
+        bytes.extend_from_slice(&self.post_id.to_be_bytes());
+        Cow::Owned(bytes)
+    }
+
+    fn into_bytes(self) -> Vec<u8> {
+        let mut bytes = Vec::with_capacity(16);
+        bytes.extend_from_slice(&self.author_profile_id.to_be_bytes());
+        bytes.extend_from_slice(&self.post_id.to_be_bytes());
+        bytes
+    }
+
+    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+        let bytes = bytes.as_ref();
+        let author_profile_id = u64::from_be_bytes(
+            bytes[0..8]
+                .try_into()
+                .expect("PostAuthorKey author_profile_id bytes must be 8 bytes"),
+        );
+        let post_id = u64::from_be_bytes(
+            bytes[8..16]
+                .try_into()
+                .expect("PostAuthorKey post_id bytes must be 8 bytes"),
+        );
+
+        Self {
+            author_profile_id,
+            post_id,
+        }
+    }
+
+    const BOUND: Bound = Bound::Bounded {
+        max_size: 16,
+        is_fixed_size: true,
+    };
 }
 
 /// Diagnostic status (ADR-09). Aggregate counts only — no per-record data.
@@ -179,6 +271,15 @@ fn next_profile_id() -> u64 {
         let mut cell = c.borrow_mut();
         let next = cell.get() + 1;
         // StableCell::set() returns old value in 0.7.2 — not a Result
+        let _ = cell.set(next);
+        next
+    })
+}
+
+fn next_post_id() -> u64 {
+    POST_COUNTER.with(|c| {
+        let mut cell = c.borrow_mut();
+        let next = cell.get() + 1;
         let _ = cell.set(next);
         next
     })
@@ -272,7 +373,6 @@ fn update_profile(display_name: String, bio: String) -> Result<(), TinyPressErro
 }
 
 /// delete_profile — hard-deletes profile. Posts/comments NOT cascaded (ADR-05).
-/// Orphaned records are residual live application data — not anonymised or de-identified.
 /// NotFound if absent; Forbidden if caller != owner (distinct — spec §4.1).
 /// Idempotent after first success (ADR-08).
 #[ic_cdk::update]
@@ -295,6 +395,120 @@ fn delete_profile(profile_id: u64) -> Result<(), TinyPressError> {
 }
 
 // ---------------------------------------------------------------------------
+// Stage 2 — Post operations (spec §4.3).
+// ---------------------------------------------------------------------------
+
+#[ic_cdk::update]
+fn create_post(title: String, body: String) -> Result<u64, TinyPressError> {
+    if !is_valid_required_text(&title) {
+        return Err(TinyPressError::InvalidInput(
+            "title must be non-empty and non-whitespace-only".to_string(),
+        ));
+    }
+
+    let caller = caller();
+
+    let author_profile_id = PRINCIPAL_INDEX
+        .with(|idx| idx.borrow().get(&StorablePrincipal(caller)))
+        .ok_or(TinyPressError::ProfileNotFound)?;
+
+    let creator_handle = PROFILES
+        .with(|p| p.borrow().get(&author_profile_id))
+        .ok_or(TinyPressError::InternalError(
+            "Principal index references missing profile".to_string(),
+        ))?
+        .handle;
+
+    let post_id = next_post_id();
+    let post = Post {
+        post_id,
+        author_profile_id,
+        title,
+        body,
+        created_at: time(),
+        creator_handle,
+    };
+
+    POSTS.with(|p| p.borrow_mut().insert(post_id, post));
+    POSTS_BY_AUTHOR.with(|index| {
+        index.borrow_mut().insert(
+            PostAuthorKey {
+                author_profile_id,
+                post_id,
+            },
+            (),
+        )
+    });
+
+    Ok(post_id)
+}
+
+#[ic_cdk::query]
+fn get_post(post_id: u64) -> Result<Post, TinyPressError> {
+    POSTS
+        .with(|p| p.borrow().get(&post_id))
+        .ok_or(TinyPressError::NotFound)
+}
+
+#[ic_cdk::query]
+fn get_posts_by_author(profile_id: u64) -> Vec<Post> {
+    let start = PostAuthorKey {
+        author_profile_id: profile_id,
+        post_id: 0,
+    };
+    let end = PostAuthorKey {
+        author_profile_id: profile_id,
+        post_id: u64::MAX,
+    };
+
+    POSTS_BY_AUTHOR.with(|index| {
+        index
+            .borrow()
+            .range(start..=end)
+            .map(|entry| {
+                let key = entry.key().clone();
+                POSTS.with(|posts| {
+                    posts.borrow().get(&key.post_id).unwrap_or_else(|| {
+                        panic!(
+                            "Invariant violation: POSTS_BY_AUTHOR references missing POSTS entry for post_id {} and author_profile_id {}",
+                            key.post_id,
+                            key.author_profile_id
+                        )
+                    })
+                })
+            })
+            .collect()
+    })
+}
+
+#[ic_cdk::update]
+fn delete_post(post_id: u64) -> Result<(), TinyPressError> {
+    let post = POSTS
+        .with(|p| p.borrow().get(&post_id))
+        .ok_or(TinyPressError::NotFound)?;
+
+    let caller = caller();
+
+    let caller_profile_id = PRINCIPAL_INDEX
+        .with(|idx| idx.borrow().get(&StorablePrincipal(caller)))
+        .ok_or(TinyPressError::ProfileNotFound)?;
+
+    if caller_profile_id != post.author_profile_id {
+        return Err(TinyPressError::Forbidden);
+    }
+
+    POSTS.with(|p| p.borrow_mut().remove(&post_id));
+    POSTS_BY_AUTHOR.with(|index| {
+        index.borrow_mut().remove(&PostAuthorKey {
+            author_profile_id: post.author_profile_id,
+            post_id,
+        })
+    });
+
+    Ok(())
+}
+
+// ---------------------------------------------------------------------------
 // Diagnostic query (ADR-09)
 // ---------------------------------------------------------------------------
 
@@ -304,7 +518,7 @@ fn tinypress_status() -> TinypressStatus {
     TinypressStatus {
         schema_version: TINYPRESS_SCHEMA_VERSION,
         profile_count:  PROFILES.with(|p| p.borrow().len()),
-        post_count:     0, // Stage 2
+        post_count:     POSTS.with(|p| p.borrow().len()),
         comment_count:  0, // Stage 3
         status:         "ok".to_string(),
     }
