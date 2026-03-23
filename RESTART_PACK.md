@@ -32,6 +32,8 @@ OPEN QUESTIONS (not yet resolved)
   - claude.md should be renamed to CLAUDE.md for consistency (minor)
   - cargo-audit not installed (WARN on deploy) — install when convenient
   - dfx.json candid metadata warning still present — dfx.json needs metadata block
+  - Review session for Playbook updates: .did-before-testing sequencing (§8.1 extension);
+    LazyEntry API lesson (verify iterator API against installed crate version)
 
 KNOWN GOTCHAS FOR NEXT SESSION
   - Git repo (MKTd03) is in WSL at /home/stef_savanah/projects/MKTd03
