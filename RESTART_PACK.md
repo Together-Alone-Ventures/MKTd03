@@ -1,33 +1,29 @@
 DATE: 2026-03-23
 
-CURRENT GOAL: Stage 1 checkpoint complete. Next: hand off to Codex for Stage 2
-(posts map: create_post, get_post, get_posts_by_author, delete_post).
+CURRENT GOAL: Stage 2 complete. Next: hand off to Codex for Stage 3
+(comments map: create_comment, get_comments_by_post, get_comments_by_author, delete_comment).
 
 GIT STATE
-  MKTd03:                    main @ 3be43fa (use git rev-parse HEAD for full SHA)
+  MKTd03:                    main @ cda623fc8cb40a032c176e59f22912bc7ce2676f
   TAV-Engineering-Standards: main @ d6c7d17 (use git rev-parse HEAD for full SHA)
-
-NOTE: Always update to full SHAs using git rev-parse HEAD before committing this file.
 
 FILES OPEN (edited, not yet committed)
   None
 
 DECISIONS MADE THIS SESSION
-  - GitHub direct fetch confirmed working (public repo + raw URL); no paste needed
-  - CLAUDE.md drafted and committed (landed as claude.md — rename pending)
-  - Toolchain pins settled: DFX 0.30.2 (conservative hold; 0.31.0 skipped due to
-    @icp-sdk/core frontend churn), ic-cdk =0.19.0, ic-stable-structures =0.7.2,
-    candid =0.10.24, serde =1.0.228 (exact pins per Principle 9)
-  - DFX 0.30.2 is a deliberate conservative hold, NOT latest (0.31.0 is current)
-  - Stage 1 scaffold produced and deployed: profiles map + tinypress_status()
-  - principal->owner field rename: 'principal' is a reserved Candid keyword
-  - handle_index (MemoryId 3) added for O(1) handle uniqueness check
-  - #![allow(deprecated)] added; ic_cdk::api::caller() retained over msg_caller
-  - StableCell::init() returns directly (not Result) in ic-stable-structures 0.7.2
-  - StableCell::set() returns old value (not Result) in ic-stable-structures 0.7.2
-  - Stage 1 compatibility checkpoint PASSED: tinypress_status() returns ok
-  - Workflow decision: design gates stay (ADR + G review); implementation handed
-    to Codex going forward; Claude + G do prompts and review
+  - All domains enabled in Settings > Capabilities (code execution network egress)
+  - Stage 2 implemented by Codex: posts map + PostAuthorKey composite key
+  - LazyEntry API confirmed for StableBTreeMap::range() in ic-stable-structures 0.7.2
+    (yields LazyEntry, not tuple; use entry.key().clone() to extract key)
+  - Big-endian encoding confirmed correct for composite key prefix iteration
+  - delete_post error semantics confirmed: ProfileNotFound (no profile) vs Forbidden (wrong profile)
+  - Invariant panic (not filter_map) required in get_posts_by_author for missing POSTS entry
+  - .gitignore created (.dfx/ and target/)
+  - tinypress.did updated with Post type and Stage 2 service entries
+  - lib.rs mode changed 100755 -> 100644 in Stage 2 commit — not accidental; correct posture
+  - Post ID counter is at 1 after acceptance testing (post 1 created then deleted);
+    next create_post will return 2
+  - All Stage 2 acceptance gates passed
 
 OPEN QUESTIONS (not yet resolved)
   - claude.md should be renamed to CLAUDE.md for consistency (minor)
@@ -49,21 +45,25 @@ KNOWN GOTCHAS FOR NEXT SESSION
       pkill -9 -f '/home/stef_savanah/.cache/dfinity/versions/0.24.3/pocket-ic'
       pkill -9 -f '/home/stef_savanah/.cache/dfinity/versions/0.24.3/replica'
       pkill -9 -f '/home/stef_savanah/.cache/dfinity/versions/0.24.3/ic-https-outcalls-adapter'
-  - raw.githubusercontent.com has CDN cache lag (10+ min after commit)
-    Fetch by commit hash if stale:
-    https://raw.githubusercontent.com/Together-Alone-Ventures/MKTd03/<sha>/RESTART_PACK.md
+  - StableBTreeMap::range() yields LazyEntry in 0.7.2 — use entry.key().clone(), not tuple destructure
+  - Interface file must be updated before acceptance testing — dfx produces misleading type errors
+    (not logic errors) when .did is stale; Stage 2 logic was correct before .did update but results
+    looked like failures
+  - delete_post Forbidden test requires a different identity that has a profile; same identity = Ok;
+    no-profile caller = ProfileNotFound — use a second dfx identity for Forbidden testing in Stage 3
   - Commit message exclamation marks trigger bash history expansion in WSL
     Use single quotes around commit message or avoid ! in messages
+  - raw.githubusercontent.com reachable via bash_tool curl (All domains setting); web_fetch still blocked
 
-ACCEPTANCE GATES (Stage 2 — before Codex begins)
+ACCEPTANCE GATES (Stage 3 — before Codex begins)
   [ ] Codex prompt drafted by Claude + G
   [ ] Codex prompt reviewed and approved
-  [ ] Codex produces Stage 2 diff (posts map)
-  [ ] Stage 2 diff reviewed by Claude (primary) + G (secondary)
+  [ ] Codex produces Stage 3 diff (comments map)
+  [ ] Stage 3 diff reviewed by Claude (primary) + G (secondary)
   [ ] cargo build passes clean
   [ ] dfx deploy succeeds
-  [ ] tinypress_status() returns post_count correctly after create_post calls
-  [ ] All Stage 2 failure paths tested (NotFound, Forbidden, ProfileNotFound, InvalidInput)
+  [ ] tinypress_status() returns comment_count correctly after create_comment calls
+  [ ] All Stage 3 failure paths tested (NotFound, Forbidden, ProfileNotFound, PostNotFound, InvalidInput)
 
 SAFE RESTART PROMPT
   Fetch https://raw.githubusercontent.com/Together-Alone-Ventures/MKTd03/main/RESTART_PACK.md
