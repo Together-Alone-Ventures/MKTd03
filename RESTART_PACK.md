@@ -1,42 +1,38 @@
-DATE: 2026-03-23
+DATE: 2026-03-24
 
-CURRENT GOAL: TinyPress repo separation complete. Next: begin Stage 3 (comments map)
-in TinyPress repo — draft and review Codex prompt before any code is written.
+CURRENT GOAL: TinyPress Stage 4 — expose get_comments_by_author as public query.
+Storage and index already exist (COMMENTS_BY_AUTHOR, MemoryId 10). This is a
+bounded single-method addition following the Stage 3 pattern.
 
 GIT STATE
     MKTd03:                    main @ f55d63615ed6966882484dfaa1c012083bbddc2a
-    TinyPress:                 main @ 0652f7f10ee9a13bccbec1980cf1f53cb8c4c73d
-    TAV-Engineering-Standards: main @ d6c7d17 (full SHA not yet refreshed this session)
+    TinyPress:                 main @ e4d8d67aa5b784d4dc3fbb68455b533867afa996
+    TAV-Engineering-Standards: main @ d6c7d17 (full SHA not yet refreshed)
 
 FILES OPEN (edited, not yet committed)
   None
 
 DECISIONS MADE THIS SESSION
-  - All domains enabled in Settings > Capabilities (code execution network egress)
-  - Stage 2 implemented by Codex: posts map + PostAuthorKey composite key
-  - LazyEntry API confirmed for StableBTreeMap::range() in ic-stable-structures 0.7.2
-    (yields LazyEntry, not tuple; use entry.key().clone() to extract key)
-  - Big-endian encoding confirmed correct for composite key prefix iteration
-  - delete_post error semantics confirmed: ProfileNotFound (no profile) vs Forbidden (wrong profile)
-  - Invariant panic (not filter_map) required in get_posts_by_author for missing POSTS entry
-  - .gitignore created (.dfx/ and target/)
-  - tinypress.did updated with Post type and Stage 2 service entries
-  - lib.rs mode changed 100755 -> 100644 in Stage 2 commit — not accidental; correct posture
-  - Post ID counter is at 1 after acceptance testing (post 1 created then deleted);
-    next create_post will return 2
-  - All Stage 2 acceptance gates passed
-  - TinyPress repo separation decided: TinyPress must be a separate repo before
-    Stage 3 begins; G and Claude agreed separation enforces the integration boundary correctly
+  - Stage 3 complete: comments map, COMMENTS_BY_POST, COMMENTS_BY_AUTHOR indexes
+  - StoredComment/Comment split: reply_to_comment_id stored internally, absent
+    from public API and DID
+  - StoredCommentCodec used as candid serialisation helper (CandidType derive on
+    codec only, not on StoredComment)
+  - get_comments_by_author deferred to Stage 4 — storage ready, public query not yet exposed
+  - dfx.json candid path fixed: src/tinypress/tinypress.did -> tinypress.did
+  - Stage 3 secondary review (G) passed clean at e4d8d67
 
 OPEN QUESTIONS (not yet resolved)
-  - claude.md should be renamed to CLAUDE.md for consistency (minor)
+  - StoredCommentCodec derives CandidType unnecessarily — harmless, park for cleanup pass
   - cargo-audit not installed (WARN on deploy) — install when convenient
   - dfx.json candid metadata warning still present — dfx.json needs metadata block
-  - Review session for Playbook updates: .did-before-testing sequencing (§8.1 extension);
-    LazyEntry API lesson (verify iterator API against installed crate version)
+  - claude.md should be renamed to CLAUDE.md (minor)
+  - Review session for Playbook updates: .did-before-testing sequencing (§8.1
+    extension); LazyEntry API lesson (verify iterator API against installed crate version)
 
 KNOWN GOTCHAS FOR NEXT SESSION
   - Git repo (MKTd03) is in WSL at /home/stef_savanah/projects/MKTd03
+  - Git repo (TinyPress) is in WSL at /home/stef_savanah/projects/TinyPress
   - Git repo (standards) is in WSL at /home/stef_savanah/projects/TAV-Engineering-Standards
   - Windows working folder: C:\Users\Stef\Dropbox\Van Haas\Bonded\Patents\Zombie Delete\MKTd03
   - WSL Dropbox path: "/mnt/c/Users/Stef/Dropbox/Van Haas/Bonded/Patents/Zombie Delete/MKTd03"
@@ -44,39 +40,4 @@ KNOWN GOTCHAS FOR NEXT SESSION
   - Always verify with sed -n 'Np' to confirm new file landed before running cp
   - Always verify filename has no (1) or (2) suffix before running cp
   - Always use full SHA (git rev-parse HEAD) in this file — not short hash
-  - Always verify branch after push: git log --oneline -3 origin/main
-  - Kill daffydefs replica before starting MKTd03 sessions:
-      pkill -9 -f '/home/stef_savanah/projects/daffydefs/.dfx/network/local'
-      pkill -9 -f '/home/stef_savanah/.cache/dfinity/versions/0.24.3/pocket-ic'
-      pkill -9 -f '/home/stef_savanah/.cache/dfinity/versions/0.24.3/replica'
-      pkill -9 -f '/home/stef_savanah/.cache/dfinity/versions/0.24.3/ic-https-outcalls-adapter'
-  - StableBTreeMap::range() yields LazyEntry in 0.7.2 — use entry.key().clone(), not tuple destructure
-  - Interface file must be updated before acceptance testing — dfx produces misleading type errors
-    (not logic errors) when .did is stale; Stage 2 logic was correct before .did update but results
-    looked like failures
-  - delete_post Forbidden test requires a different identity that has a profile; same identity = Ok;
-    no-profile caller = ProfileNotFound — use a second dfx identity for Forbidden testing in Stage 3
-  - Commit message exclamation marks trigger bash history expansion in WSL
-    Use single quotes around commit message or avoid ! in messages
-  - raw.githubusercontent.com reachable via bash_tool curl (All domains setting); web_fetch still blocked
-
-ACCEPTANCE GATES (Stage 3 — before Codex begins)
-  [ ] Codex prompt drafted by Claude + G
-  [ ] Codex prompt reviewed and approved
-  [ ] Codex produces Stage 3 diff (comments map)
-  [ ] Stage 3 diff reviewed by Claude (primary) + G (secondary)
-  [ ] cargo build passes clean
-  [ ] dfx deploy succeeds
-  [ ] tinypress_status() returns comment_count correctly after create_comment calls
-  [ ] All Stage 3 failure paths tested (NotFound, Forbidden, ProfileNotFound, PostNotFound, InvalidInput)
-
-SAFE RESTART PROMPT
-Fetch https://raw.githubusercontent.com/Together-Alone-Ventures/MKTd03/main/RESTART_PACK.md
-and https://raw.githubusercontent.com/Together-Alone-Ventures/TinyPress/main/RESTART_PACK.md
-(if it exists) and confirm your understanding of the current state before we proceed.
-Context if needed: We are building MKTd03 — a zombie-delete / GDPR tombstoning protocol
-on ICP. The toy dApp is TinyPress, a Nuance-inspired single-canister publishing app.
-TinyPress must be zombie-delete naive (no tombstone awareness in v1). TinyPress repo:
-Together-Alone-Ventures/TinyPress on GitHub, main branch. MKTd03 repo:
-Together-Alone-Ventures/MKTd03 on GitHub, main branch. TAV Engineering Standards
-(Playbook + Design Principles) live at Together-Alone-Ventures/TAV-Engineering-Standards.
+  - Always verify branc
