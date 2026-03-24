@@ -250,3 +250,35 @@ Category: tooling
 Apply next time:
   - Make git status --short a mandatory step in the post-Codex checkpoint, not optional
 
+## 2026-03-24 — SESSION LESSON: Multi-repo continuity file ownership
+
+What happened:
+  - TinyPress was separated into its own repo mid-project. RESTART_PACK
+    and MILESTONE_LOG were not created in TinyPress at separation time;
+    TinyPress state continued to be tracked in MKTd03's continuity files.
+
+The lesson:
+  - Each repo must have its own RESTART_PACK.md and MILESTONE_LOG.md
+    from the point of separation. Do not track sub-project state in
+    the parent repo's continuity files.
+
+Category: process
+
+Apply next time:
+  - On repo separation day: create RESTART_PACK.md and MILESTONE_LOG.md
+    in the new repo before the first commit of new work. Do not defer.
+  - Session close must update continuity files in every repo touched,
+    not just the primary repo.
+  - Safe restart prompt must reference all active repos by name and SHA.
+
+Proposed Playbook addition — §3.4:
+  When a sub-project is separated into its own repository, it must have
+  its own RESTART_PACK.md and MILESTONE_LOG.md from the point of
+  separation. Do not continue tracking its state in the parent repo's
+  continuity files. Each repo owns the continuity files for its own
+  state only. The safe restart prompt in each repo must reference all
+  other active repos by name and current SHA. Session close must update
+  continuity files in every repo touched that session. On repo
+  separation day: create both files in the new repo before the first
+  commit of new work. Do not defer.
+  Violation signal: "The TinyPress state is in the MKTd03 restart pack."
