@@ -11,7 +11,7 @@ CURRENT STATUS:
 - Repo-boundary cleanup checkpoint completed.
 - MKTd03 main is at commit 52b3fc2 — docs: reset root continuity files for dApp-agnostic boundary
 - TinyPress main is at commit 195890e — docs: narrow README to app-local boundary
-- TAV-Engineering-Standards main is at commit 8709d20 — docs: tighten standards from MKTd03 prep review
+- TAV-Engineering-Standards main is at commit 738c11d — docs: tighten standards from MKTd03 prep review
 - TinyPress no longer lives in MKTd03 as an active app work surface.
 - MKTd03 remains dApp-agnostic.
 - TinyPress remains the first reference target only.
@@ -42,7 +42,7 @@ NEXT LIKELY TASKS:
 
 SAFE RESTART PROMPT:
 MKTd03 is now a dApp-agnostic protocol repo, not the live home of TinyPress app work.
-Current MKTd03 main is 52b3fc2, TinyPress main is 195890e, and TAV-Engineering-Standards main is 8709d20.
+Current MKTd03 main is 52b3fc2, TinyPress main is 195890e, and TAV-Engineering-Standards main is 738c11d.
 Repo-boundary cleanup is complete, Codex setup has been verified, and standards uplift has been completed and pushed.
 Use MKTd03 only for protocol/integration/library-start work.
 The dApp-agnostic MKTd03 protocol library has not yet begun, but prep is complete and the repo is ready for the first bounded design step.

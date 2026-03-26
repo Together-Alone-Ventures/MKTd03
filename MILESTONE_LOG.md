@@ -35,3 +35,14 @@ Do not revisit:
   - Whether standards uplift must be completed before the first MKTd03 library design step — settled yes, now done.
   - Whether Codex/operator setup remains an open prep dependency — settled no.
   - Whether the next MKTd03 session should resume prep instead of beginning protocol-library design — settled no.
+
+## 2026-03-26 -- SESSION LESSON: standards baseline tightened before ADR start
+
+Decisions made:
+  - TAV-Engineering-Standards received one final bounded cleanup pass before the first library ADR session.
+  - The standards repo head for the clean starting baseline is now 738c11d, replacing the earlier prep-closeout reference to 8709d20.
+  - This was a small baseline-tightening patch, not a reopening of prep or standards work.
+
+Do not revisit:
+  - Whether this requires reopening the prep phase — settled no.
+  - Whether broader Playbook rewrite work should happen before the first library ADR — settled no; treat as later bounded debt if needed.
