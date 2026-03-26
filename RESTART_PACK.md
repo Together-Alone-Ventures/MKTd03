@@ -1,6 +1,45 @@
-DATE: 2026-03-24
+DATE: 2026-03-26
 
-TinyPress is now a separate repo with its own continuity files
+CURRENT GOAL:
+Prepare MKTd03 as the clean starting point for dApp-agnostic protocol-library design on ICP.
 
-- Playbook §3.4 addition drafted (multi-repo continuity rule) —
-  needs Standards update session to commit to TAV-Engineering-Standards repo
+IMPORTANT SCOPE RULE:
+This file is for MKTd03 protocol work only.
+TinyPress implementation sessions must use the TinyPress repo’s own RESTART_PACK.md, not this file.
+
+CURRENT STATUS:
+- Repo-boundary cleanup checkpoint completed.
+- MKTd03 main is at commit 0e3ef37 — docs: narrow repo guidance and remove TinyPress ADR
+- TinyPress main is at commit cf4e53f — docs: refresh restart pack after repo boundary cleanup
+- TinyPress no longer lives in MKTd03 as an active app work surface.
+- MKTd03 remains dApp-agnostic.
+- TinyPress remains the first reference target only.
+
+WHAT MKTd03 NOW CONTAINS:
+- Protocol/project framing
+- Deletion-boundary doctrine
+- Integration and adapter thinking
+- Enterprise/protocol targeting material
+- Historical TinyPress artifacts only where retained for provenance
+
+WHAT MKTd03 DOES NOT NOW CONTAIN:
+- Live TinyPress application continuity
+- Live TinyPress ADR ownership
+- Active TinyPress app build surface at repo root
+
+NOT YET STARTED:
+The dApp-agnostic MKTd03 protocol library has not yet begun.
+Do not describe the library as underway until the repo-cleanup gates are green.
+
+NEXT LIKELY TASKS:
+1. Finalise root continuity files and README so they all tell the same boundary story.
+2. Complete the operator cleanliness gate for both repos.
+3. Separately schedule standards/process extraction into TAV-Engineering-Standards.
+4. Only then begin bounded library design work.
+
+SAFE RESTART PROMPT:
+MKTd03 is now a dApp-agnostic protocol repo, not the live home of TinyPress app work.
+Current MKTd03 main is 0e3ef37 and TinyPress main is cf4e53f.
+Repo-boundary cleanup is complete: TinyPress ADR ownership and TinyPress continuity now live in the TinyPress repo.
+Use MKTd03 only for protocol/integration/library-start work.
+The dApp-agnostic MKTd03 protocol library has not yet begun.
