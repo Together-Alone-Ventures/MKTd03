@@ -9,8 +9,8 @@ TinyPress implementation sessions must use the TinyPress repo’s own RESTART_PA
 
 CURRENT STATUS:
 - Repo-boundary cleanup checkpoint completed.
-- MKTd03 main is at commit 0e3ef37 — docs: narrow repo guidance and remove TinyPress ADR
-- TinyPress main is at commit cf4e53f — docs: refresh restart pack after repo boundary cleanup
+- MKTd03 main is at commit 52b3fc2 — docs: reset root continuity files for dApp-agnostic boundary
+- TinyPress main is at commit 195890e — docs: narrow README to app-local boundary
 - TinyPress no longer lives in MKTd03 as an active app work surface.
 - MKTd03 remains dApp-agnostic.
 - TinyPress remains the first reference target only.
@@ -39,7 +39,7 @@ NEXT LIKELY TASKS:
 
 SAFE RESTART PROMPT:
 MKTd03 is now a dApp-agnostic protocol repo, not the live home of TinyPress app work.
-Current MKTd03 main is 0e3ef37 and TinyPress main is cf4e53f.
+Current MKTd03 main is 52b3fc2 and TinyPress main is 195890e.
 Repo-boundary cleanup is complete: TinyPress ADR ownership and TinyPress continuity now live in the TinyPress repo.
 Use MKTd03 only for protocol/integration/library-start work.
 The dApp-agnostic MKTd03 protocol library has not yet begun.
