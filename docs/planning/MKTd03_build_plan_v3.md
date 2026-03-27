@@ -72,7 +72,7 @@ The following are explicitly out of scope for this opening phase:
 - making TinyPress-specific design decisions,
 - broad Tree-mode implementation before protocol decisions are written down,
 - allowing Codex to infer architecture from app code or partial implementations,
-- authorising any MKTd02 back-port work merely because a reuse audit identifies a candidate. Back-port decisions remain out of scope and require separate sign-off. :contentReference[oaicite:5]{index=5}
+- authorising any MKTd02 back-port work merely because a reuse audit identifies a candidate. Back-port decisions remain out of scope and require separate sign-off.
 
 ### 1.4 Operational test of dApp-agnosticism
 
@@ -274,7 +274,7 @@ To define what the MKTd03 protocol library owns and what remains application-spe
 - what must not be leaked through diagnostics or query surfaces.
 
 #### Conceptual adapter contract artifact
-Phase 3 must also produce a named conceptual adapter contract specification, derived from ADR-01, which later becomes a formal interface definition artifact in Phase 6. :contentReference[oaicite:13]{index=13}
+Phase 3 must also produce a named conceptual adapter contract specification, derived from ADR-01, which later becomes a formal interface definition artifact in Phase 6.
 
 ---
 
@@ -323,7 +323,7 @@ Before doing the reuse audit, classify MKTd02 modules into categories such as:
 - verifier-facing shared semantics,
 - Leaf-mode-specific semantics.
 
-This helps separate “currently implemented in MKTd02” from “intrinsically Leaf-mode-specific.” :contentReference[oaicite:15]{index=15}
+This helps separate “currently implemented in MKTd02” from “intrinsically Leaf-mode-specific.”
 
 ### 4.3 Required artifact: reuse audit
 
@@ -363,7 +363,7 @@ For each such module, record:
 - the likely back-port cost/risk.
 
 **Scope restriction:**  
-Listing a module as a back-port candidate does **not** authorise any changes to MKTd02. Back-port decisions are out of scope for this phase, require separate analysis, and require explicit sign-off before action. :contentReference[oaicite:16]{index=16}
+Listing a module as a back-port candidate does **not** authorise any changes to MKTd02. Back-port decisions are out of scope for this phase, require separate analysis, and require explicit sign-off before action.
 
 ---
 
@@ -371,7 +371,7 @@ Listing a module as a back-port candidate does **not** authorise any changes to 
 
 The general role model comes from the playbook. For this plan, the additions that matter most are:
 
-- Codex must be kept on bounded prompts; it must not infer architecture or “bring everything into line” across multiple repos. :contentReference[oaicite:17]{index=17}
+- Codex must be kept on bounded prompts; it must not infer architecture or “bring everything into line” across multiple repos.
 - TinyPress is a reference target only; protocol truth must remain independent of app-local semantics and API choices. 
 - Interface definition files must exist before implementation begins; spec prose alone is not a sufficient target. This sequencing rule was already elevated during prep and in the standards/playbook refresh. 
 
@@ -492,7 +492,7 @@ This should include examples for:
 - byte order and deterministic encoding rules,
 - version-tag behavior where applicable.
 
-The playbook already requires explicit encoding conventions and at least one golden vector per cryptographic formula. :contentReference[oaicite:24]{index=24}
+The playbook already requires explicit encoding conventions and at least one golden vector per cryptographic formula.
 
 ### 8.2 Negative cases
 
