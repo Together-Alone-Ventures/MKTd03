@@ -1,7 +1,7 @@
 DATE: 2026-03-26
 
 CURRENT GOAL:
-Begin MKTd03 build Session 1 — Phase 1 stale-spec inventory from the clean post-prep baseline.
+Continue Session 4 audit work from the approved MKTd03 Phase 1–3 baseline, starting with population of the pinned MKTd02 reuse/generalisation audit.
 
 IMPORTANT SCOPE RULE:
 This file is for MKTd03 protocol work only.
@@ -11,67 +11,49 @@ CURRENT STATUS:
 - Prep is closed.
 - Repo-boundary cleanup is closed and must not be reopened unless a concrete regression is found.
 - Standards uplift is complete and pushed.
-- MKTd03 main is at commit 7f47b26.
+- MKTd03 main is at commit 80be0ea.
 - docs/planning/MKTd03_build_plan.md is present in the live repo.
-- TinyPress no longer lives in MKTd03 as an active app work surface.
 - MKTd03 remains dApp-agnostic.
-- TinyPress remains the first reference target only.
-- Codex setup review completed.
-- Global and repo AGENTS files were created and verified for MKTd03, TinyPress, and TAV-Engineering-Standards.
-- ADR-02 tree-structure choice is approved at repo head after adversarial review.
-- ADR-01 library-vs-adapter boundary is approved at repo head after adversarial review.
-- ADR-03 Tree-mode CVDR structure is now present as a Session 3 scaffold.
-- Session 3 opening artifact set is now in place: ADR-01 approved, adapter contract concept committed, ADR-03 scaffold prepared for decision drafting.
-- Current next task: draft substantive ADR-03 decisions, then send ADR-01 + ADR-03 together for Session 3 adversarial review.
-- ADR-03 Tree-mode CVDR structure is approved at repo head after adversarial review.
-- Session 3 is now substantively complete: ADR-01 approved, adapter contract concept committed, ADR-03 approved.
-- Current next task: move to Session 4 artifacts, starting with protocol refresh/spec consolidation and the MKTd02 reuse/generalisation audit.
-- Protocol Refresh v1 is now present as a reviewed intermediate draft.
-- Session 4 opening state is now in place: Phase 1–3 ADR baseline approved, adapter contract concept committed, protocol refresh draft prepared for follow-on audit/spec work.
-- Current next task: begin the MKTd02 reuse/generalisation audit and then the diagnostics/versioning/security/privacy note set.
-- MKTd02 reuse/generalisation audit scaffold is now present as a reviewed Session 4 audit artifact.
-- Current next task: pin the exact MKTd02 commit/tag and scope, then begin populating the reuse/generalisation audit rows.
-- MKTd02 reuse/generalisation audit now has its first approved row set populated against the pinned MKTd02 scope.
-- Session 4 audit work is now underway with the initial candidate areas covered in the first audit pass.
-- Current next task: continue the reuse/generalisation audit beyond the initial candidate set, then move into diagnostics/versioning/security/privacy note drafting.
+- TinyPress remains the first reference target only and must not shape protocol truth.
+- ADR-00 evidentiary scope is approved.
+- Tree-mode invariants note is committed.
+- ADR-02 tree-structure choice is approved.
+- ADR-01 library-vs-adapter boundary is approved.
+- ADR-03 Tree-mode CVDR structure is an approved intermediate draft, with completion still pending its remaining questions.
+- Adapter contract concept v1 is committed.
+- Protocol Refresh v1 is present as a reviewed intermediate draft.
+- MKTd02 reuse/generalisation audit scaffold is present and its audit scope is pinned to a specific MKTd02 repo state and module set.
+- Session 4 audit work is now underway.
+
+CURRENT NEXT TASK:
+- Continue populating the MKTd02 reuse/generalisation audit beyond the initial candidate set, then move into diagnostics/versioning/security/privacy note drafting.
 
 AUTHORITY ORDER:
 1. Live MKTd03 repo state
-2. New build-phase ADR/spec/interface artifacts created in this phase
-3. Old spreadsheet MKTd03 tab as audit input only
-4. Prep artifacts (restart pack, milestone log, TinyPress prep notes) as historical context only
+2. Approved build-phase ADR/spec/interface artifacts created in this phase
+3. Draft build-phase artifacts created in this phase
+4. Old spreadsheet MKTd03 tab as audit input only
+5. Prep artifacts (restart pack, milestone log, TinyPress prep notes) as historical context only
 
-SESSION 1 OPERATING CONSTRAINTS:
+OPERATING CONSTRAINTS:
 - ADR-01 scoping guardrail: ADR-01 must not become a catch-all. It should decide only the core library boundary, host-owned responsibilities, adapter seam, and explicit out-of-scope items. Service-canister architecture, orchestration flows, retry/list/recovery models, and other non-baseline concerns must be deferred or excluded unless explicitly re-gated.
-- Tree-mode terminology is provisional until ADR-02 settles structure/nouns.
 - Reuse audit findings cannot change ADR-01 or ADR-02 without explicit G sign-off and phase re-gate.
 - Formal interface files must live in MKTd03, not TinyPress.
 - Do not let TinyPress leak into protocol truth, examples, payloads, routes, schemas, fixtures, or interface names.
 - Do not let MKTd02 implementation history become authority; use it only for bounded reuse analysis.
 - Do not begin code before the Phase 6 gate is satisfied.
 
-SESSION 1 FINDINGS:
+DURABLE FINDINGS:
 - The stale-spec inventory surfaced four dominant clusters: evidentiary/verifier scope, tree-structure/terminology, core library boundary, and service-canister/orchestration overreach.
-- ADR-01 remains tightly scoped by guardrail and must not absorb orchestration/service-canister architecture.
+- ADR-01 remains tightly scoped and must not absorb orchestration/service-canister architecture.
 - The strongest stale-spec drops from baseline are the TAV-operated service-canister assumptions.
-- The strongest stale-spec inconsistency is the certified-state/evidence model, which should be settled through ADR-00 and later ADR-03.
-- Recommended drafting order from inventory findings: ADR-00, Tree-mode invariants note, ADR-02, then ADR-01.
-
-READY TO START:
-This is the first actual MKTd03 protocol build phase.
-Prior work was prep, including TinyPress readiness as a later reference target.
-The first content task is to audit the old spreadsheet spec and classify its items before any new protocol truth is written.
-
-NEXT LIKELY TASKS:
-1. Create the stale-spec inventory from the old MKTd03 spreadsheet tab.
-2. Create the authority map for this build phase.
-3. Keep protocol work dApp-agnostic and upstream of TinyPress-local implementation.
-4. Do not reopen prep, cleanup, or standards uplift unless a specific regression is found.
+- The strongest stale-spec inconsistency was the certified-state/evidence model, settled through ADR-00 and ADR-03.
+- Approved MKTd03 baseline now consists of ADR-00, ADR-01, ADR-02, ADR-03, the Tree-mode invariants note, and the protocol refresh draft.
 
 SAFE RESTART PROMPT:
-MKTd03 is in its first actual protocol-build phase.
-Current MKTd03 main is 654b5122a590db292d9b31a7099546ec18eaee47.
-Use MKTd03 only for dApp-agnostic protocol/spec/ADR/interface work.
+MKTd03 is in Session 4 audit work with Phase 1–3 baseline ADRs approved.
+Current MKTd03 main is 80be0ea.
+Use MKTd03 only for dApp-agnostic protocol/spec/ADR/interface/audit work.
 Treat the old spreadsheet MKTd03 tab as audit input only.
-Treat prep artifacts as historical context only.
-Begin with Phase 1 stale-spec inventory before any coding.
+Treat TinyPress and prep artifacts as historical context only.
+Current task is to continue the pinned MKTd02 reuse/generalisation audit, then draft diagnostics/versioning/security/privacy notes.
