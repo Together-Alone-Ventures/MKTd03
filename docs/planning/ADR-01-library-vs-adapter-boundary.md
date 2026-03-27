@@ -43,18 +43,27 @@ The baseline boundary decision is:
    - operational status publication required by the integration surface.
 
 3. **Adapter seam**  
-   Baseline MKTd03 uses a narrow adapter seam between library and host. The adapter provides the library with the host-state access and mutation execution required for canonical Tree-mode operation, and nothing beyond that. It must not import application-specific storage models, orchestration assumptions, or service-layer concerns into the baseline library boundary.
+   Baseline MKTd03 uses a narrow adapter seam between library and host. The adapter provides the library with only the protocol-boundary interactions required for canonical Tree-mode operation:
+   - reading the host state required to derive canonical Tree-mode inputs,
+   - executing the host-side mutations required to commit canonical Tree-mode state transitions,
+   - persisting and retrieving progress/state information that the host owns operationally but the library must evaluate through protocol predicates,
+   - exposing or wiring operational status information required for readiness gating at the integration boundary.
+
+   The adapter must not import application-specific storage models, orchestration assumptions, retry/list semantics, service-layer concerns, or composite-deletion behaviour into the baseline library boundary.
 
 4. **Readiness state machine ownership**  
-   The host owns the operational readiness state machine, including transition triggering, progress persistence wiring, and scheduling mechanics. The library defines the protocol predicates that determine whether Tree-mode state is evidence-ready, rebuild-required, or blocked, but the host wires those predicates into its own operational control and scheduling. The library does not own host scheduling policy or application operational control.
+   The host owns the operational readiness state machine, including transition triggering, scheduling mechanics, and the final publication of operational status. The library defines the protocol predicates that determine whether Tree-mode state is evidence-ready, rebuild-required, or blocked. The host wires those predicates into its own operational control and scheduling. The library does not own host scheduling policy or application operational control.
 
-5. **Scheduling ownership**  
+5. **Progress persistence and status exposure split**  
+   The host owns progress persistence wiring and status exposure as operational responsibilities. The library may require that specific progress facts or status predicates be available at the adapter boundary so that protocol-critical checks can be evaluated consistently, but it does not own the host’s persistence mechanism or external status-publication mechanism.
+
+6. **Scheduling ownership**  
    Initialisation/resume scheduling mechanics are host responsibilities or explicitly out of scope for the baseline library. Baseline MKTd03 does not require heartbeat-driven scheduling or any other single operational mechanism as part of the core library boundary.
 
-6. **Adapter contract shape**  
+7. **Adapter contract shape**  
    ADR-01 rejects a broad orchestration-style adapter. The baseline adapter contract must remain narrow — limited to the protocol-boundary data and control interactions required for canonical Tree-mode operation. It must not become a service-layer, retry-layer, listing-layer, or composite-deletion orchestration surface.
 
-7. **Explicit out-of-scope boundary exclusions**  
+8. **Explicit out-of-scope boundary exclusions**  
    The baseline library boundary does not include:
    - service-canister registration or topology management,
    - composite deletion orchestration,
@@ -66,9 +75,8 @@ The baseline boundary decision is:
 This ADR does not yet finalise the exact adapter method set or formal interface file contents. Those later artifacts must remain consistent with this boundary and must not broaden the library scope by implication.
 
 ## Remaining Questions to Resolve Within This ADR
-- What exact minimum protocol-level adapter contract should baseline MKTd03 publish?
-- What exact host/library split should baseline MKTd03 publish for progress persistence wiring and status exposure?
 - What exact terminology should ADR-01 use for “host,” “integration seam,” and “adapter” so later interface artifacts stay consistent? (Must resolve before ADR-03 drafting begins.)
+- What exact published notation should baseline MKTd03 use to describe the minimum adapter contract in later interface/spec artifacts?
 
 ## Constraints from Earlier Artifacts
 - Must stay within ADR-00 evidentiary scope.
@@ -78,6 +86,15 @@ This ADR does not yet finalise the exact adapter method set or formal interface 
 - Must not let TinyPress, app-shaped examples, or stale MKTd02 implementation history become baseline authority.
 - Must not assign orchestration/service-canister responsibilities to the baseline library.
 - Must not decide formal interface contents prematurely, but may state what kinds of interfaces the boundary implies.
+
+## Terminology Decision
+For baseline MKTd03 boundary documents:
+- **Host** means the integrating canister/application component that owns application-specific storage, authority policy, operational control, and external interface exposure.
+- **Library** means the core MKTd03 protocol component that owns canonical Tree-mode logic and protocol-critical checks.
+- **Adapter** means the narrow protocol-boundary contract by which the host provides the library with required host-state access, mutation execution, progress facts, and readiness/status wiring.
+- **Integration seam** means the combined host-plus-adapter boundary where library predicates are wired into host operational control.
+
+These meanings must be used consistently in later ADRs and interface/spec artifacts.
 
 ## Rejected Alternatives
 - **Broad orchestration adapter**
