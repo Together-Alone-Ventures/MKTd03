@@ -31,6 +31,9 @@ CURRENT STATUS:
 - Current next task: begin the MKTd02 reuse/generalisation audit and then the diagnostics/versioning/security/privacy note set.
 - MKTd02 reuse/generalisation audit scaffold is now present as a reviewed Session 4 audit artifact.
 - Current next task: pin the exact MKTd02 commit/tag and scope, then begin populating the reuse/generalisation audit rows.
+- MKTd02 reuse/generalisation audit now has its first approved row set populated against the pinned MKTd02 scope.
+- Session 4 audit work is now underway with the initial candidate areas covered in the first audit pass.
+- Current next task: continue the reuse/generalisation audit beyond the initial candidate set, then move into diagnostics/versioning/security/privacy note drafting.
 
 AUTHORITY ORDER:
 1. Live MKTd03 repo state
