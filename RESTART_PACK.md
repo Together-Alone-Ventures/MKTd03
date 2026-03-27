@@ -23,9 +23,9 @@ CURRENT STATUS:
 - ADR-03 Tree-mode CVDR structure is now present as a Session 3 scaffold.
 - Session 3 opening artifact set is now in place: ADR-01 approved, adapter contract concept committed, ADR-03 scaffold prepared for decision drafting.
 - Current next task: draft substantive ADR-03 decisions, then send ADR-01 + ADR-03 together for Session 3 adversarial review.
-- ADR-03 Tree-mode CVDR structure is now advanced to a reviewed intermediate draft.
-- Session 3 artifact state: ADR-01 approved, adapter contract concept committed, ADR-03 intermediate draft ready for final approval check.
-- Current next task: final adversarial approval check for ADR-03, then approve/commit ADR-03 and send ADR-01 + ADR-03 together for the Session 3 review gate if needed.
+- ADR-03 Tree-mode CVDR structure is approved at repo head after adversarial review.
+- Session 3 is now substantively complete: ADR-01 approved, adapter contract concept committed, ADR-03 approved.
+- Current next task: move to Session 4 artifacts, starting with protocol refresh/spec consolidation and the MKTd02 reuse/generalisation audit.
 
 AUTHORITY ORDER:
 1. Live MKTd03 repo state

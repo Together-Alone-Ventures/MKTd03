@@ -1,7 +1,7 @@
 # ADR-03: Tree-Mode CVDR Structure and Verifier Requirements
 
 ## Status
-Scaffold — decision pending Session 3
+Approved
 
 ## Date
 2026-03-26
