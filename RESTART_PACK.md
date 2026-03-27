@@ -1,7 +1,7 @@
 DATE: 2026-03-26
 
 CURRENT GOAL:
-Continue Session 4 audit work from the approved MKTd03 Phase 1–3 baseline, starting with population of the pinned MKTd02 reuse/generalisation audit.
+Begin the formal-interface phase from the approved MKTd03 Phase 1–5 baseline.
 
 IMPORTANT SCOPE RULE:
 This file is for MKTd03 protocol work only.
@@ -11,7 +11,7 @@ CURRENT STATUS:
 - Prep is closed.
 - Repo-boundary cleanup is closed and must not be reopened unless a concrete regression is found.
 - Standards uplift is complete and pushed.
-- MKTd03 main is at commit 80be0ea.
+- MKTd03 main is at commit 505ca1a.
 - docs/planning/MKTd03_build_plan.md is present in the live repo.
 - MKTd03 remains dApp-agnostic.
 - TinyPress remains the first reference target only and must not shape protocol truth.
@@ -22,11 +22,13 @@ CURRENT STATUS:
 - ADR-03 Tree-mode CVDR structure is an approved intermediate draft, with completion still pending its remaining questions.
 - Adapter contract concept v1 is committed.
 - Protocol Refresh v1 is present as a reviewed intermediate draft.
-- MKTd02 reuse/generalisation audit scaffold is present and its audit scope is pinned to a specific MKTd02 repo state and module set.
-- Session 4 audit work is now underway.
+- MKTd02 reuse/generalisation audit v1 is complete against its pinned scope.
+- Diagnostics / Status Note v1 is committed.
+- Versioning / Compatibility Note v1 is committed.
+- Security / Privacy Note v1 is committed.
 
 CURRENT NEXT TASK:
-- Continue populating the MKTd02 reuse/generalisation audit beyond the initial candidate set, then move into diagnostics/versioning/security/privacy note drafting.
+- Begin the formal-interface phase by drafting the first formal interface artifact from the approved ADR/spec baseline, then proceed to companion rules and golden vectors.
 
 AUTHORITY ORDER:
 1. Live MKTd03 repo state
@@ -48,12 +50,12 @@ DURABLE FINDINGS:
 - ADR-01 remains tightly scoped and must not absorb orchestration/service-canister architecture.
 - The strongest stale-spec drops from baseline are the TAV-operated service-canister assumptions.
 - The strongest stale-spec inconsistency was the certified-state/evidence model, settled through ADR-00 and ADR-03.
-- Approved MKTd03 baseline now consists of ADR-00, ADR-01, ADR-02, ADR-03, the Tree-mode invariants note, and the protocol refresh draft.
+- Approved MKTd03 baseline now consists of ADR-00, ADR-01, ADR-02, ADR-03 intermediate baseline, the Tree-mode invariants note, the protocol refresh, the reuse/generalisation audit, and the Phase 5 note set.
 
 SAFE RESTART PROMPT:
-MKTd03 is in Session 4 audit work with Phase 1–3 baseline ADRs approved.
-Current MKTd03 main is 80be0ea.
+MKTd03 is now entering the formal-interface phase with Phase 1–5 baseline artifacts committed.
+Current MKTd03 main is 505ca1a.
 Use MKTd03 only for dApp-agnostic protocol/spec/ADR/interface/audit work.
 Treat the old spreadsheet MKTd03 tab as audit input only.
 Treat TinyPress and prep artifacts as historical context only.
-Current task is to continue the pinned MKTd02 reuse/generalisation audit, then draft diagnostics/versioning/security/privacy notes.
+Current task is to begin formal interface drafting from the approved ADR/spec baseline.
