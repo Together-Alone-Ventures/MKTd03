@@ -1,7 +1,7 @@
 # ADR-01: Library vs Adapter Boundary
 
 ## Status
-Draft decision — pending Session 3 completion
+Approved
 
 ## Date
 2026-03-26

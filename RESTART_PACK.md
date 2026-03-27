@@ -19,6 +19,7 @@ CURRENT STATUS:
 - Codex setup review completed.
 - Global and repo AGENTS files were created and verified for MKTd03, TinyPress, and TAV-Engineering-Standards.
 - ADR-02 tree-structure choice is approved at repo head after adversarial review.
+- ADR-01 library-vs-adapter boundary is approved at repo head after adversarial review.
 
 AUTHORITY ORDER:
 1. Live MKTd03 repo state
