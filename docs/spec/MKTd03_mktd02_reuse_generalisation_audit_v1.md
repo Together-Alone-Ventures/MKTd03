@@ -30,12 +30,12 @@ Guardrails:
 - The candidate list produced by this audit does not authorise edits to MKTd02, creation of MKTd02 tasks, or parallel back-port work during this phase.
 
 ## Audit Scope
-- **MKTd02 repo URL:** To be pinned before audit rows are added.
-- **Exact commit SHA or tag under review:** Mandatory before audit rows are added.
-- **Modules included in scope:** To be listed explicitly before audit rows are added.
-- **Modules explicitly excluded from scope:** To be listed explicitly before audit rows are added.
+- **MKTd02 repo URL:** https://github.com/Together-Alone-Ventures/MKTd02
+- **Exact commit SHA or tag under review:** 54f1e2dc24dd0b79705a66894b2f25138e28a9ad
+- **Modules included in scope:** mktd02/src/certified.rs; mktd02/src/engine.rs; mktd02/src/export.rs; mktd02/src/finalization.rs; mktd02/src/guard.rs; mktd02/src/lib.rs; mktd02/src/nonce.rs; mktd02/src/state.rs; mktd02/src/storage.rs; mktd02/src/trait_def.rs; README.md; MKTd02_Integration_Guide.md; docs/architecture/finalization-flow.md; docs/sections/03-adapter.md; docs/sections/05-api-endpoints.md; docs/sections/06-stable-memory.md; docs/sections/07-receipt-export.md; docs/sections/10-verification.md; docs/sections/11-deterministic-encoding.md; docs/sections/module-hash-pipeline.md
+- **Modules explicitly excluded from scope:** local Cargo.lock modification; docs/compose.yaml; docs/scripts/compose.py; docs/sections/00-header.md; docs/sections/01-prereqs-product.md; docs/sections/02-add-crate.md; docs/sections/04-lifecycle-hooks.md; docs/sections/08-ref-adapters.md; docs/sections/09-assumptions-product.md; LICENSE; RELEASES.md; shell-script behaviour outside the committed module/doc set under review
 
-This audit is not reproducible until those four scope items are filled in.
+This audit is reproducible only for the exact repo state and module scope named above.
 
 ## Audit Questions
 1. Which MKTd02 concepts remain valid at the level of evidentiary logic?
