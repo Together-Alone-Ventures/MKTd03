@@ -11,7 +11,7 @@ CURRENT STATUS:
 - Prep is closed.
 - Repo-boundary cleanup is closed and must not be reopened unless a concrete regression is found.
 - Standards uplift is complete and pushed.
-- MKTd03 main is at commit 654b5122a590db292d9b31a7099546ec18eaee47.
+- MKTd03 main is at commit 7f47b26.
 - docs/planning/MKTd03_build_plan.md is present in the live repo.
 - TinyPress no longer lives in MKTd03 as an active app work surface.
 - MKTd03 remains dApp-agnostic.
