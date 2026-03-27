@@ -26,6 +26,10 @@ CURRENT STATUS:
 - ADR-03 Tree-mode CVDR structure is approved at repo head after adversarial review.
 - Session 3 is now substantively complete: ADR-01 approved, adapter contract concept committed, ADR-03 approved.
 - Current next task: move to Session 4 artifacts, starting with protocol refresh/spec consolidation and the MKTd02 reuse/generalisation audit.
+- Protocol Refresh v1 is now present as a reviewed intermediate draft.
+- Session 4 opening state is now in place: Phase 1–3 ADR baseline approved, adapter contract concept committed, protocol refresh draft prepared for follow-on audit/spec work.
+- Current next task: begin the MKTd02 reuse/generalisation audit and then the diagnostics/versioning/security/privacy note set.
+
 
 AUTHORITY ORDER:
 1. Live MKTd03 repo state
