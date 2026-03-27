@@ -20,6 +20,9 @@ CURRENT STATUS:
 - Global and repo AGENTS files were created and verified for MKTd03, TinyPress, and TAV-Engineering-Standards.
 - ADR-02 tree-structure choice is approved at repo head after adversarial review.
 - ADR-01 library-vs-adapter boundary is approved at repo head after adversarial review.
+- ADR-03 Tree-mode CVDR structure is now present as a Session 3 scaffold.
+- Session 3 opening artifact set is now in place: ADR-01 approved, adapter contract concept committed, ADR-03 scaffold prepared for decision drafting.
+- Current next task: draft substantive ADR-03 decisions, then send ADR-01 + ADR-03 together for Session 3 adversarial review.
 
 AUTHORITY ORDER:
 1. Live MKTd03 repo state
