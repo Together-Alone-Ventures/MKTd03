@@ -1,0 +1,100 @@
+// MKTd03 Tree Mode Conceptual Interface v1
+// Conceptual interface artifact only.
+// This file is not yet the final frozen interface surface.
+
+type BlockedCode = variant {
+  rebuild_consistency_failure;
+  rebuild_required;
+  initialisation_incomplete;
+  operator_hold;
+  unknown_blocked_state;
+};
+
+type BlockedReason = record {
+  code : BlockedCode;
+  description : text;
+};
+
+// Operational state surface owned by the host/integration boundary.
+// This is not itself evidentiary proof.
+type TreeModeStatus = variant {
+  uninitialised;
+  initialising;
+  ready;
+  rebuilding;
+  blocked : BlockedReason;
+};
+
+type CompatibilityClass = variant {
+  full_semantic;
+  partial_interpretation;
+  migration_only;
+  none;
+};
+
+// Protocol-predicate-facing readiness surface.
+// This indicates whether baseline evidence can be produced under current protocol predicates.
+type EvidenceReadiness = variant {
+  evidence_ready;
+  rebuild_required;
+  blocked : BlockedReason;
+};
+
+type DeletionStateMaterial = variant {
+  tombstoned_position : vec nat8;
+  empty_position : vec nat8;
+};
+
+// Conceptual CVDR shape only.
+// Field names and byte-level encodings are not yet frozen.
+type TreeModeCvdr = record {
+  protocol_version : text;
+  receipt_version : text;
+  record_reference : vec nat8;
+  pre_state_commitment : vec nat8;
+  post_state_commitment : vec nat8;
+  proof_material : vec nat8;
+  deletion_state_material : DeletionStateMaterial;
+  certification_material : vec nat8;
+  provenance_material : vec nat8;
+};
+
+type SemanticVersion = record {
+  major : nat32;
+  minor : nat32;
+  patch : nat32;
+};
+
+type VersionInfo = record {
+  protocol_version : SemanticVersion;
+  interface_version : SemanticVersion;
+  compatibility_class : CompatibilityClass;
+};
+
+type CvdrError = variant {
+  not_found;
+  not_yet_issued;
+  invalid_record_reference;
+  unsupported_version;
+};
+
+type CvdrResult = variant {
+  ok : TreeModeCvdr;
+  err : CvdrError;
+};
+
+type VersionCheckResult = variant {
+  supported : VersionInfo;
+  unsupported_version : VersionInfo;
+};
+
+service : {
+  // Status / diagnostics
+  get_tree_mode_status : () -> (TreeModeStatus) query;
+  get_evidence_readiness : () -> (EvidenceReadiness) query;
+  get_version_info : () -> (VersionInfo) query;
+  check_version_support : (SemanticVersion) -> (VersionCheckResult) query;
+
+  // CVDR / verifier-facing surface
+  get_cvdr : (vec nat8) -> (CvdrResult) query;
+}
