@@ -29,7 +29,8 @@ CURRENT STATUS:
 - Protocol Refresh v1 is now present as a reviewed intermediate draft.
 - Session 4 opening state is now in place: Phase 1–3 ADR baseline approved, adapter contract concept committed, protocol refresh draft prepared for follow-on audit/spec work.
 - Current next task: begin the MKTd02 reuse/generalisation audit and then the diagnostics/versioning/security/privacy note set.
-
+- MKTd02 reuse/generalisation audit scaffold is now present as a reviewed Session 4 audit artifact.
+- Current next task: pin the exact MKTd02 commit/tag and scope, then begin populating the reuse/generalisation audit rows.
 
 AUTHORITY ORDER:
 1. Live MKTd03 repo state
