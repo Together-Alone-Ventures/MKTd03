@@ -63,6 +63,27 @@ The baseline structural decision is:
 
 This ADR does not yet finalise the exact placement formula, exact hash preimage layouts, or final proof/receipt schema wording. Those later artifacts must remain consistent with the structural decisions made here and must not alter the structural baseline by implication.
 
+## Published Terminology Addendum
+For interface-prep work, the stable published public nouns are:
+- subject
+- scope
+- pre-state commitment
+- post-state commitment
+- transition
+- tree proof
+- receipt
+- certification/provenance
+- status
+- compatibility
+
+The key distinctions are:
+- receipt is the full public artifact,
+- tree proof is a component inside the receipt,
+- subject is distinct from scope,
+- status is distinct from compatibility.
+
+Later frozen interface work may still normalise casing, style, and exact field notation, but it must not replace these public nouns by drift.
+
 ## Decision Shape
 ADR-02 must produce explicit answers for the following:
 1. the canonical tree model name and structural definition,
@@ -75,7 +96,7 @@ ADR-02 must produce explicit answers for the following:
 ADR-02 is not complete until each of those items is answered in normative language rather than left as descriptive discussion.
 
 ## Remaining Questions to Resolve Within This ADR
-- What exact canonical terminology should baseline MKTd03 publish for terminal positions and proof-path elements?
+- What exact casing/style and lower-level notation should later frozen artifacts use for terminal positions and proof-path elements while preserving the published public nouns settled above?
 - What exact published notation should baseline MKTd03 use to describe the index-mapping rule and hash-role identifiers?
 
 ## Constraints from Earlier Artifacts

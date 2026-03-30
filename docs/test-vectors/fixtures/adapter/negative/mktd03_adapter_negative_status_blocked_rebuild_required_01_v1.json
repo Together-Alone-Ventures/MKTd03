@@ -1,0 +1,52 @@
+{
+  "fixture_id": "mktd03_adapter_negative_status_blocked_rebuild_required_01_v1",
+  "fixture_schema_version": "1.0.0",
+  "surface": "adapter",
+  "polarity": "negative",
+  "family": "blocked_boundary_state",
+  "case_id": "status_blocked_rebuild_required_01",
+  "title": "Adapter status facts report rebuild-required only through blocked-state signaling",
+  "authority_refs": [
+    "interfaces/mktd03_adapter_contract.did",
+    "interfaces/mktd03_adapter_contract_rules.md",
+    "docs/test-vectors/MKTd03_negative_cases_v1.md",
+    "RESTART_PACK.md"
+  ],
+  "target_method": "get_adapter_status_facts",
+  "protocol_version": {
+    "major": 1,
+    "minor": 0,
+    "patch": 0
+  },
+  "interface_version": {
+    "major": 1,
+    "minor": 0,
+    "patch": 0
+  },
+  "rules_version_ref": "interfaces/mktd03_adapter_contract_rules.md#v1",
+  "input_summary": {
+    "method_args": [],
+    "semantic_context": "Adapter boundary is blocked because rebuild is required before capture or mutation can proceed."
+  },
+  "expected_outcome": {
+    "result_variant": "ok",
+    "primary_class": "blocked_boundary_state",
+    "status_facts": {
+      "contract_version": {
+        "major": 1,
+        "minor": 0,
+        "patch": 0
+      },
+      "is_blocked": true,
+      "blocked_reason": {
+        "code": "rebuild_required",
+        "description": "BOUNDARY_REBUILD_REQUIRED_PLACEHOLDER"
+      },
+      "progress_material": "PROGRESS_MATERIAL_PLACEHOLDER"
+    }
+  },
+  "notes": [
+    "This fixture intentionally uses no separate rebuild_required flag.",
+    "Rebuild-required is represented only through is_blocked plus blocked_reason.code = rebuild_required."
+  ]
+}

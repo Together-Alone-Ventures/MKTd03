@@ -1,6 +1,7 @@
-// MKTd03 Tree Mode Conceptual Interface v1
-// Conceptual interface artifact only.
-// This file is not yet the final frozen interface surface.
+// MKTd03 Library Interface v1
+// Frozen-draft public library interface.
+// This file is the first frozen-draft public library surface for MKTd03.
+// It remains subordinate to approved ADR authority and its companion rules.
 
 type Compatibility = variant {
   compatible;
@@ -8,11 +9,25 @@ type Compatibility = variant {
   unsupported;
 };
 
+type SemanticVersion = record {
+  major : nat32;
+  minor : nat32;
+  patch : nat32;
+};
+
+type BuildIdentity = record {
+  build_version : SemanticVersion;
+  build_label : opt text;
+  module_hash : opt vec nat8;
+};
+
 type BlockedCode = variant {
-  rebuild_consistency_failure;
   rebuild_required;
+  rebuild_consistency_failure;
   initialisation_incomplete;
   operator_hold;
+  unsupported_version;
+  incompatible_status_surface;
   unknown_blocked_state;
 };
 
@@ -34,47 +49,30 @@ type OperationContext = variant {
   receipt_retrieval;
   status_check;
   version_check;
-};
-
-// Protocol-predicate-facing readiness surface.
-// This indicates whether baseline evidence can be produced under current protocol predicates.
-type EvidenceReadiness = variant {
-  evidence_ready;
-  rebuild_required;
-  blocked : BlockedReason;
-};
-
-type DeletionStateMaterial = variant {
-  tombstoned_position : vec nat8;
-  empty_position : vec nat8;
-};
-
-type SemanticVersion = record {
-  major : nat32;
-  minor : nat32;
-  patch : nat32;
-};
-
-type BuildIdentity = record {
-  build_version : SemanticVersion;
-  build_label : opt text;
-};
-
-type VersionInfo = record {
-  protocol_version : SemanticVersion;
-  interface_version : SemanticVersion;
-  compatibility : Compatibility;
+  readiness_check;
 };
 
 type StatusSurface = record {
   protocol_version : SemanticVersion;
   status_schema_version : SemanticVersion;
+  interface_version : SemanticVersion;
   build_identity : BuildIdentity;
   lifecycle_state : LifecycleState;
   is_blocked : bool;
   blocked_reason : opt BlockedReason;
   compatibility : Compatibility;
   operation_context : opt OperationContext;
+};
+
+type EvidenceReadiness = variant {
+  evidence_ready;
+  rebuild_required;
+  not_evidence_ready;
+};
+
+type DeletionStateMaterial = variant {
+  tombstoned_position : vec nat8;
+  empty_position : vec nat8;
 };
 
 type CoreTransitionEvidence = record {
@@ -107,8 +105,6 @@ type CertificationProvenanceBlock = record {
   route_context_material : opt vec nat8;
 };
 
-// Conceptual receipt shape only.
-// Field names and byte-level encodings are not yet frozen.
 type Receipt = record {
   protocol_version : SemanticVersion;
   receipt_version : SemanticVersion;
@@ -126,6 +122,12 @@ type ReceiptError = variant {
 type ReceiptResult = variant {
   ok : Receipt;
   err : ReceiptError;
+};
+
+type VersionInfo = record {
+  protocol_version : SemanticVersion;
+  interface_version : SemanticVersion;
+  compatibility : Compatibility;
 };
 
 type VersionCheckResult = variant {

@@ -1,0 +1,70 @@
+{
+  "fixture_id": "mktd03_library_positive_status_ready_minimal_01_v1",
+  "fixture_schema_version": "1.0.0",
+  "surface": "library",
+  "polarity": "positive",
+  "family": "status",
+  "case_id": "ready_minimal_01",
+  "title": "Library status surface reports minimal ready, non-blocked state",
+  "authority_refs": [
+    "interfaces/mktd03_library.did",
+    "interfaces/mktd03_library_interface_rules.md",
+    "docs/spec/MKTd03_golden_vectors_v1.md",
+    "RESTART_PACK.md"
+  ],
+  "target_method": "get_status",
+  "protocol_version": {
+    "major": 1,
+    "minor": 0,
+    "patch": 0
+  },
+  "interface_version": {
+    "major": 1,
+    "minor": 0,
+    "patch": 0
+  },
+  "rules_version_ref": "interfaces/mktd03_library_interface_rules.md#v1",
+  "input_summary": {
+    "method_args": [],
+    "semantic_context": "Minimal ready-state query with no additional operation-context override."
+  },
+  "expected_outcome": {
+    "result_variant": "status_surface",
+    "primary_class": "ready",
+    "status_surface": {
+      "protocol_version": {
+        "major": 1,
+        "minor": 0,
+        "patch": 0
+      },
+      "status_schema_version": {
+        "major": 1,
+        "minor": 0,
+        "patch": 0
+      },
+      "interface_version": {
+        "major": 1,
+        "minor": 0,
+        "patch": 0
+      },
+      "build_identity": {
+        "build_version": {
+          "major": 1,
+          "minor": 0,
+          "patch": 0
+        },
+        "build_label": "BUILD_LABEL_PLACEHOLDER",
+        "module_hash": null
+      },
+      "lifecycle_state": "ready",
+      "is_blocked": false,
+      "blocked_reason": null,
+      "compatibility": "compatible",
+      "operation_context": "status_check"
+    }
+  },
+  "notes": [
+    "Absence of module_hash here does not imply missing provenance attestation.",
+    "This fixture exercises the minimal authoritative status surface only."
+  ]
+}

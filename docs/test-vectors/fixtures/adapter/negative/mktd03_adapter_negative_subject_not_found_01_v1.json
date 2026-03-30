@@ -1,0 +1,44 @@
+{
+  "fixture_id": "mktd03_adapter_negative_subject_not_found_01_v1",
+  "fixture_schema_version": "1.0.0",
+  "surface": "adapter",
+  "polarity": "negative",
+  "family": "subject_not_found",
+  "case_id": "subject_not_found_01",
+  "title": "Adapter subject/scope resolution fails loud when the requested subject cannot be found",
+  "authority_refs": [
+    "interfaces/mktd03_adapter_contract.did",
+    "interfaces/mktd03_adapter_contract_rules.md",
+    "docs/test-vectors/MKTd03_negative_cases_v1.md",
+    "RESTART_PACK.md"
+  ],
+  "target_method": "resolve_subject_scope",
+  "protocol_version": {
+    "major": 1,
+    "minor": 0,
+    "patch": 0
+  },
+  "interface_version": {
+    "major": 1,
+    "minor": 0,
+    "patch": 0
+  },
+  "rules_version_ref": "interfaces/mktd03_adapter_contract_rules.md#v1",
+  "input_summary": {
+    "method_args": {
+      "request_material": "SUBJECT_LOOKUP_REQUEST_PLACEHOLDER",
+      "operation_context_material": "BOUNDARY_CONTEXT_PLACEHOLDER"
+    },
+    "semantic_context": "Boundary request material is well formed, but no subject can be resolved from the current host-side boundary view."
+  },
+  "expected_outcome": {
+    "result_variant": "err",
+    "primary_class": "subject_not_found",
+    "error_code": "subject_not_found",
+    "must_fail_loud": true
+  },
+  "notes": [
+    "This fixture remains distinct from invalid_request_material.",
+    "It uses an explicit adapter outcome already present in the frozen adapter contract."
+  ]
+}

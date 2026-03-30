@@ -1,0 +1,41 @@
+{
+  "fixture_id": "mktd03_adapter_negative_capability_not_supported_01_v1",
+  "fixture_schema_version": "1.0.0",
+  "surface": "adapter",
+  "polarity": "negative",
+  "family": "capability_not_supported",
+  "case_id": "capability_not_supported_01",
+  "title": "Adapter boundary fails loud when a requested contract capability is not supported",
+  "authority_refs": [
+    "interfaces/mktd03_adapter_contract.did",
+    "interfaces/mktd03_adapter_contract_rules.md",
+    "docs/test-vectors/MKTd03_negative_cases_v1.md",
+    "RESTART_PACK.md"
+  ],
+  "target_method": "get_adapter_capabilities",
+  "protocol_version": {
+    "major": 1,
+    "minor": 0,
+    "patch": 0
+  },
+  "interface_version": {
+    "major": 1,
+    "minor": 0,
+    "patch": 0
+  },
+  "rules_version_ref": "interfaces/mktd03_adapter_contract_rules.md#v1",
+  "input_summary": {
+    "method_args": [],
+    "semantic_context": "Boundary interaction requires a named adapter capability that is not present in the supported capabilities set for this contract slice."
+  },
+  "expected_outcome": {
+    "result_variant": "err",
+    "primary_class": "capability_not_supported",
+    "error_code": "capability_not_supported",
+    "must_fail_loud": true
+  },
+  "notes": [
+    "This fixture uses an explicit adapter outcome already present in the frozen adapter baseline.",
+    "It does not broaden the adapter contract into additional capability taxonomy."
+  ]
+}

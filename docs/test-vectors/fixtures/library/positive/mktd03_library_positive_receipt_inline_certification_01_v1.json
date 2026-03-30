@@ -1,0 +1,71 @@
+{
+  "fixture_id": "mktd03_library_positive_receipt_inline_certification_01_v1",
+  "fixture_schema_version": "1.0.0",
+  "surface": "library",
+  "polarity": "positive",
+  "family": "receipt",
+  "case_id": "inline_certification_01",
+  "title": "Library receipt with coherent core transition evidence and inline certification/provenance block",
+  "authority_refs": [
+    "interfaces/mktd03_library.did",
+    "interfaces/mktd03_library_interface_rules.md",
+    "docs/spec/MKTd03_golden_vectors_v1.md",
+    "RESTART_PACK.md"
+  ],
+  "target_method": "get_receipt",
+  "protocol_version": {
+    "major": 1,
+    "minor": 0,
+    "patch": 0
+  },
+  "interface_version": {
+    "major": 1,
+    "minor": 0,
+    "patch": 0
+  },
+  "rules_version_ref": "interfaces/mktd03_library_interface_rules.md#v1",
+  "input_summary": {
+    "method_args": [
+      "SUBJECT_REFERENCE_PLACEHOLDER"
+    ],
+    "semantic_context": "Receipt retrieval for a subject with a coherent tombstoned-position transition and inline certification/provenance payloads."
+  },
+  "expected_outcome": {
+    "result_variant": "ok",
+    "primary_class": "receipt_returned",
+    "receipt": {
+      "protocol_version": {
+        "major": 1,
+        "minor": 0,
+        "patch": 0
+      },
+      "receipt_version": {
+        "major": 1,
+        "minor": 0,
+        "patch": 0
+      },
+      "core_transition_evidence": {
+        "subject_reference": "SUBJECT_REFERENCE_PLACEHOLDER",
+        "scope_reference": "SCOPE_REFERENCE_PLACEHOLDER",
+        "pre_state_commitment": "PRE_STATE_COMMITMENT_PLACEHOLDER",
+        "post_state_commitment": "POST_STATE_COMMITMENT_PLACEHOLDER",
+        "transition_material": "TRANSITION_MATERIAL_PLACEHOLDER",
+        "tree_proof": "TREE_PROOF_PLACEHOLDER",
+        "deletion_state_material": {
+          "tombstoned_position": "TOMBSTONED_POSITION_PLACEHOLDER"
+        }
+      },
+      "certification_provenance": {
+        "posture": "inline_payload",
+        "route": "direct_inline",
+        "certification_material": "CERTIFICATION_MATERIAL_PLACEHOLDER",
+        "provenance_material": "PROVENANCE_MATERIAL_PLACEHOLDER",
+        "route_context_material": null
+      }
+    }
+  },
+  "notes": [
+    "This fixture keeps the two-layer receipt structure explicit.",
+    "All payload-bearing fields are semantic placeholders, not frozen bytes."
+  ]
+}

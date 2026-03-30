@@ -1,0 +1,117 @@
+// MKTd03 Adapter Contract v1
+// Frozen-draft adapter-boundary interface.
+// This file defines the first frozen-draft adapter contract surface for MKTd03.
+// It is subordinate to ADR-01 and to the frozen library interface baseline.
+
+type SemanticVersion = record {
+  major : nat32;
+  minor : nat32;
+  patch : nat32;
+};
+
+type SubjectScope = record {
+  subject_reference : vec nat8;
+  scope_reference : opt vec nat8;
+};
+
+type AdapterCapability = variant {
+  subject_scope_resolution;
+  pre_state_capture;
+  post_state_capture;
+  transition_mutation_execution;
+  status_facts;
+};
+
+type AdapterCapabilityReport = record {
+  contract_version : SemanticVersion;
+  supported_capabilities : vec AdapterCapability;
+};
+
+type AdapterErrorCode = variant {
+  invalid_request_material;
+  subject_not_found;
+  scope_not_supported;
+  capability_not_supported;
+  pre_state_capture_unavailable;
+  post_state_capture_unavailable;
+  transition_mutation_rejected;
+  stale_precondition;
+  initialisation_incomplete;
+  rebuild_required;
+  blocked;
+  internal_adapter_failure;
+};
+
+type AdapterError = record {
+  code : AdapterErrorCode;
+  description : text;
+};
+
+type SubjectScopeRequest = record {
+  request_material : vec nat8;
+  operation_context_material : opt vec nat8;
+};
+
+type SubjectScopeResult = variant {
+  ok : SubjectScope;
+  err : AdapterError;
+};
+
+type StateCapture = record {
+  subject_scope : SubjectScope;
+  state_material : vec nat8;
+  capture_context_material : opt vec nat8;
+};
+
+type StateCaptureResult = variant {
+  ok : StateCapture;
+  err : AdapterError;
+};
+
+type TransitionMutationRequest = record {
+  subject_scope : SubjectScope;
+  mutation_material : vec nat8;
+  operation_context_material : opt vec nat8;
+};
+
+type TransitionMutationResult = variant {
+  ok : record {
+    mutation_applied : bool;
+    result_material : opt vec nat8;
+  };
+  err : AdapterError;
+};
+
+type AdapterBlockedReasonCode = variant {
+  initialisation_incomplete;
+  rebuild_required;
+  blocked_by_host_policy;
+  unsupported_boundary_condition;
+  unknown_blocked_state;
+};
+
+type AdapterBlockedReason = record {
+  code : AdapterBlockedReasonCode;
+  description : text;
+};
+
+type AdapterStatusFacts = record {
+  contract_version : SemanticVersion;
+  is_blocked : bool;
+  blocked_reason : opt AdapterBlockedReason;
+  progress_material : opt vec nat8;
+};
+
+type AdapterStatusFactsResult = variant {
+  ok : AdapterStatusFacts;
+  err : AdapterError;
+};
+
+service : {
+  resolve_subject_scope : (SubjectScopeRequest) -> (SubjectScopeResult);
+  capture_pre_state : (SubjectScope) -> (StateCaptureResult) query;
+  execute_transition_mutation : (TransitionMutationRequest) -> (TransitionMutationResult);
+  capture_post_state : (SubjectScope) -> (StateCaptureResult) query;
+  get_adapter_status_facts : () -> (AdapterStatusFactsResult) query;
+  get_adapter_capabilities : () -> (AdapterCapabilityReport) query;
+}

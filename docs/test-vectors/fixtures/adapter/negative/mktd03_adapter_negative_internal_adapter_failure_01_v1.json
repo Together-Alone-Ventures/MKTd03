@@ -1,0 +1,48 @@
+{
+  "fixture_id": "mktd03_adapter_negative_internal_adapter_failure_01_v1",
+  "fixture_schema_version": "1.0.0",
+  "surface": "adapter",
+  "polarity": "negative",
+  "family": "internal_adapter_failure",
+  "case_id": "internal_adapter_failure_01",
+  "title": "Adapter boundary fails loud with an explicit internal adapter failure outcome",
+  "authority_refs": [
+    "interfaces/mktd03_adapter_contract.did",
+    "interfaces/mktd03_adapter_contract_rules.md",
+    "docs/test-vectors/MKTd03_negative_cases_v1.md",
+    "RESTART_PACK.md"
+  ],
+  "target_method": "execute_transition_mutation",
+  "protocol_version": {
+    "major": 1,
+    "minor": 0,
+    "patch": 0
+  },
+  "interface_version": {
+    "major": 1,
+    "minor": 0,
+    "patch": 0
+  },
+  "rules_version_ref": "interfaces/mktd03_adapter_contract_rules.md#v1",
+  "input_summary": {
+    "method_args": {
+      "subject_scope": {
+        "subject_reference": "SUBJECT_REFERENCE_PLACEHOLDER",
+        "scope_reference": "SCOPE_REFERENCE_PLACEHOLDER"
+      },
+      "mutation_material": "MUTATION_MATERIAL_PLACEHOLDER",
+      "operation_context_material": "BOUNDARY_CONTEXT_PLACEHOLDER"
+    },
+    "semantic_context": "Boundary mutation request is well formed, but the adapter encounters an explicit internal failure that must not be collapsed into another error family."
+  },
+  "expected_outcome": {
+    "result_variant": "err",
+    "primary_class": "internal_adapter_failure",
+    "error_code": "internal_adapter_failure",
+    "must_fail_loud": true
+  },
+  "notes": [
+    "This fixture must not be used as a catch-all substitute for stale_precondition, blocked, or capability_not_supported.",
+    "It uses an explicit adapter error already present in the frozen baseline."
+  ]
+}

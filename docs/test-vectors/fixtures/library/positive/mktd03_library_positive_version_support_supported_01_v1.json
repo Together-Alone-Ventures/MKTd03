@@ -1,0 +1,58 @@
+{
+  "fixture_id": "mktd03_library_positive_version_support_supported_01_v1",
+  "fixture_schema_version": "1.0.0",
+  "surface": "library",
+  "polarity": "positive",
+  "family": "version_support",
+  "case_id": "version_support_supported_01",
+  "title": "Library version-support check accepts a supported protocol version under the current interface baseline",
+  "authority_refs": [
+    "interfaces/mktd03_library.did",
+    "interfaces/mktd03_library_interface_rules.md",
+    "docs/spec/MKTd03_golden_vectors_v1.md",
+    "RESTART_PACK.md"
+  ],
+  "target_method": "check_version_support",
+  "protocol_version": {
+    "major": 1,
+    "minor": 0,
+    "patch": 0
+  },
+  "interface_version": {
+    "major": 1,
+    "minor": 0,
+    "patch": 0
+  },
+  "rules_version_ref": "interfaces/mktd03_library_interface_rules.md#v1",
+  "input_summary": {
+    "method_args": [
+      {
+        "major": 1,
+        "minor": 0,
+        "patch": 0
+      }
+    ],
+    "semantic_context": "Version-support query checks a protocol version inside the supported compatibility set."
+  },
+  "expected_outcome": {
+    "result_variant": "supported",
+    "primary_class": "supported",
+    "version_info": {
+      "protocol_version": {
+        "major": 1,
+        "minor": 0,
+        "patch": 0
+      },
+      "interface_version": {
+        "major": 1,
+        "minor": 0,
+        "patch": 0
+      },
+      "compatibility": "compatible"
+    }
+  },
+  "notes": [
+    "This fixture stays on the library version-support surface.",
+    "It does not imply any fallback or conditional interpretation path."
+  ]
+}

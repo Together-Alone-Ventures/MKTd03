@@ -1,0 +1,70 @@
+{
+  "fixture_id": "mktd03_verifier_negative_wrong_tree_proof_01_v1",
+  "fixture_schema_version": "1.0.0",
+  "surface": "verifier",
+  "polarity": "negative",
+  "family": "wrong_tree_proof",
+  "case_id": "wrong_tree_proof_01",
+  "title": "Verifier-side receipt validation fails because tree-proof material does not match the claimed transition evidence",
+  "authority_refs": [
+    "interfaces/mktd03_library.did",
+    "interfaces/mktd03_library_interface_rules.md",
+    "docs/test-vectors/MKTd03_negative_cases_v1.md",
+    "RESTART_PACK.md"
+  ],
+  "target_method": "receipt_validation",
+  "protocol_version": {
+    "major": 1,
+    "minor": 0,
+    "patch": 0
+  },
+  "interface_version": {
+    "major": 1,
+    "minor": 0,
+    "patch": 0
+  },
+  "rules_version_ref": "interfaces/mktd03_library_interface_rules.md#v1",
+  "input_summary": {
+    "receipt_artifact_under_validation": {
+      "protocol_version": {
+        "major": 1,
+        "minor": 0,
+        "patch": 0
+      },
+      "receipt_version": {
+        "major": 1,
+        "minor": 0,
+        "patch": 0
+      },
+      "core_transition_evidence": {
+        "subject_reference": "SUBJECT_REFERENCE_PLACEHOLDER",
+        "scope_reference": "SCOPE_REFERENCE_PLACEHOLDER",
+        "pre_state_commitment": "PRE_STATE_COMMITMENT_PLACEHOLDER",
+        "post_state_commitment": "POST_STATE_COMMITMENT_PLACEHOLDER",
+        "transition_material": "TRANSITION_MATERIAL_PLACEHOLDER",
+        "tree_proof": "TREE_PROOF_MISMATCH_PLACEHOLDER",
+        "deletion_state_material": {
+          "tombstoned_position": "TOMBSTONED_POSITION_PLACEHOLDER"
+        }
+      },
+      "certification_provenance": {
+        "posture": "inline_payload",
+        "route": "direct_inline",
+        "certification_material": "CERTIFICATION_MATERIAL_PLACEHOLDER",
+        "provenance_material": "PROVENANCE_MATERIAL_PLACEHOLDER",
+        "route_context_material": null
+      }
+    },
+    "semantic_context": "Verifier-side receipt validation of an artifact whose tree proof is intentionally inconsistent with the claimed subject position and commitment transition."
+  },
+  "expected_outcome": {
+    "primary_class": "invalid_evidence",
+    "family": "wrong_tree_proof",
+    "must_fail_loud": true,
+    "validation_outcome": "reject_receipt_artifact"
+  },
+  "notes": [
+    "This fixture is a verifier-input fixture, not a get_receipt retrieval-result fixture.",
+    "The failure is post-retrieval receipt invalidity."
+  ]
+}

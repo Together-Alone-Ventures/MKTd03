@@ -1,0 +1,44 @@
+{
+  "fixture_id": "mktd03_adapter_negative_scope_not_supported_01_v1",
+  "fixture_schema_version": "1.0.0",
+  "surface": "adapter",
+  "polarity": "negative",
+  "family": "scope_not_supported",
+  "case_id": "scope_not_supported_01",
+  "title": "Adapter subject/scope resolution fails loud for an unsupported scope",
+  "authority_refs": [
+    "interfaces/mktd03_adapter_contract.did",
+    "interfaces/mktd03_adapter_contract_rules.md",
+    "docs/test-vectors/MKTd03_negative_cases_v1.md",
+    "RESTART_PACK.md"
+  ],
+  "target_method": "resolve_subject_scope",
+  "protocol_version": {
+    "major": 1,
+    "minor": 0,
+    "patch": 0
+  },
+  "interface_version": {
+    "major": 1,
+    "minor": 0,
+    "patch": 0
+  },
+  "rules_version_ref": "interfaces/mktd03_adapter_contract_rules.md#v1",
+  "input_summary": {
+    "method_args": {
+      "request_material": "REQUEST_MATERIAL_SCOPE_UNSUPPORTED_PLACEHOLDER",
+      "operation_context_material": "BOUNDARY_CONTEXT_PLACEHOLDER"
+    },
+    "semantic_context": "Boundary request material is well formed but requests a scope not supported by the adapter contract surface."
+  },
+  "expected_outcome": {
+    "result_variant": "err",
+    "primary_class": "scope_not_supported",
+    "error_code": "scope_not_supported",
+    "must_fail_loud": true
+  },
+  "notes": [
+    "This fixture maps a concrete subject/scope failure case to an existing explicit adapter outcome.",
+    "It remains distinct from invalid_request_material."
+  ]
+}

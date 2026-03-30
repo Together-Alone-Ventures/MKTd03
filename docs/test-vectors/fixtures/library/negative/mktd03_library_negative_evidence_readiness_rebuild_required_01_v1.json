@@ -1,0 +1,40 @@
+{
+  "fixture_id": "mktd03_library_negative_evidence_readiness_rebuild_required_01_v1",
+  "fixture_schema_version": "1.0.0",
+  "surface": "library",
+  "polarity": "negative",
+  "family": "rebuild_required",
+  "case_id": "evidence_readiness_rebuild_required_01",
+  "title": "Library evidence-readiness surface reports rebuild_required without carrying blocked diagnosis detail",
+  "authority_refs": [
+    "interfaces/mktd03_library.did",
+    "interfaces/mktd03_library_interface_rules.md",
+    "docs/test-vectors/MKTd03_negative_cases_v1.md",
+    "RESTART_PACK.md"
+  ],
+  "target_method": "get_evidence_readiness",
+  "protocol_version": {
+    "major": 1,
+    "minor": 0,
+    "patch": 0
+  },
+  "interface_version": {
+    "major": 1,
+    "minor": 0,
+    "patch": 0
+  },
+  "rules_version_ref": "interfaces/mktd03_library_interface_rules.md#v1",
+  "input_summary": {
+    "method_args": [],
+    "semantic_context": "Evidence-readiness predicate surface reports the narrower rebuild-required outcome and does not duplicate structured blocked diagnosis."
+  },
+  "expected_outcome": {
+    "result_variant": "evidence_readiness",
+    "primary_class": "rebuild_required",
+    "enum_value": "rebuild_required"
+  },
+  "notes": [
+    "This fixture stays on the narrow predicate-facing readiness surface.",
+    "Structured blocked diagnosis belongs to get_status, not this fixture."
+  ]
+}

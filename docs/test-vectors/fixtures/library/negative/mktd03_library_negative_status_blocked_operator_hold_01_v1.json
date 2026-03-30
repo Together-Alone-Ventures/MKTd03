@@ -1,0 +1,73 @@
+{
+  "fixture_id": "mktd03_library_negative_status_blocked_operator_hold_01_v1",
+  "fixture_schema_version": "1.0.0",
+  "surface": "library",
+  "polarity": "negative",
+  "family": "blocked_status",
+  "case_id": "status_blocked_operator_hold_01",
+  "title": "Library status surface reports blocked state for a non-rebuild operator hold",
+  "authority_refs": [
+    "interfaces/mktd03_library.did",
+    "interfaces/mktd03_library_interface_rules.md",
+    "docs/test-vectors/MKTd03_negative_cases_v1.md",
+    "RESTART_PACK.md"
+  ],
+  "target_method": "get_status",
+  "protocol_version": {
+    "major": 1,
+    "minor": 0,
+    "patch": 0
+  },
+  "interface_version": {
+    "major": 1,
+    "minor": 0,
+    "patch": 0
+  },
+  "rules_version_ref": "interfaces/mktd03_library_interface_rules.md#v1",
+  "input_summary": {
+    "method_args": [],
+    "semantic_context": "Library status query returns an operationally blocked state caused by a named operator hold rather than rebuild-required."
+  },
+  "expected_outcome": {
+    "result_variant": "status_surface",
+    "primary_class": "blocked_status",
+    "status_surface": {
+      "protocol_version": {
+        "major": 1,
+        "minor": 0,
+        "patch": 0
+      },
+      "status_schema_version": {
+        "major": 1,
+        "minor": 0,
+        "patch": 0
+      },
+      "interface_version": {
+        "major": 1,
+        "minor": 0,
+        "patch": 0
+      },
+      "build_identity": {
+        "build_version": {
+          "major": 1,
+          "minor": 0,
+          "patch": 0
+        },
+        "build_label": "BUILD_LABEL_PLACEHOLDER",
+        "module_hash": null
+      },
+      "lifecycle_state": "ready",
+      "is_blocked": true,
+      "blocked_reason": {
+        "code": "operator_hold",
+        "description": "OPERATOR_HOLD_PLACEHOLDER"
+      },
+      "compatibility": "compatible",
+      "operation_context": "status_check"
+    }
+  },
+  "notes": [
+    "This fixture uses a non-rebuild blocked reason as required.",
+    "Blocked state remains distinct from lifecycle state."
+  ]
+}

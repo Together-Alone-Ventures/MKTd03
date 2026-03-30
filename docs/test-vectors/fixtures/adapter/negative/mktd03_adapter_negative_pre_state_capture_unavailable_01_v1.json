@@ -1,0 +1,44 @@
+{
+  "fixture_id": "mktd03_adapter_negative_pre_state_capture_unavailable_01_v1",
+  "fixture_schema_version": "1.0.0",
+  "surface": "adapter",
+  "polarity": "negative",
+  "family": "pre_state_capture_unavailable",
+  "case_id": "pre_state_capture_unavailable_01",
+  "title": "Adapter pre-state capture fails loud when required boundary state cannot be produced",
+  "authority_refs": [
+    "interfaces/mktd03_adapter_contract.did",
+    "interfaces/mktd03_adapter_contract_rules.md",
+    "docs/test-vectors/MKTd03_negative_cases_v1.md",
+    "RESTART_PACK.md"
+  ],
+  "target_method": "capture_pre_state",
+  "protocol_version": {
+    "major": 1,
+    "minor": 0,
+    "patch": 0
+  },
+  "interface_version": {
+    "major": 1,
+    "minor": 0,
+    "patch": 0
+  },
+  "rules_version_ref": "interfaces/mktd03_adapter_contract_rules.md#v1",
+  "input_summary": {
+    "method_args": {
+      "subject_reference": "SUBJECT_REFERENCE_PLACEHOLDER",
+      "scope_reference": "SCOPE_REFERENCE_PLACEHOLDER"
+    },
+    "semantic_context": "Boundary capture request is well formed, but required pre-state material is unavailable at capture time."
+  },
+  "expected_outcome": {
+    "result_variant": "err",
+    "primary_class": "pre_state_capture_unavailable",
+    "error_code": "pre_state_capture_unavailable",
+    "must_fail_loud": true
+  },
+  "notes": [
+    "This fixture remains distinct from stale_precondition, which is mutation-time failure.",
+    "It uses an explicit adapter capture error from the frozen baseline."
+  ]
+}

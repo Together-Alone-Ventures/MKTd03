@@ -1,0 +1,44 @@
+{
+  "fixture_id": "mktd03_adapter_negative_invalid_request_material_01_v1",
+  "fixture_schema_version": "1.0.0",
+  "surface": "adapter",
+  "polarity": "negative",
+  "family": "invalid_request_material",
+  "case_id": "invalid_request_material_01",
+  "title": "Adapter subject/scope resolution fails loud for malformed request material",
+  "authority_refs": [
+    "interfaces/mktd03_adapter_contract.did",
+    "interfaces/mktd03_adapter_contract_rules.md",
+    "docs/test-vectors/MKTd03_negative_cases_v1.md",
+    "RESTART_PACK.md"
+  ],
+  "target_method": "resolve_subject_scope",
+  "protocol_version": {
+    "major": 1,
+    "minor": 0,
+    "patch": 0
+  },
+  "interface_version": {
+    "major": 1,
+    "minor": 0,
+    "patch": 0
+  },
+  "rules_version_ref": "interfaces/mktd03_adapter_contract_rules.md#v1",
+  "input_summary": {
+    "method_args": {
+      "request_material": "MALFORMED_REQUEST_MATERIAL_PLACEHOLDER",
+      "operation_context_material": "BOUNDARY_CONTEXT_PLACEHOLDER"
+    },
+    "semantic_context": "Boundary request material is malformed and cannot be resolved into canonical subject/scope references."
+  },
+  "expected_outcome": {
+    "result_variant": "err",
+    "primary_class": "invalid_request_material",
+    "error_code": "invalid_request_material",
+    "must_fail_loud": true
+  },
+  "notes": [
+    "This fixture uses an explicit adapter outcome already present in the frozen contract.",
+    "It does not introduce a separate machine-readable subject_scope_mismatch family."
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "fixture_id": "mktd03_library_negative_receipt_not_yet_issued_01_v1",
+  "fixture_schema_version": "1.0.0",
+  "surface": "library",
+  "polarity": "negative",
+  "family": "not_yet_issued",
+  "case_id": "receipt_not_yet_issued_01",
+  "title": "Receipt retrieval returns not_yet_issued for a subject whose receipt issuance is pending",
+  "authority_refs": [
+    "interfaces/mktd03_library.did",
+    "interfaces/mktd03_library_interface_rules.md",
+    "docs/test-vectors/MKTd03_negative_cases_v1.md",
+    "RESTART_PACK.md"
+  ],
+  "target_method": "get_receipt",
+  "protocol_version": {
+    "major": 1,
+    "minor": 0,
+    "patch": 0
+  },
+  "interface_version": {
+    "major": 1,
+    "minor": 0,
+    "patch": 0
+  },
+  "rules_version_ref": "interfaces/mktd03_library_interface_rules.md#v1",
+  "input_summary": {
+    "method_args": [
+      "SUBJECT_REFERENCE_PLACEHOLDER"
+    ],
+    "semantic_context": "Receipt lookup uses a well-formed subject reference, but lifecycle context indicates issuance is pending rather than absent."
+  },
+  "expected_outcome": {
+    "result_variant": "err",
+    "primary_class": "not_yet_issued",
+    "error_code": "not_yet_issued",
+    "must_fail_loud": true
+  },
+  "notes": [
+    "This fixture remains distinct from clean not_found absence.",
+    "The negative outcome is a library retrieval-result error."
+  ]
+}

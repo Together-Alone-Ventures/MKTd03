@@ -1,0 +1,48 @@
+{
+  "fixture_id": "mktd03_adapter_negative_transition_mutation_rejected_01_v1",
+  "fixture_schema_version": "1.0.0",
+  "surface": "adapter",
+  "polarity": "negative",
+  "family": "transition_mutation_rejected",
+  "case_id": "transition_mutation_rejected_01",
+  "title": "Adapter mutation execution returns transition_mutation_rejected for a non-stale rejection case",
+  "authority_refs": [
+    "interfaces/mktd03_adapter_contract.did",
+    "interfaces/mktd03_adapter_contract_rules.md",
+    "docs/test-vectors/MKTd03_negative_cases_v1.md",
+    "RESTART_PACK.md"
+  ],
+  "target_method": "execute_transition_mutation",
+  "protocol_version": {
+    "major": 1,
+    "minor": 0,
+    "patch": 0
+  },
+  "interface_version": {
+    "major": 1,
+    "minor": 0,
+    "patch": 0
+  },
+  "rules_version_ref": "interfaces/mktd03_adapter_contract_rules.md#v1",
+  "input_summary": {
+    "method_args": {
+      "subject_scope": {
+        "subject_reference": "SUBJECT_REFERENCE_PLACEHOLDER",
+        "scope_reference": "SCOPE_REFERENCE_PLACEHOLDER"
+      },
+      "mutation_material": "MUTATION_MATERIAL_PLACEHOLDER",
+      "operation_context_material": "BOUNDARY_CONTEXT_PLACEHOLDER"
+    },
+    "semantic_context": "Mutation request is well formed and not stale, but the boundary rejects execution for a non-stale reason."
+  },
+  "expected_outcome": {
+    "result_variant": "err",
+    "primary_class": "transition_mutation_rejected",
+    "error_code": "transition_mutation_rejected",
+    "must_fail_loud": true
+  },
+  "notes": [
+    "This fixture remains distinct from stale_precondition.",
+    "The negative outcome is an explicit adapter error already present in the frozen adapter contract."
+  ]
+}
