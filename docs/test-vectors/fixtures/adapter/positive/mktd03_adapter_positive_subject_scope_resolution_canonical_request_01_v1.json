@@ -1,0 +1,45 @@
+{
+  "fixture_id": "mktd03_adapter_positive_subject_scope_resolution_canonical_request_01_v1",
+  "fixture_schema_version": "1.0.0",
+  "surface": "adapter",
+  "polarity": "positive",
+  "family": "subject_scope_resolution",
+  "case_id": "canonical_request_01",
+  "title": "Adapter resolve_subject_scope returns a canonical subject/scope object for one fixture-backed request/context pair",
+  "authority_refs": [
+    "interfaces/mktd03_adapter_contract.did",
+    "interfaces/mktd03_adapter_contract_rules.md",
+    "docs/test-vectors/MKTd03_golden_vectors_v1.md"
+  ],
+  "target_method": "resolve_subject_scope",
+  "protocol_version": {
+    "major": 1,
+    "minor": 0,
+    "patch": 0
+  },
+  "interface_version": {
+    "major": 1,
+    "minor": 0,
+    "patch": 0
+  },
+  "rules_version_ref": "interfaces/mktd03_adapter_contract_rules.md#v1",
+  "input_summary": {
+    "method_args": {
+      "request_material": "CANONICAL_REQUEST_MATERIAL_PLACEHOLDER",
+      "operation_context_material": "CANONICAL_OPERATION_CONTEXT_PLACEHOLDER"
+    },
+    "semantic_context": "This fixture is a reference-only contract example showing that one canonical request/context shape yields one canonical boundary subject/scope object."
+  },
+  "expected_outcome": {
+    "result_variant": "ok",
+    "primary_class": "subject_scope_resolved",
+    "subject_scope": {
+      "subject_reference": "SUBJECT_REFERENCE_PLACEHOLDER",
+      "scope_reference": "SCOPE_REFERENCE_PLACEHOLDER"
+    }
+  },
+  "notes": [
+    "This fixture is fixture-backed and contract-oriented only; it does not claim that a real host lookup or application discovery process succeeded.",
+    "The resolved references are canonical boundary placeholders only and do not imply provenance, capture success, mutation success, receipt generation, verifier flow, or cryptographic validation."
+  ]
+}

@@ -1,0 +1,205 @@
+{
+  "fixture_index_version": "1.0.0",
+  "entries": [
+    {
+      "filename": "library/positive/mktd03_library_positive_status_ready_minimal_01_v1.json",
+      "surface": "library",
+      "polarity": "positive",
+      "family": "status",
+      "target_method": "get_status",
+      "status": "draft"
+    },
+    {
+      "filename": "library/positive/mktd03_library_positive_receipt_inline_certification_01_v1.json",
+      "surface": "library",
+      "polarity": "positive",
+      "family": "receipt",
+      "target_method": "get_receipt",
+      "status": "draft"
+    },
+    {
+      "filename": "library/positive/mktd03_library_positive_version_support_supported_01_v1.json",
+      "surface": "library",
+      "polarity": "positive",
+      "family": "version_support",
+      "target_method": "check_version_support",
+      "status": "draft"
+    },
+    {
+      "filename": "adapter/positive/mktd03_adapter_positive_subject_scope_resolution_canonical_request_01_v1.json",
+      "surface": "adapter",
+      "polarity": "positive",
+      "family": "subject_scope_resolution",
+      "target_method": "resolve_subject_scope",
+      "status": "draft"
+    },
+    {
+      "filename": "verifier/negative/mktd03_verifier_negative_wrong_tree_proof_01_v1.json",
+      "surface": "verifier",
+      "polarity": "negative",
+      "family": "wrong_tree_proof",
+      "target_method": "receipt_validation",
+      "status": "draft"
+    },
+    {
+      "filename": "verifier/negative/mktd03_verifier_negative_wrong_commitment_relationship_01_v1.json",
+      "surface": "verifier",
+      "polarity": "negative",
+      "family": "wrong_commitment_relationship",
+      "target_method": "receipt_validation",
+      "status": "draft"
+    },
+    {
+      "filename": "verifier/negative/mktd03_verifier_negative_malformed_certification_provenance_01_v1.json",
+      "surface": "verifier",
+      "polarity": "negative",
+      "family": "malformed_certification_provenance",
+      "target_method": "receipt_validation",
+      "status": "draft"
+    },
+    {
+      "filename": "verifier/negative/mktd03_verifier_negative_receipt_subject_scope_mismatch_01_v1.json",
+      "surface": "verifier",
+      "polarity": "negative",
+      "family": "receipt_subject_scope_mismatch",
+      "target_method": "receipt_validation",
+      "status": "draft"
+    },
+    {
+      "filename": "library/negative/mktd03_library_negative_unsupported_version_receipt_01_v1.json",
+      "surface": "library",
+      "polarity": "negative",
+      "family": "unsupported_version",
+      "target_method": "get_receipt",
+      "status": "draft"
+    },
+    {
+      "filename": "library/negative/mktd03_library_negative_receipt_not_found_01_v1.json",
+      "surface": "library",
+      "polarity": "negative",
+      "family": "not_found",
+      "target_method": "get_receipt",
+      "status": "draft"
+    },
+    {
+      "filename": "library/negative/mktd03_library_negative_receipt_not_yet_issued_01_v1.json",
+      "surface": "library",
+      "polarity": "negative",
+      "family": "not_yet_issued",
+      "target_method": "get_receipt",
+      "status": "draft"
+    },
+    {
+      "filename": "library/negative/mktd03_library_negative_status_blocked_operator_hold_01_v1.json",
+      "surface": "library",
+      "polarity": "negative",
+      "family": "blocked_status",
+      "target_method": "get_status",
+      "status": "draft"
+    },
+    {
+      "filename": "library/negative/mktd03_library_negative_evidence_readiness_not_ready_01_v1.json",
+      "surface": "library",
+      "polarity": "negative",
+      "family": "not_evidence_ready",
+      "target_method": "get_evidence_readiness",
+      "status": "draft"
+    },
+    {
+      "filename": "library/negative/mktd03_library_negative_evidence_readiness_rebuild_required_01_v1.json",
+      "surface": "library",
+      "polarity": "negative",
+      "family": "rebuild_required",
+      "target_method": "get_evidence_readiness",
+      "status": "draft"
+    },
+    {
+      "filename": "library/negative/mktd03_library_negative_status_blocked_initialisation_incomplete_01_v1.json",
+      "surface": "library",
+      "polarity": "negative",
+      "family": "blocked_status",
+      "target_method": "get_status",
+      "status": "draft"
+    },
+    {
+      "filename": "adapter/negative/mktd03_adapter_negative_stale_precondition_01_v1.json",
+      "surface": "adapter",
+      "polarity": "negative",
+      "family": "stale_precondition",
+      "target_method": "execute_transition_mutation",
+      "status": "draft"
+    },
+    {
+      "filename": "adapter/negative/mktd03_adapter_negative_transition_mutation_rejected_01_v1.json",
+      "surface": "adapter",
+      "polarity": "negative",
+      "family": "transition_mutation_rejected",
+      "target_method": "execute_transition_mutation",
+      "status": "draft"
+    },
+    {
+      "filename": "adapter/negative/mktd03_adapter_negative_invalid_request_material_01_v1.json",
+      "surface": "adapter",
+      "polarity": "negative",
+      "family": "invalid_request_material",
+      "target_method": "resolve_subject_scope",
+      "status": "draft"
+    },
+    {
+      "filename": "adapter/negative/mktd03_adapter_negative_scope_not_supported_01_v1.json",
+      "surface": "adapter",
+      "polarity": "negative",
+      "family": "scope_not_supported",
+      "target_method": "resolve_subject_scope",
+      "status": "draft"
+    },
+    {
+      "filename": "adapter/negative/mktd03_adapter_negative_subject_not_found_01_v1.json",
+      "surface": "adapter",
+      "polarity": "negative",
+      "family": "subject_not_found",
+      "target_method": "resolve_subject_scope",
+      "status": "draft"
+    },
+    {
+      "filename": "adapter/negative/mktd03_adapter_negative_pre_state_capture_unavailable_01_v1.json",
+      "surface": "adapter",
+      "polarity": "negative",
+      "family": "pre_state_capture_unavailable",
+      "target_method": "capture_pre_state",
+      "status": "draft"
+    },
+    {
+      "filename": "adapter/negative/mktd03_adapter_negative_post_state_capture_unavailable_01_v1.json",
+      "surface": "adapter",
+      "polarity": "negative",
+      "family": "post_state_capture_unavailable",
+      "target_method": "capture_post_state",
+      "status": "draft"
+    },
+    {
+      "filename": "adapter/negative/mktd03_adapter_negative_capability_not_supported_01_v1.json",
+      "surface": "adapter",
+      "polarity": "negative",
+      "family": "capability_not_supported",
+      "target_method": "get_adapter_capabilities",
+      "status": "draft"
+    },
+    {
+      "filename": "adapter/negative/mktd03_adapter_negative_internal_adapter_failure_01_v1.json",
+      "surface": "adapter",
+      "polarity": "negative",
+      "family": "internal_adapter_failure",
+      "target_method": "execute_transition_mutation",
+      "status": "draft"
+    },
+    {
+      "filename": "adapter/negative/mktd03_adapter_negative_status_blocked_rebuild_required_01_v1.json",
+      "surface": "adapter",
+      "polarity": "negative",
+      "family": "blocked_boundary_state",
+      "target_method": "get_adapter_status_facts",
+      "status": "draft"
+    }
+  ]
+}
