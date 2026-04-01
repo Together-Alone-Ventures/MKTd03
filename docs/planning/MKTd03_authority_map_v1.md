@@ -23,7 +23,7 @@ If two artifacts overlap, the artifact named here governs unless G explicitly re
 | Conceptual adapter contract | `docs/spec/MKTd03_adapter_contract_concept_v1.md` | pre-freeze draft |
 | Companion-rule layer | `docs/spec/MKTd03_companion_rules_v1.md` | pre-freeze draft |
 | Conceptual interface seed artifact | `interfaces/mktd03_tree_mode_conceptual_interface_v1.did` | pre-freeze draft; not frozen authority |
-| Human-readable semantic vectors | `docs/spec/MKTd03_golden_vectors_v1.md` | pre-freeze draft |
+| Human-readable semantic vectors | `docs/test-vectors/MKTd03_golden_vectors_v1.md` | pre-freeze draft |
 | Frozen formal public interface | not yet created | needs cleanup before frozen interface |
 | Frozen machine-readable fixtures | not yet created | not started |
 

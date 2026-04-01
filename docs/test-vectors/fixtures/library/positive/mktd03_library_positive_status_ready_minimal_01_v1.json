@@ -9,7 +9,7 @@
   "authority_refs": [
     "interfaces/mktd03_library.did",
     "interfaces/mktd03_library_interface_rules.md",
-    "docs/spec/MKTd03_golden_vectors_v1.md",
+    "docs/test-vectors/MKTd03_golden_vectors_v1.md",
     "RESTART_PACK.md"
   ],
   "target_method": "get_status",

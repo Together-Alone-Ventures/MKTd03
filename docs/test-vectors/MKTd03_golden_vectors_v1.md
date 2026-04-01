@@ -212,6 +212,39 @@ These families align with the currently approved direction that MKTd03 must expo
 
 ---
 
+## Vector GV-05A — Pre-state capture success for a resolved boundary subject/scope
+
+**Purpose:** Define the minimum positive semantic baseline for a successful `capture_pre_state` result at the adapter boundary.
+
+**Inputs (conceptual):**
+- a canonical `SubjectScope` has already been resolved at the adapter boundary,
+- the adapter boundary is not blocked for this operation,
+- the adapter supports pre-state capture for the supplied `SubjectScope`,
+- the adapter can return one pre-state boundary object for that same subject/scope pair.
+
+**Expected outcome:**
+- the adapter returns a successful `capture_pre_state` result,
+- the returned object is one `StateCapture` boundary object, not a receipt, commitment, proof, or mutation result,
+- `StateCapture.subject_scope` matches the supplied `SubjectScope`,
+- `StateCapture.state_material` is the adapter-asserted pre-state material for that same subject/scope pair,
+- `StateCapture.capture_context_material`, if present, is auxiliary boundary context only.
+
+**Minimum later-fixture interpretation rule:**
+- a later machine-readable fixture for this vector must preserve the frozen `StateCapture` field structure and optionality exactly,
+- `subject_scope`, `state_material`, and optional `capture_context_material` must remain distinct payload domains and must not be silently concatenated, reordered into a different semantic object, or treated as implicit proof/certification material,
+- this vector does not freeze final byte encoding, hash-domain tags, or cryptographic preimage layout beyond requiring that later fixtures keep the boundary fields distinct and ordered according to the frozen adapter-contract types.
+
+**What this does not claim:**
+- post-state availability,
+- mutation success,
+- receipt derivation,
+- verifier validity,
+- commitment correctness,
+- proof correctness,
+- cryptographic sufficiency beyond the returned boundary object shape.
+
+---
+
 ## Vector GV-06 — CVDR retrieval error: not found
 
 **Purpose:** Separate absence of artifact from malformed request and from unsupported version.
