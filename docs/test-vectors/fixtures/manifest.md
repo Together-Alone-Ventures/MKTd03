@@ -17,7 +17,7 @@ This note is subordinate to:
 - `interfaces/mktd03_adapter_contract.did`
 - `interfaces/mktd03_adapter_contract_rules.md`
 - `docs/test-vectors/MKTd03_negative_cases_v1.md`
-- `docs/spec/MKTd03_golden_vectors_v1.md`
+- `docs/test-vectors/MKTd03_golden_vectors_v1.md`
 
 If this note conflicts with a frozen interface or interface-rules artifact, the frozen interface artifact wins.
 
@@ -40,7 +40,7 @@ A fixture must map to exactly one authoritative surface.
 
 ### 1.3 Human-readable note linkage
 Each machine-readable fixture must link back to at least one human-readable authority note:
-- `docs/spec/MKTd03_golden_vectors_v1.md` for positive semantic baselines
+- `docs/test-vectors/MKTd03_golden_vectors_v1.md` for positive semantic baselines
 - `docs/test-vectors/MKTd03_negative_cases_v1.md` for negative families
 
 ## 2. Fixture naming convention
