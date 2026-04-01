@@ -1,7 +1,7 @@
-# MKTd03 — AI Restart Pack for Antoine Handover (v2)
+# MKTd03 — AI Restart Pack for Handover
 
 **Date:** 2026-04-01  
-**Audience:** Antoine’s AI assistant, assuming no prior project knowledge  
+**Audience:** Coder’s AI assistant, assuming no prior project knowledge  
 **Purpose:** Full technical and operational handover pack for the current MKTd03 state  
 **Current checkpoint:** `MKTd03 main @ 9bd9f1e`  
 **Status:** Current phase cleanly closed. Next phase not yet opened.
@@ -120,7 +120,7 @@ This handover pack assumes those doctrines remain active unless explicitly super
 
 ## 5. Repo landscape and role of each repo
 
-Antoine will have access to multiple related repos. Their roles are distinct.
+Coder will have access to multiple related repos. Their roles are distinct.
 
 ### 5.1 MKTd03 repo
 Primary repo for:
@@ -329,7 +329,7 @@ Current explicit stop:
 - continuation past resolve success is deferred
 
 ### 9.6 Recent close-out sequence that must be understood
-This was the just-completed close-out before Antoine handover:
+This was the just-completed close-out before Coder handover:
 
 1. .did gate resolved:
    - `PreStateCaptured` was added as the frozen named positive pre-state result family
@@ -453,12 +453,12 @@ Historically in this project:
 - “G” referred to the ChatGPT instance acting as primary drafter / protocol lead / gatekeeper for close-out wording
 - “C” referred to the Claude instance acting as adversarial reviewer in targeted review passes
 
-Antoine does not need to preserve those exact tool identities, but he should preserve the role separation:
+Coder does not need to preserve those exact tool identities, but he should preserve the role separation:
 - one model or agent drafts / proposes
 - a different model or agent performs adversarial review
 - the human operator verifies repo truth and signs off
 
-If Antoine uses only one AI for both drafting and review, he loses the adversarial gate that caught real issues during MKTd03. The exact tools can change; the two-role discipline should not.
+If Coder uses only one AI for both drafting and review, he loses the adversarial gate that caught real issues during MKTd03. The exact tools can change; the two-role discipline should not.
 
 ### 13.5 Continuity discipline
 At each important stop:
@@ -539,7 +539,7 @@ Use MKTd02 and DaffyDefs to compare:
 - where MKTd03 is fundamentally different because of Tree mode
 - what can or cannot be reused
 
-## 16. Specific constraints Antoine’s AI must respect
+## 16. Specific constraints Coder’s AI must respect
 
 ### 16.1 Do not reopen settled cleanup/prep/governance work
 Unless concrete contradictory evidence appears.
@@ -562,7 +562,7 @@ The protocol proves configured deletion / tombstoning transitions for declared i
 ### 16.7 Do not collapse protocol truth, integration truth, and release truth
 Keep layers separate.
 
-## 17. Recommended reading order for Antoine’s AI
+## 17. Recommended reading order for Coder’s AI
 
 Read in this order:
 
@@ -613,7 +613,7 @@ Then, for comparison/context:
 33. MKTd03 close-out plan
 34. MKTd02 lessons learned / playbook / design principles
 
-## 18. Recommended startup procedure for Antoine’s AI
+## 18. Recommended startup procedure for Coder’s AI
 
 When starting a new working session on MKTd03:
 1. read current `RESTART_PACK.md`
@@ -628,9 +628,9 @@ When starting a new working session on MKTd03:
 5. identify authority files for the exact topic
 6. avoid asking the user to re-explain settled context already captured in repo artifacts
 
-## 19. Suggested first-question posture for Antoine’s AI
+## 19. Suggested first-question posture for Coder’s AI
 
-The first technical decision Antoine’s AI should probably frame is not:
+The first technical decision Coder’s AI should probably frame is not:
 - “How do we build the whole engine?”
 
 It should be:
@@ -679,7 +679,7 @@ MKTd03 is a dApp-agnostic Tree-mode deletion-proof/integration project, not yet 
 
 ## 22. File checklist for handover completeness
 
-This restart pack assumes the following are available to Antoine:
+This restart pack assumes the following are available to Coder:
 
 ### In MKTd03
 - `RESTART_PACK.md`
@@ -721,7 +721,7 @@ If any of these are missing, restore visibility before expecting a new AI to tak
 
 ## 23. Final rule
 
-Do not let Antoine’s AI start from the words:
+Do not let Coder’s AI start from the words:
 “I think the idea is…”
 
 It should start from:
