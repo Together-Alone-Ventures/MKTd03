@@ -63,6 +63,13 @@ type StateCapture = record {
   capture_context_material : opt vec nat8;
 };
 
+type PreStateCaptured = StateCapture;
+
+type PreStateCaptureResult = variant {
+  ok : PreStateCaptured;
+  err : AdapterError;
+};
+
 type StateCaptureResult = variant {
   ok : StateCapture;
   err : AdapterError;
@@ -109,7 +116,7 @@ type AdapterStatusFactsResult = variant {
 
 service : {
   resolve_subject_scope : (SubjectScopeRequest) -> (SubjectScopeResult);
-  capture_pre_state : (SubjectScope) -> (StateCaptureResult) query;
+  capture_pre_state : (SubjectScope) -> (PreStateCaptureResult) query;
   execute_transition_mutation : (TransitionMutationRequest) -> (TransitionMutationResult);
   capture_post_state : (SubjectScope) -> (StateCaptureResult) query;
   get_adapter_status_facts : () -> (AdapterStatusFactsResult) query;
