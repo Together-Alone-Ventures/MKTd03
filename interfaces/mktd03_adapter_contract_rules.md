@@ -65,6 +65,27 @@ A consumer must not infer one from the other or reuse one as a default stand-in 
 The use of query methods for capture in this draft expresses boundary read semantics only.
 It must not be interpreted as relaxing invariant requirements about freshness, rebuild state, or blocked state.
 
+### 3.5 Minimal positive pre-state success meaning
+A successful `capture_pre_state` result means only that, for the supplied `SubjectScope`, the adapter has returned one boundary `StateCapture` object whose `subject_scope` identifies the same boundary subject/scope pair and whose `state_material` is the pre-state material the adapter is asserting for that boundary event.
+
+The returned `StateCapture.subject_scope` must match the requested `SubjectScope` as the authoritative boundary subject/scope identity for that capture result.
+The adapter must not return a successful pre-state capture whose `subject_scope` silently changes the requested boundary subject or scope.
+
+At this boundary, the minimum positive structural claim is limited to:
+- the supplied `SubjectScope` has been accepted for pre-state capture,
+- one corresponding `StateCapture` object has been returned,
+- `state_material` is the adapter's asserted pre-state boundary material for that same subject/scope pair,
+- `capture_context_material`, if present, is auxiliary boundary context for that capture result only.
+
+A successful `capture_pre_state` result does not by itself imply:
+- post-state availability,
+- mutation success,
+- receipt construction,
+- verifier validity,
+- commitment correctness,
+- proof correctness,
+- cryptographic sufficiency beyond the returned boundary object shape.
+
 ## 4. Mutation execution semantics at the boundary
 
 ### 4.1 Mutation role
