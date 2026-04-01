@@ -1,7 +1,7 @@
-DATE: 2026-03-26
+DATE: 2026-03-30
 
 CURRENT GOAL:
-Close the remaining hygiene and conformance gaps so the existing Phase 1-5 baseline can cleanly seed frozen formal-interface drafting.
+Close out the current formal-interface/conformance phase cleanly and hand the repo over from a stable checkpoint, without beginning the next phase.
 
 IMPORTANT SCOPE RULE:
 This file is for MKTd03 protocol work only.
@@ -11,60 +11,56 @@ CURRENT STATUS:
 - Prep is closed.
 - Repo-boundary cleanup is closed and must not be reopened unless a concrete regression is found.
 - Standards uplift is complete and pushed.
-- MKTd03 main is at commit 505ca1a.
-- docs/planning/MKTd03_build_plan.md is present in the live repo.
+- MKTd03 main is at commit cdfc097.
 - MKTd03 remains dApp-agnostic.
 - TinyPress remains the first reference target only and must not shape protocol truth.
-- Phase 1-5 baseline artifacts exist in repo form, with some path/name drift and draft-status drift still requiring cleanup.
-- A conceptual Tree-mode interface artifact exists.
-- Companion rules and semantic golden vectors exist as pre-freeze drafting artifacts.
-- Frozen formal interface artifacts do not yet exist.
+- The current close-out sequence has been completed through the Step-4 boundary:
+  - 0bf90b9 — interfaces: freeze named pre-state capture result
+  - cfacc7f — docs: align fixture manifest golden vector paths
+  - 4490f2b — docs: pin minimal pre-state capture semantics
+  - cdfc097 — docs: relocate golden vectors authority references
+- The blocking `PreStateCaptured` .did gate is resolved.
+- Manifest/path/authority-reference alignment for the current corpus is complete.
+- No machine-readable positive pre-state fixture has been added.
+- No continuation beyond resolve-success orchestration has been started.
+- The next phase has not begun.
 
-SETTLED CLOSES FOR INTERFACE-PREP WORK:
-1. Tree-mode receipt uses a stable two-layer evidence model:
-   mandatory core transition evidence + explicit certification/provenance block with route-dependent payload.
-2. Versioning uses explicit multi-surface versioning and one authoritative compatibility policy with three classes only:
-   compatible, conditionally compatible, unsupported.
-3. Diagnostics/status must expose a minimal authoritative status surface including:
-   protocol version, status-schema/interface version, build identity, lifecycle state, blocked/not-blocked, structured blocked reason/code, compatibility posture, and operation context when relevant.
-   Blocked is first-class and distinct from failed/completed/in-progress.
-4. Published terminology is fixed at the policy level:
-   subject, scope, pre-state commitment, post-state commitment, transition, tree proof, receipt, certification/provenance, status, compatibility.
-   Receipt is the top-level public artifact term; tree proof is a component inside it.
-5. Security/privacy constraints on identifier exposure and host-readiness exposure belong in companion rules, not as a .did blocker.
+SETTLED CLOSES FOR THE CURRENT PHASE:
+1. `capture_pre_state` now has a frozen named positive result family in `interfaces/mktd03_adapter_contract.did` via `PreStateCaptured`, without changing payload structure or expanding semantics.
+2. Minimal positive pre-state semantics are pinned in `interfaces/mktd03_adapter_contract_rules.md` §3.5 and remain limited to one returned boundary `StateCapture` with matching `SubjectScope` and adapter-asserted pre-state material.
+3. Golden-vectors authority references have been relocated from `docs/spec/MKTd03_golden_vectors_v1.md` to `docs/test-vectors/MKTd03_golden_vectors_v1.md`.
+4. Fixture-manifest and fixture authority references have been aligned to the relocated golden-vectors path.
+5. The repo closes this phase at metadata/interface alignment only; no new success path, fixture family, or orchestration continuation has been introduced.
 
 CURRENT NEXT TASK:
-- Align continuity, authority map, and conceptual interface artifacts with the settled baseline closes.
-- Then use the cleaned conceptual baseline to seed frozen formal-interface drafting.
+- Prepare and review the Antoine handover pack from this clean close-out checkpoint.
+- Do not begin machine-readable GV-05A fixture creation, corpus growth, or new orchestration work in this phase.
 
 AUTHORITY ORDER:
 1. Live MKTd03 repo state
-2. Approved ADR baseline decisions
-3. Approved or accepted baseline spec notes and companion rules where they do not conflict with ADRs or settled closes
-4. Conceptual interface and vector artifacts as pre-freeze drafting inputs only
-5. Old spreadsheet MKTd03 tab as audit input only
-6. Prep artifacts (restart pack, milestone log, TinyPress prep notes) as historical context only
+2. Committed close-out sequence ending at cdfc097
+3. Approved ADR baseline decisions
+4. Approved or accepted baseline spec notes and companion rules where they do not conflict with ADRs or committed close-out state
+5. Conceptual interface and vector artifacts as pre-freeze / pre-next-phase inputs only
+6. Old spreadsheet MKTd03 tab as audit input only
+7. Prep artifacts and TinyPress materials as historical context only
 
 OPERATING CONSTRAINTS:
-- ADR-01 scoping guardrail: ADR-01 must not become a catch-all. It should decide only the core library boundary, host-owned responsibilities, adapter seam, and explicit out-of-scope items. Service-canister architecture, orchestration flows, retry/list/recovery models, and other non-baseline concerns must be deferred or excluded unless explicitly re-gated.
-- Reuse audit findings cannot change ADR-01 or ADR-02 without explicit G sign-off and phase re-gate.
-- Formal interface files must live in MKTd03, not TinyPress.
+- ADR-01 scoping guardrail remains in force: ADR-01 must not become a catch-all.
 - Do not let TinyPress leak into protocol truth, examples, payloads, routes, schemas, fixtures, or interface names.
 - Do not let MKTd02 implementation history become authority; use it only for bounded reuse analysis.
-- Do not begin code before the Phase 6 gate is satisfied.
+- Do not begin code before the relevant future gate is explicitly opened.
+- Do not begin machine-readable pre-state fixture creation from this close-out state without an explicit new-phase decision.
 
 DURABLE FINDINGS:
-- The stale-spec inventory surfaced four dominant clusters: evidentiary/verifier scope, tree-structure/terminology, core library boundary, and service-canister/orchestration overreach.
-- ADR-01 remains tightly scoped and must not absorb orchestration/service-canister architecture.
-- The strongest stale-spec drops from baseline are the TAV-operated service-canister assumptions.
-- The strongest stale-spec inconsistency was the certified-state/evidence model, now closed by the settled two-layer receipt model.
-- Current cleanup work is not a reopening of earlier phases; it is a bounded baseline-close pass before frozen interface drafting.
+- The current phase is now closed at the Step-4 boundary, not at pre-freeze cleanup.
+- The `.did` gate and companion-rules alignment were both necessary before continuity could be updated cleanly.
+- The remaining path/authority drift was bounded and has been resolved without semantic expansion.
+- Current repo state is a handover checkpoint, not an active expansion checkpoint.
+
+OPEN QUESTIONS (deferred, not active in this phase):
+- Whether a machine-readable GV-05A fixture should be created in the next bounded phase.
+- Whether any future corpus growth is justified beyond the current resolved baseline.
 
 SAFE RESTART PROMPT:
-MKTd03 is in the formal-interface pre-freeze cleanup phase.
-Current MKTd03 main is 505ca1a.
-Use MKTd03 only for dApp-agnostic protocol/spec/ADR/interface/audit work.
-Treat the old spreadsheet MKTd03 tab as audit input only.
-Treat TinyPress and prep artifacts as historical context only.
-Do not reopen the settled interface-prep closes.
-Current task is to align continuity, authority mapping, and conceptual interface artifacts so frozen formal-interface drafting can begin from a clean baseline.
+MKTd03 is resuming from a clean close-out checkpoint at commit cdfc097 on main. This phase is closed. The repo is dApp-agnostic, TinyPress remains only a reference target, and the Step-4 boundary work is complete: the `PreStateCaptured` .did gate is resolved, minimal pre-state semantics are pinned, and golden-vectors authority/path alignment is complete. No machine-readable positive pre-state fixture exists yet, no continuation beyond resolve-success has begun, and the next phase has not been opened. The immediate task is Antoine handover preparation, not new protocol expansion.

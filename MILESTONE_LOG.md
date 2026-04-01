@@ -46,3 +46,24 @@ Decisions made:
 Do not revisit:
   - Whether this requires reopening the prep phase — settled no.
   - Whether broader Playbook rewrite work should happen before the first library ADR — settled no; treat as later bounded debt if needed.
+
+## 2026-03-30 -- MILESTONE: Formal-interface close-out checkpoint completed
+
+Decisions made:
+  - The current MKTd03 formal-interface/conformance cleanup phase is closed at the Step-4 boundary and does not roll forward into the next phase.
+  - The blocking `PreStateCaptured` adapter-contract .did gate was resolved by freezing a named positive pre-state result family without changing payload structure.
+  - Minimal positive pre-state semantics for `capture_pre_state` were pinned in the adapter companion rules and aligned explicitly with the .did surface.
+  - Golden-vectors authority references were relocated from `docs/spec/` to `docs/test-vectors/`, and dependent fixture-manifest / fixture authority references were aligned accordingly.
+  - No machine-readable positive pre-state fixture was created, and no continuation beyond resolve-success orchestration was started.
+
+Irreversible actions taken:
+  - Committed `0bf90b9` — `interfaces: freeze named pre-state capture result`
+  - Committed `cfacc7f` — `docs: align fixture manifest golden vector paths`
+  - Committed `4490f2b` — `docs: pin minimal pre-state capture semantics`
+  - Committed `cdfc097` — `docs: relocate golden vectors authority references`
+
+Do not revisit:
+  - Whether the current phase should continue into machine-readable pre-state fixture creation — settled no.
+  - Whether resolve-success should be extended into a new positive continuation path from this checkpoint — settled no.
+  - Whether the path/authority cleanup should be treated as semantic corpus growth — settled no.
+  - Whether the repo is being handed over mid-expansion — settled no; this is a clean close checkpoint.
