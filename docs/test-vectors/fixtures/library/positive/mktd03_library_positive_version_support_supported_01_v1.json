@@ -19,11 +19,11 @@
     "patch": 0
   },
   "interface_version": {
-    "major": 1,
+    "major": 2,
     "minor": 0,
     "patch": 0
   },
-  "rules_version_ref": "interfaces/mktd03_library_interface_rules.md#v1",
+  "rules_version_ref": "interfaces/mktd03_library_interface_rules.md#v2",
   "input_summary": {
     "method_args": [
       {

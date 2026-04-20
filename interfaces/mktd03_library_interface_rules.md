@@ -1,4 +1,12 @@
-# MKTd03 Library Interface Rules v1
+<a id="v2"></a>
+# MKTd03 Library Interface Rules v2
+
+## Version note
+v2 supersedes v1 for the public library surface by adding required
+`transition_derivation_version : SemanticVersion` to
+`Receipt.core_transition_evidence`. This version bump does not, by
+itself, authorise new verifier semantics beyond the explicitly
+approved formal-interface change set.
 
 ## Status
 Frozen-draft companion rules
@@ -33,10 +41,18 @@ If `scope_reference` is absent, that means the receipt carries no separate scope
 `pre_state_commitment` and `post_state_commitment` are distinct commitments bracketing the transition.
 No consumer may infer one from the other or treat equality as a default success condition.
 
-### 1.4 Transition vs deletion-state material
-`transition_material` represents transition-specific evidence material.
-`deletion_state_material` represents the deletion-state classification needed to preserve the ADR-02 empty-vs-tombstoned distinction.
-Neither field is sufficient on its own to stand in for the full core transition evidence.
+### 1.4 Transition material, transition-derivation version, and deletion-state material
+
+`transition_material` carries the transition-specific evidence material.
+`transition_derivation_version` declares the version identity of the
+derivation scheme under which `transition_material` is to be interpreted.
+`deletion_state_material` carries the deletion-state classification
+needed to preserve the ADR-02 empty-vs-tombstoned distinction.
+
+No consumer may treat any one of these three fields as a semantic
+substitute for the others, and no consumer may infer
+`transition_derivation_version` from `protocol_version`,
+`receipt_version`, or `interface_version`.
 
 ## 2. Compatibility interpretation
 
@@ -158,7 +174,11 @@ No rule in this file authorises TinyPress-specific naming, routes, payloads, sch
 ### 8.1 Atomic fixation rule
 The evidence-bearing substance of the receipt must be fixed atomically with the deletion transition. A later retrieval, rendering, or export step is acceptable only as a pure projection over already-fixed issuance artefacts, not as a fresh semantic reconstruction from live state.
 
-This rule applies to `subject_reference`, `scope_reference`, `pre_state_commitment`, `post_state_commitment`, `transition_material`, `tree_proof`, and `deletion_state_material` collectively; it is not satisfied by fixing any subset.
+This rule applies to `subject_reference`, `scope_reference`,
+`pre_state_commitment`, `post_state_commitment`, `transition_material`,
+`transition_derivation_version`, `tree_proof`, and
+`deletion_state_material` collectively; it is not satisfied by fixing
+any subset.
 
 ### 8.2 Retrieval-operation rule
 `get_receipt` is a retrieval operation. The receipt it returns must have been fixed at the deletion transition that produced it. The query may select, project, or re-encode the stored artefact for transport, but must not construct its evidence-bearing substance from live library state at query time.
