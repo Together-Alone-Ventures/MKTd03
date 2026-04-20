@@ -68,7 +68,7 @@ Do not revisit:
   - Whether the path/authority cleanup should be treated as semantic corpus growth — settled no.
   - Whether the repo is being handed over mid-expansion — settled no; this is a clean close checkpoint.
 
-2026-04-20 -- MILESTONE: Specification-tightening stream Session 1 landed
+## 2026-04-20 -- MILESTONE: Specification-tightening stream Session 1 landed
 Decisions made:
 
 An analytical comparison between MKTd03 and the Zombie-delete-MKTd03 monorepo (Antoine's build) confirmed the core MKTd03 architectural decisions without requiring any ADR to be reopened.
