@@ -57,6 +57,8 @@ Reactive endpoint growth or broad adapter expansion creates unplanned disclosure
 Certification material and build/module provenance are part of the baseline trust model.
 They must not be treated as optional convenience features for “better” verification; they are part of baseline evidentiary trust.
 
+The baseline requirements in this section stand on their own and are not conditional on any later addition. The baseline does not, however, foreclose additional certification or provenance layers for module-hash and related provenance material that later artifacts may adopt by explicit decision. Representative optional paths include certified query routes for module-hash material, reproducible-build attestation chains anchored to the published build, and transparency-log or chain anchoring of the stable provenance pointer permitted by ADR-03. Any such path would be additive to the baseline trust model described above, not a redefinition of it. This note does not itself adopt any such path.
+
 ### 7. Replay, stale-proof, and fake-proof risks must be addressed
 Baseline MKTd03 must address replay risk, stale-proof risk, and fake-proof risk before formal interface files are frozen.
 Later companion rules and interface/spec artifacts must state what makes a receipt unreplayable in a different context and what constitutes a stale, invalidated, or non-genuine proof.
