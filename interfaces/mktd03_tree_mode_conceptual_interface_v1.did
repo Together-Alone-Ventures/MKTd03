@@ -83,6 +83,7 @@ type CoreTransitionEvidence = record {
   pre_state_commitment : vec nat8;
   post_state_commitment : vec nat8;
   transition_material : vec nat8;
+  transition_derivation_version : SemanticVersion;
   tree_proof : vec nat8;
   deletion_state_material : DeletionStateMaterial;
 };
