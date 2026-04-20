@@ -153,7 +153,17 @@ In particular, host-specific storage layout, scheduler internals, and app-local 
 ### 7.3 TinyPress containment
 No rule in this file authorises TinyPress-specific naming, routes, payloads, schema names, fixtures, or examples in the public library interface.
 
-## 8. Non-goals
+## 8. Issuance atomicity and retrieval semantics
+
+### 8.1 Atomic fixation rule
+The evidence-bearing substance of the receipt must be fixed atomically with the deletion transition. A later retrieval, rendering, or export step is acceptable only as a pure projection over already-fixed issuance artefacts, not as a fresh semantic reconstruction from live state.
+
+This rule applies to `subject_reference`, `scope_reference`, `pre_state_commitment`, `post_state_commitment`, `transition_material`, `tree_proof`, and `deletion_state_material` collectively; it is not satisfied by fixing any subset.
+
+### 8.2 Retrieval-operation rule
+`get_receipt` is a retrieval operation. The receipt it returns must have been fixed at the deletion transition that produced it. The query may select, project, or re-encode the stored artefact for transport, but must not construct its evidence-bearing substance from live library state at query time.
+
+## 9. Non-goals
 
 This file does not define:
 - byte-level encodings
