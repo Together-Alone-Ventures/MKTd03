@@ -133,6 +133,7 @@ pub struct FixtureCoreTransitionEvidence {
     pub pre_state_commitment: String,
     pub post_state_commitment: String,
     pub transition_material: String,
+    pub transition_derivation_version: SemanticVersion,
     pub tree_proof: String,
     pub deletion_state_material: FixtureDeletionStateMaterial,
 }
@@ -562,6 +563,11 @@ fn parse_typed_case(path: &Path, envelope: &FixtureEnvelope) -> Result<TypedFixt
         (FixtureSurface::Verifier, FixturePolarity::Negative, "wrong_tree_proof")
         | (FixtureSurface::Verifier, FixturePolarity::Negative, "wrong_commitment_relationship")
         | (FixtureSurface::Verifier, FixturePolarity::Negative, "malformed_certification_provenance")
+        | (
+            FixtureSurface::Verifier,
+            FixturePolarity::Negative,
+            "missing_transition_derivation_version",
+        )
         | (FixtureSurface::Verifier, FixturePolarity::Negative, "receipt_subject_scope_mismatch") => {
             require(
                 envelope.target_method == "receipt_validation",

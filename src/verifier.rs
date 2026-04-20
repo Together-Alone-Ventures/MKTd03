@@ -30,6 +30,9 @@ pub fn validate_fixture_receipt_semantics(
         "receipt_subject_scope_mismatch" => {
             validate_subject_scope_relationship(&fixture.input.receipt_artifact_under_validation)
         }
+        "missing_transition_derivation_version" => Err(VerificationFailure::Deferred(
+            "missing_transition_derivation_version requires G-approved verifier semantics beyond mechanical alignment",
+        )),
         "wrong_tree_proof" => Err(VerificationFailure::Deferred(
             "wrong_tree_proof requires tree-proof validation beyond the non-cryptographic slice",
         )),

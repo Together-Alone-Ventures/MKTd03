@@ -101,6 +101,7 @@ pub struct CoreTransitionEvidence {
     pub pre_state_commitment: Vec<u8>,
     pub post_state_commitment: Vec<u8>,
     pub transition_material: Vec<u8>,
+    pub transition_derivation_version: SemanticVersion,
     pub tree_proof: Vec<u8>,
     pub deletion_state_material: DeletionStateMaterial,
 }
@@ -494,6 +495,10 @@ fn materialize_receipt(fixture_receipt: &FixtureReceipt) -> Receipt {
                 .transition_material
                 .as_bytes()
                 .to_vec(),
+            transition_derivation_version: fixture_receipt
+                .core_transition_evidence
+                .transition_derivation_version
+                .clone(),
             tree_proof: fixture_receipt
                 .core_transition_evidence
                 .tree_proof
