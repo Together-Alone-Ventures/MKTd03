@@ -72,6 +72,12 @@ The baseline boundary decision is:
    - verifier procedure or receipt-schema decisions,
    - host-specific storage ownership decisions beyond the adapter contract.
 
+9. **Module-boundary rule**
+   Separate module or library does not imply separate canister. The MKTd03 core library is a modular artefact intended to be bundled inside the integrating host canister. Modular design discipline is satisfied at the crate and interface boundary, not at the deployment boundary. Externalising the library into a distinct canister is explicitly outside the baseline MKTd03 architecture.
+
+10. **Genericity rule**
+    The core MKTd03 library is protocol-generic, not schema-generic. Host-specific traversal, storage layout, schema interpretation, and mutation semantics belong in the host-local adapter seam and do not cross into the library boundary. A design in which the library appears generic but requires host-specific understanding to function is inconsistent with this rule.
+
 This ADR does not yet finalise the exact adapter method set or formal interface file contents. Those later artifacts must remain consistent with this boundary and must not broaden the library scope by implication.
 
 ## Remaining Questions to Resolve Within This ADR
@@ -111,6 +117,12 @@ These meanings must be used consistently in later ADRs and interface/spec artifa
 
 - **S18-style broad data-source adapter**
   Rejected in favour of a narrow protocol-boundary seam, because a broader data-source model would risk importing storage-shape assumptions and non-baseline orchestration concerns into the library boundary.
+
+- **External witness-canister deployment of the core library**
+  Rejected because deployment separation introduces an inter-canister trust boundary that the library cannot close from inside, degrading evidence-binding and atomicity properties that the bundled-library model preserves by construction.
+
+- **Schema-generic library interface**
+  Rejected because a library designed to understand host-specific schemas would violate the protocol-generic boundary and pull host-internal storage and mutation semantics into the core, regardless of whether the deployment shape is bundled or split.
 
 ## Likely Inventory Drivers
 - S2, S17, S18, S19, S20, S25, S29, S30, S32, S53, S55, S57, S58, S67
