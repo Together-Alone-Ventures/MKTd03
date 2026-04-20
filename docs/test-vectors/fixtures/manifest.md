@@ -68,6 +68,7 @@ Examples of valid family names:
 - `wrong_tree_proof`
 - `wrong_commitment_relationship`
 - `malformed_certification_provenance`
+- `missing_transition_derivation_version`
 - `receipt_subject_scope_mismatch`
 - `stale_precondition`
 - `transition_mutation_rejected`

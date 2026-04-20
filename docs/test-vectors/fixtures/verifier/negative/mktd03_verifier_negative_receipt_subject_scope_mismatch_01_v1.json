@@ -42,6 +42,11 @@
         "pre_state_commitment": "PRE_STATE_COMMITMENT_PLACEHOLDER",
         "post_state_commitment": "POST_STATE_COMMITMENT_PLACEHOLDER",
         "transition_material": "TRANSITION_MATERIAL_PLACEHOLDER",
+        "transition_derivation_version": {
+          "major": 1,
+          "minor": 0,
+          "patch": 0
+        },
         "tree_proof": "TREE_PROOF_PLACEHOLDER",
         "deletion_state_material": {
           "tombstoned_position": "TOMBSTONED_POSITION_PLACEHOLDER"

@@ -66,6 +66,14 @@
       "status": "draft"
     },
     {
+      "filename": "verifier/negative/mktd03_verifier_negative_missing_transition_derivation_version_01_v1.json",
+      "surface": "verifier",
+      "polarity": "negative",
+      "family": "missing_transition_derivation_version",
+      "target_method": "receipt_validation",
+      "status": "draft"
+    },
+    {
       "filename": "library/negative/mktd03_library_negative_unsupported_version_receipt_01_v1.json",
       "surface": "library",
       "polarity": "negative",
