@@ -64,6 +64,9 @@ The baseline Tree-mode CVDR decision is:
    - retry/list/recovery workflow truth,
    - live-network availability as a prerequisite for baseline verification.
 
+9. **Issuance atomicity**
+   The evidence-bearing substance of the CVDR — including record reference, pre-state and post-state commitments, proof material, and deletion-state material — must be fixed atomically with the deletion transition that produces the receipt. Later rendering, export, or retrieval is acceptable only as a pure projection over already-fixed issuance artefacts, not as a fresh semantic reconstruction from live state. This clause does not prescribe a specific implementation mechanism for fixation. It prohibits any implementation in which the receipt's evidence-bearing substance would differ if constructed at different query times for the same deletion event.
+
 This ADR does not yet finalise exact receipt field names, exact encoding rules, or golden-vector layouts. Those later artifacts must remain consistent with these semantic decisions and must not narrow or expand baseline CVDR meaning by implication.
 
 ## Remaining Questions to Resolve Within This ADR
@@ -98,6 +101,9 @@ This ADR does not yet finalise exact receipt field names, exact encoding rules, 
 
 - **Service-canister or composite-orchestration semantics as part of baseline CVDR truth**
   Rejected because ADR-00 excludes those claims from baseline protocol truth.
+
+- **Query-time reconstruction of evidence-bearing substance**
+  Rejected because a receipt whose evidence-bearing substance is reconstructed at query time is not structurally distinguishable from a genuine receipt, but lacks the atomic binding to the deletion transition that baseline Tree-mode semantics require.
 
 ## Likely Inventory Drivers
 - S6, S12, S13, S14, S15, S30, S34, S35, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S54, S56, S59, S60, S61, S62, S63, S64, S65, S66
