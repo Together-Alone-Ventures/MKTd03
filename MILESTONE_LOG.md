@@ -102,3 +102,30 @@ Whether the rhetorical claim formulation belongs inside normative MKTd03 spec ma
 Standing constraint surfaced:
 
 14 machine-readable fixtures reference interfaces/mktd03_library_interface_rules.md via rules_version_ref: "...md#v1". Any future bump of that companion-rules file to #v2 requires a coordinated update of all 14 fixtures. Session 2 is currently expected to remain within v1, pending confirmation during the Session 2 scope-verification sweep.
+
+## 2026-04-20 -- MILESTONE: Specification-tightening stream Session 2 landed
+
+Decisions made:
+  - Session 2 Change 2.1 is complete and pushed.
+  - `transition_derivation_version : SemanticVersion` was added as a required field on `CoreTransitionEvidence`.
+  - The breaking frozen-interface change was reflected by bumping library `interface_version` from 1.0.0 to 2.0.0.
+  - `interfaces/mktd03_library_interface_rules.md` was bumped from v1 to v2, and fixture `rules_version_ref` anchors were retargeted to `#v2`.
+  - Source alignment was brought into Session 2 scope rather than leaving a knowingly inconsistent tree.
+  - A new verifier negative family `missing_transition_derivation_version` was added, with verifier dispatch returning `Deferred(...)` rather than `NotImplemented`.
+  - Protocol version and receipt version did not change.
+  - Session 3 remains open and has not yet begun.
+
+Irreversible actions taken:
+  - Committed `e43890f`
+  - Committed `4c1d95d`
+  - Committed `8a07fb1`
+  - Committed `7ddf40c`
+  - Committed `6037154`
+  - Committed `7b4db16`
+
+Do not revisit:
+  - Whether Change 2.1 is a breaking frozen-interface change — settled yes.
+  - Whether the companion-rules file remains v1 — settled no; v2 now governs.
+  - Whether source alignment should have been deferred to a later session — settled no.
+  - Whether the new verifier negative family should fall through to `NotImplemented` — settled no; `Deferred(...)` is the approved posture.
+  - Whether protocol version or receipt version changed in Session 2 — settled no.
