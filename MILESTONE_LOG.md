@@ -67,3 +67,38 @@ Do not revisit:
   - Whether resolve-success should be extended into a new positive continuation path from this checkpoint — settled no.
   - Whether the path/authority cleanup should be treated as semantic corpus growth — settled no.
   - Whether the repo is being handed over mid-expansion — settled no; this is a clean close checkpoint.
+
+2026-04-20 -- MILESTONE: Specification-tightening stream Session 1 landed
+Decisions made:
+
+An analytical comparison between MKTd03 and the Zombie-delete-MKTd03 monorepo (Antoine's build) confirmed the core MKTd03 architectural decisions without requiring any ADR to be reopened.
+A bounded specification-tightening modification stream was opened, organised into three sessions, to close drift windows identified by the comparison:
+Session 1 — ADR/interface wording tightening (load-bearing)
+Session 2 — transition_derivation_version field (frozen-interface change)
+Session 3 — documentation additions (batchable)
+Session 1 is complete. Sessions 2 and 3 are pending and will run in fresh chats.
+G decided the three open questions before Session 2:
+A. transition_derivation_version applies only to core_transition_evidence; no parallel certification/provenance version field.
+B. Adding the required field is a breaking frozen-interface change; library interface_version bump is required, not optional.
+C. Rhetorical/comparative claim framing stays outside MKTd03 normative spec material; it lives only in a non-normative TAV-Engineering-Standards note.
+The RST evaluation lens note will live under docs/analysis/ as a non-normative analytical artefact, not under docs/spec/.
+A cross-reference sweep across docs/, interfaces/, src/, and continuity files was run and returned no stale references; no housekeeping commit was required.
+
+Irreversible actions taken:
+
+Committed aeec179 — interfaces: add issuance atomicity and retrieval semantics rules (Change 1.1)
+Committed 35fa3fa — ADR-03: add issuance atomicity clause and rejected alternative (Change 1.2)
+Committed 24db28f — ADR-01: add module-boundary and genericity rules with rejections (Changes 1.3 and 1.4)
+Added MKTd03_Handover_Pack.md and MKTd03_build_plan.md to main at d1f6c85 (handover context for the modification stream).
+
+Do not revisit:
+
+Whether the Zombie-delete-MKTd03 comparison requires any MKTd03 ADR to be reopened — settled no.
+Whether the specification-tightening changes should be interleaved rather than session-separated — settled no; Sessions 1, 2, 3 remain distinct commit streams.
+Whether module-boundary and genericity should stay implicit in ADR-01 — settled no, both are now explicit rules with paired rejected alternatives.
+Whether Change 2.1 is a breaking frozen-interface change — settled yes; interface_version bump required.
+Whether the rhetorical claim formulation belongs inside normative MKTd03 spec material — settled no.
+
+Standing constraint surfaced:
+
+14 machine-readable fixtures reference interfaces/mktd03_library_interface_rules.md via rules_version_ref: "...md#v1". Any future bump of that companion-rules file to #v2 requires a coordinated update of all 14 fixtures. Session 2 is currently expected to remain within v1, pending confirmation during the Session 2 scope-verification sweep.
