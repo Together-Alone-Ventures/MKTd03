@@ -34,7 +34,8 @@ It is not TinyPress-specific and must not inherit TinyPress routes, payloads, fi
 ### 2. Evidentiary scope
 Baseline MKTd03 evidentiary scope is conservative and archival-first.
 Baseline Tree-mode CVDR verification must not depend on live fetch as a mandatory first step.
-Baseline scope does not claim whole-application deletion completeness, service-canister truth, or cross-canister orchestration completeness by default.
+Baseline scope does not, by default, claim whole-application deletion completeness, cross-canister completion beyond the single baseline receipt scope, or service-canister orchestration truth, and does not treat baseline verification of a declared transition as equivalent to broader completeness properties of the host deployment.
+The full baseline non-claims interpretation is governed by ADR-03's explicit non-claims section. Where this section and ADR-03 differ, ADR-03 wins.
 
 ### 3. Tree structure
 Baseline Tree mode uses one canonical binary Merkle tree model with deterministic record placement, explicit hash-role/domain separation, and fixed-capacity semantics for each ready tree instance.
