@@ -65,6 +65,16 @@ The baseline Tree-mode CVDR decision is:
    - retry/list/recovery workflow truth,
    - live-network availability as a prerequisite for baseline verification.
 
+   The baseline Tree-mode CVDR should also not be read as claiming, by implication, omission, or verifier overreach, that:
+
+   - the target record identifier or canonical record-position reference named by the artifact exhausts all potentially relevant subject-linked records, residues, replicas, or semantically related surfaces in the host application,
+   - undeclared records, canisters, or application surfaces were searched, interpreted, or found absent,
+   - the adapter or host selected a legally complete, regulatorily sufficient, or workflow-complete deletion scope for a particular deployment,
+   - baseline verification of the declared transition is equivalent to proof of whole-application erasure, data-governance completeness, or jurisdiction-specific compliance,
+   - receipt silence, omitted surfaces, or absence of additional artifacts can be elevated into affirmative proof that no further deletion work, scoping judgment, or application-layer evidence is required.
+
+   This extension clarifies limits of interpretation only. It does not narrow the baseline evidence components already required by this ADR, and it does not authorise expansion of baseline verifier duties beyond the artifact-contained transition evidence and its published protocol/build anchors.
+
 9. **Issuance atomicity**
    The evidence-bearing substance of the CVDR — including record reference, pre-state and post-state commitments, transition material, transition_derivation_version, proof material, and deletion-state material — must be fixed atomically with the deletion transition that produces the receipt. Later rendering, export, or retrieval is acceptable only as a pure projection over already-fixed issuance artefacts, not as a fresh semantic reconstruction from live state. This clause does not prescribe a specific implementation mechanism for fixation. It prohibits any implementation in which the receipt's evidence-bearing substance would differ if constructed at different query times for the same deletion event.
 
