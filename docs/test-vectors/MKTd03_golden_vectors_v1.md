@@ -448,6 +448,21 @@ These families align with the currently approved direction that MKTd03 must expo
 
 ---
 
+## Vector GV-15 — Required transition_derivation_version present
+
+**Purpose:** Lock the semantic requirement that transition-bearing receipt evidence declares the version identity of the transition derivation scheme it uses.
+
+**Inputs (conceptual):**
+- receipt artifact is otherwise structurally coherent,
+- `core_transition_evidence` carries transition material,
+- `core_transition_evidence` also carries an explicit `transition_derivation_version` object in the approved SemanticVersion shape.
+
+**Expected outcome:**
+- the receipt remains structurally eligible for verifier processing,
+- absence of `transition_derivation_version` is not treated as implicitly equal to the library `interface_version`, `protocol_version`, or `receipt_version`.
+
+---
+
 ## 6. Minimal outcome taxonomy implied by v1
 
 This document does not yet define final wire enums, but it does require the later interface/files/fixtures to preserve at least the following semantic distinctions:

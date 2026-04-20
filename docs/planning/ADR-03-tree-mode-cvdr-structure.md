@@ -42,6 +42,7 @@ The baseline Tree-mode CVDR decision is:
    Every baseline Tree-mode CVDR must contain, in canonical form, evidence sufficient to bind together:
    - the target record identifier or canonical record-position reference used by the protocol,
    - the relevant pre-state and post-state tree commitments,
+   - the transition material and its declared derivation-version identity,
    - the proof material required to verify the relevant tree-position transition under the canonical structural model defined by ADR-02, without requiring re-implementation of host storage layout,
    - the deletion-state or tombstone-related semantics required by the protocol,
    - the ICP certification material required by ADR-00 baseline scope,
@@ -65,7 +66,7 @@ The baseline Tree-mode CVDR decision is:
    - live-network availability as a prerequisite for baseline verification.
 
 9. **Issuance atomicity**
-   The evidence-bearing substance of the CVDR — including record reference, pre-state and post-state commitments, proof material, and deletion-state material — must be fixed atomically with the deletion transition that produces the receipt. Later rendering, export, or retrieval is acceptable only as a pure projection over already-fixed issuance artefacts, not as a fresh semantic reconstruction from live state. This clause does not prescribe a specific implementation mechanism for fixation. It prohibits any implementation in which the receipt's evidence-bearing substance would differ if constructed at different query times for the same deletion event.
+   The evidence-bearing substance of the CVDR — including record reference, pre-state and post-state commitments, transition material, transition_derivation_version, proof material, and deletion-state material — must be fixed atomically with the deletion transition that produces the receipt. Later rendering, export, or retrieval is acceptable only as a pure projection over already-fixed issuance artefacts, not as a fresh semantic reconstruction from live state. This clause does not prescribe a specific implementation mechanism for fixation. It prohibits any implementation in which the receipt's evidence-bearing substance would differ if constructed at different query times for the same deletion event.
 
 This ADR does not yet finalise exact receipt field names, exact encoding rules, or golden-vector layouts. Those later artifacts must remain consistent with these semantic decisions and must not narrow or expand baseline CVDR meaning by implication.
 

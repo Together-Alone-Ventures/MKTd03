@@ -107,6 +107,12 @@ Later fixture sets may refine payload detail, but must not silently merge distin
 **Applies to:** receipt artifacts under validation where `subject_reference` and optional `scope_reference` are inconsistent with the declared transition semantics or are improperly collapsed.
 **Fixture rule:** this family must remain distinct from adapter-boundary subject/scope resolution errors.
 
+### 3.5 Missing transition_derivation_version in receipt evidence
+**Surface:** verifier-input receipt validation
+**Primary outcome family:** `missing_transition_derivation_version`
+**Applies to:** receipt artifacts under validation whose `core_transition_evidence` omits the required `transition_derivation_version` field.
+**Fixture rule:** this family must remain distinct from wrong tree-proof material and from malformed certification/provenance posture, and it does not by itself authorise deeper verifier interpretation of the field's semantic content.
+
 ## 4. Library-facing negative cases
 
 ### 4.1 Blocked status: rebuild required
