@@ -129,3 +129,62 @@ Do not revisit:
   - Whether source alignment should have been deferred to a later session — settled no.
   - Whether the new verifier negative family should fall through to `NotImplemented` — settled no; `Deferred(...)` is the approved posture.
   - Whether protocol version or receipt version changed in Session 2 — settled no.
+
+## 2026-04-20 -- MILESTONE: Specification-tightening stream Session 3 landed
+
+Decisions made:
+  - All five Session 3 substantive changes are complete and pushed.
+  - ADR-03 §8 "Explicit non-claims" extended with five interpretation-limit bullets covering identifier exhaustion, undeclared-surface inspection, scope-selection completeness, verification-completeness equivalence, and silence-as-proof elevation, plus a closing clause declining both narrowing and verifier-duty expansion.
+  - `docs/spec/MKTd03_protocol_refresh_v1.md` §2 ("Evidentiary scope") was rewritten to align with ADR-03 §8 original-bullet wording verbatim where overlap existed, add an inline equivalence non-claim in technical language, and defer the full non-claims set to ADR-03 via an authority pointer with an explicit "ADR-03 wins" tie-breaker. "conservative and archival-first" posture language retained.
+  - `docs/spec/MKTd03_security_privacy_note_v1.md` §6 ("Certification and provenance") received one additive paragraph naming representative optional paths for additional certification or provenance layers (certified query routes, reproducible-build attestation chains anchored to the published build, transparency-log or chain anchoring of the ADR-03 stable provenance pointer) without adopting any path.
+  - `docs/analysis/MKTd03_rst_evaluation_lens_v1.md` was created as a new non-normative analytical note defining the Residual Trust Statement (RST) evaluation lens. Seven residual-trust categories, four-step application procedure, five reflexive non-claims about the lens itself, and orientation-only cross-references to ADR-00/01/02/03, Protocol Refresh v1, and Security/Privacy Note v1 via heading names rather than section numbers.
+  - `docs/analysis/` directory was created in MKTd03 for the first time by this addition.
+  - `MKTd03_Residual_Trust_Note.md` was added to the TAV-Engineering-Standards repo at root as a non-normative, project-scoped companion note for operator-facing rhetorical and comparative claim framing about MKTd03. Standards repo CHANGELOG was bumped to v1.1 in the same commit. Standards-repo head is now `cd719a3`. MKTd03-side RST lens and Standards-side companion note are decoupled — neither is authoritative for the other.
+  - Commit-order change numbering was used (3.1, 3.2, 3.3, 3.4, 3.5) rather than item-based labelling (which would have produced 3.4a/3.4b).
+  - A regulatory/legal-terminology boundary was enforced mid-session: terminology like "legally complete," "regulatorily sufficient," "jurisdiction-specific compliance," and "data-governance completeness" landed in ADR-03 §8 via Change 3.1 in non-claim framing, and was kept bounded to non-claim contexts for the remainder of the session. `protocol_refresh_v1` §2 and the security/privacy note §6 addition contain no such terminology. The RST lens and Standards note use it only in explicit non-claim contexts (RST lens §3.6 and §5; Standards note §3).
+
+Irreversible actions taken:
+  - Committed `d2367a8` (MKTd03) — ADR-03: extend section 8 non-claims with interpretation-limit clarifications (Change 3.1)
+  - Committed `f37ade9` (MKTd03) — protocol_refresh_v1: align section 2 evidentiary-claim wording with ADR-03 §8 (Change 3.2)
+  - Committed `f2cf4c5` (MKTd03) — security_privacy_note_v1: add module-hash strengthening-path paragraph to section 6 (Change 3.3)
+  - Committed `0a21274` (MKTd03) — rst_evaluation_lens_v1: add new non-normative residual trust statement analytical lens (Change 3.4)
+  - Committed `cd719a3` (TAV-Engineering-Standards) — add non-normative MKTd03 residual trust note and register in CHANGELOG (MKTd03 Change 3.5)
+
+Do not revisit:
+  - Whether Session 3 required interface, fixture, or verifier changes — settled no; all five changes are wording-only or new non-normative files.
+  - Whether the RST evaluation lens belongs under `docs/spec/` or `docs/planning/` — settled no; `docs/analysis/` is its home per Session 1 decision, now instantiated.
+  - Whether the Standards-side residual-trust note should be cross-project rather than MKTd03-scoped — settled no; abstraction to doctrine declined at this time.
+  - Whether the Standards-side and MKTd03-side notes should reference each other as authority — settled no; both documents are non-authoritative for the other.
+  - Whether regulatory/legal terminology may propagate from ADR-03 §8 into normative artefacts as affirmative claims — settled no; such terminology is restricted to non-claim contexts regardless of whether it appears in ADR-03 §8, non-normative analytical locations, or operator-facing Standards notes.
+  - Whether the security/privacy note §6 addition should use the word "strengthening" in the paragraph body — settled no; body text uses "addition," "additional certification or provenance layers," and "additive to" instead. The item label "strengthening-path" is retained in the change list only, for identification.
+
+Standing constraint surfaced:
+  - Regulatory/legal terminology remains bounded to non-claim contexts. Any future MKTd03 artefact may discuss legal/regulatory dimensions only as (a) an explicit non-claim inside ADR-03 §8 or an equivalent normative non-claim surface, or (b) material in a non-normative location such as `docs/analysis/` or TAV-Engineering-Standards. Introducing such terminology as an affirmative claim into protocol refresh, interface files, companion rules, or verifier documents requires explicit reopening.
+
+## 2026-04-20 -- SESSION LESSON: stop when a normative-adjacent artefact has an undefined term in its title
+
+What happened:
+  - Session 3 Item 2 created `docs/analysis/MKTd03_rst_evaluation_lens_v1.md`. The filename was settled in RESTART_PACK and the Session 1 MILESTONE. When the drafter reached this item, no committed repo artefact explained what "RST" stood for. Three candidate expansions were plausible, each producing a materially different document.
+  - The drafter stopped, surfaced the gap explicitly, and escalated rather than guessing. "RST = Residual Trust Statement" was confirmed, and drafting resumed.
+
+The lesson:
+  - Before drafting a normative or normative-adjacent artefact whose filename contains a term not defined anywhere in committed repo artefacts, stop and obtain an authoritative expansion. Even a well-reasoned inference can encode a wrong expansion as de facto authority by drift.
+
+Category: review │ process
+
+Apply next time:
+  - When a RESTART_PACK or earlier MILESTONE names a new artefact by acronym or novel term, the pre-drafting checklist for that artefact includes: "Has this term been explicitly expanded in a committed repo artefact? If no, stop and escalate before drafting."
+
+## 2026-04-20 -- SESSION LESSON: name standing constraints proactively when approving new terminology in a multi-item session
+
+What happened:
+  - Session 3 Item 1 (Change 3.1) approved regulatory/legal terminology into ADR-03 §8 in non-claim framing. During review, C flagged that this terminology shape should not propagate into remaining Session 3 items as affirmative claims, and recommended it as a standing constraint for the rest of the session.
+  - The constraint was endorsed. Items 4a, 3, 2, and 4b all honored it without further friction. Where regulatory/legal registers were needed (RST lens §3.6 and §5; Standards note §3), they were scoped as non-claims or non-scope.
+
+The lesson:
+  - When approving a new terminology shape in the first item of a multi-item session, proactively name any boundary conditions as standing constraints for remaining items. This prevents silent drift where each individual review looks acceptable but the cumulative effect widens or relocates a register across items.
+
+Category: review │ process
+
+Apply next time:
+  - First-item reviews in a multi-item session carry precedent weight. Any new register, terminology, or framing introduced should be accompanied by an explicit "standing constraint for this session" note that remaining items can be checked against.
