@@ -22,7 +22,6 @@ This document is subordinate to:
 - ADR-03: Tree-Mode CVDR Structure and Verifier Requirements
 - Tree-Mode Invariants Note
 
-ADR-03 is currently an intermediate draft. Where this refresh relies on ADR-03 content beyond its already-reviewed baseline decisions, that content remains provisional pending ADR-03 completion.
 Where this document and an ADR differ, the ADR wins.
 
 ## Current Baseline Position
