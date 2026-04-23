@@ -188,3 +188,38 @@ Category: review │ process
 
 Apply next time:
   - First-item reviews in a multi-item session carry precedent weight. Any new register, terminology, or framing introduced should be accompanied by an explicit "standing constraint for this session" note that remaining items can be checked against.
+
+## 2026-04-23 -- MILESTONE: Authority-block housekeeping landed; specification phase closed
+
+Decisions made:
+  - The stale "ADR-03 is currently an intermediate draft" language in the `docs/spec/MKTd03_protocol_refresh_v1.md` Authority block was removed.
+  - Removal was bounded to the two-sentence provisional paragraph only. The tiebreaker line ("Where this document and an ADR differ, the ADR wins.") was retained.
+  - The file's `## Status` field ("Draft") was explicitly held out of scope and recorded as a separate future open candidate.
+  - With this commit, the specification-and-documentation phase of MKTd03 is fully closed. The next bounded session opens the engine build planning phase (build plan Phase 7) but will not write code.
+
+Irreversible actions taken:
+  - Committed `16f1124` (MKTd03) — web-editor partial deletion of the first stale sentence only.
+  - Committed `44f849b` (MKTd03) — web-editor mistaken re-addition of the second stale sentence.
+  - Committed `4ea134a` (MKTd03) — CLI completion: removed the second stale sentence and left the tiebreaker line in place.
+  - Committed `1e08238` (MKTd03) — RESTART_PACK updated for the new state and next-session framing.
+
+Do not revisit:
+  - Whether the Authority block should retain the "intermediate draft" wording — settled no; ADR-03 is Approved.
+  - Whether the `## Status` field should have been updated in the same pass — settled no; explicitly out of scope for this bounded housekeeping commit.
+  - Whether the noisy commit history (web-editor partial, web-editor revert, CLI correction) should be rewritten for tidiness — settled no; Playbook rule is no history rewrites.
+
+## 2026-04-23 -- SESSION LESSON: multi-line edits must use CLI, not the GitHub web editor
+
+What happened:
+  - A two-sentence stale-language paragraph in `docs/spec/MKTd03_protocol_refresh_v1.md` needed removing. The Playbook rule (web editor for single-line typo fixes only; CLI for anything else) was correctly restated by G at the start of the pass. C then issued instructions that used the phrase "editor of your choice" after G had already closed that choice, and the operator chose the GitHub web editor.
+  - The web editor treated the two-sentence paragraph as two separate lines (which they were in the raw markdown, even though they rendered as one paragraph). A first web-editor edit deleted only the first sentence. A second web-editor attempt mistakenly re-added the second sentence. A CLI follow-up was required to complete the removal cleanly.
+
+The lesson:
+  - "Multi-line edit" means any edit that deletes or modifies more than one line of raw file text, regardless of how the lines render in the final document. Paragraphs that visually read as one unit may be two or more lines in the source.
+  - When the Playbook rule is restated by G, C does not have latitude to re-open the choice. Framings like "editor of your choice" are only appropriate when the Playbook leaves the choice open. C must check whether the Playbook has already closed it.
+
+Category: process │ review
+
+Apply next time:
+  - Before issuing edit instructions, C states the edit method explicitly (CLI or web editor) and cites the Playbook clause that governs the choice. No "editor of your choice" language for multi-line edits.
+  - If the operator nonetheless uses the web editor for a multi-line edit, the immediate next step is a `git show` on the resulting commit to inspect whether the web editor's line handling produced the intended change, before any follow-up commit is planned.
