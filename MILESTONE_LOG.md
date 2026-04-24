@@ -279,7 +279,7 @@ Decisions made:
 
 Irreversible actions taken:
   - Committed 936b873fd1c511cd8125a8143a25e588b1dcfa7f (MKTd03) — analysis: promote section 5 reuse-audit drafts to approved at docs/analysis/ (G review 2026-04-24; anchors pinned). Commit 1 of this session's sequence; amended once to correct file mode from 100755 to 100644.
-  - Committed 23b70c6bd3ee07faa5841c9fb1cfa17b2c3ea66f (MKTd03) — restart_pack: update for post-section-5 state; next session is C pre-implementation adversarial review. Commit 2 of this session's sequence; amended once to resolve three [SHA-2] self-reference placeholders with the commit's own SHA.
+  - Committed 23b70c6bd3ee07faa5841c9fb1cfa17b2c3ea66f (MKTd03) — restart_pack: update for post-section-5 state; next session is C pre-implementation adversarial review. Commit 2 of this session's sequence; amended once to resolve three 1e485402a96e2efc84951408ab8949b56dff92bf self-reference placeholders with the commit's own SHA.
 
 Do not revisit:
   - Whether the v2 drafts graduate cleanly — settled yes; G approved all three on 2026-04-24.
@@ -329,3 +329,47 @@ Apply next time:
   - C's file-transfer instructions for Dropbox → WSL → git of non-executable assets include a `chmod 644` step between `cp` and `git add`, not as a post-commit correction. Verify mode with `ls -la` before staging.
   - If the first `git commit` on a transferred file shows `create mode 100755` and the file is non-executable, the correct response is immediate `chmod 644` + amend before any downstream commit lands in the sequence.
   - Playbook uplift candidate: standing `chmod 644` step in the Dropbox → WSL → git transfer pattern for non-executable assets.
+
+## 2026-04-24 -- MILESTONE: C pre-implementation adversarial review complete
+
+Decisions made:
+  - C adversarial review of the Phase 6 artifact set as a post-Session-3 whole executed per G's four-step sequence step 3; ruled Approve-with-flags.
+  - Review anchored to HEAD = `776aff7394dc3fb7e16cebd7bf081c1489fdb621` (§5 close-out MILESTONE_LOG commit).
+  - No flag blocks step 4 (G's explicit coding-start decision) from opening.
+  - Role-swap from §5 close-out carried into this session per Stef's ruling 2026-04-24: C drafted the review brief; G reviewed the brief (one gap identified: HEAD SHA pinning) and executed the adversarial review.
+  - Stress-test result: the expensive failure pattern — CVDR-as-declaration rather than certified record of execution — is not structurally present in the Phase 6 set. Lazy receipt construction is blocked at the spec layer by the absence of receipt-producing paths in S7-1 and by A→B→C discipline preserved as later-slice input.
+  - Per-artifact rulings: three Flags, one Approve-with-flag, all remaining Phase 6 artifacts Approve.
+    - Flag: `AGENTS.md` + `RESTART_PACK.md` — adjacent drift (pre-Phase-6 "formal-interface gate" / interface-prep wording). Folds into existing open-candidates queue item (AGENTS adjacent-drift cleanup pass); scope expanded to include RESTART_PACK.md.
+    - Flag: `docs/spec/MKTd03_protocol_refresh_v1.md` `## Status` still reads "Draft". Existing open-candidates queue item confirmed as active.
+    - Flag: Authority map v2 row 15 ("Conceptual interface seed artifact") retains "pre-freeze draft" descriptor. Existing open-candidates queue item confirmed as active.
+    - Approve-with-flag: First-slice scope draft v2 — update context anchor from old `3319c3f` at promotion time. Attached to existing open-candidates queue item (first-slice promotion) as promotion-time detail.
+  - Approve rulings (no flag): stale spec inventory (no evidence of stale spreadsheet authority reassertion); ADR-00 evidentiary scope; Tree-mode invariants note; ADR-02 tree structure; ADR-01 boundary; ADR-03 receipt/verifier semantics (Session 1/3 tightening blocks declaration-based and lazy receipt semantics); diagnostics/status note; versioning/compatibility note (post-Session-2 `interface_version = 2.0.0` reflected in authority map); security/privacy note (certification/provenance strengthening remains optional/additive, not adopted as proof claim); published terminology policy; conceptual adapter contract (reference-only status preserved, superseded by frozen adapter contract); companion-rule layer (v2 governs, no v1/v2 partial state); golden vectors / negative cases (no unsupported positive extension); frozen `.did` interfaces (`interface_version = 2.0.0`, `PreStateCaptured` frozen, coherent post-Session-2 state); machine-readable fixtures (`#v2` anchors and `missing_transition_derivation_version` reflected); `transition_derivation_version` row (correctly scoped to `core_transition_evidence` only); library interface version row (correctly binds `.did` + rules v2); `docs/analysis/` convention / RST lens / Standards note (non-normative boundary explicit); coding-start readiness gate (correctly points to first-slice scope §6 and prevents gate re-authoring).
+  - No flag identified in the review is net-new to the open-candidates queue. All four fold into existing items. Queue updated accordingly in RESTART_PACK at Commit 1 of this session's sequence.
+
+Irreversible actions taken:
+  - Committed 1dcdee10c7ce49b07e45b4eddfedbf99904ea555 (MKTd03) — restart_pack: record pre-implementation review outcome; next bounded session is G coding-start decision. Commit 1 of this session's sequence.
+  - Committed 1e485402a96e2efc84951408ab8949b56dff92bf (MKTd03) — milestone_log: record pre-implementation adversarial review ruling and session lesson. Commit 2 of this session's sequence.
+
+Do not revisit:
+  - Whether the Phase 6 artifact set holds as a post-Session-3 whole — settled yes, ruled Approve-with-flags.
+  - Whether any flag blocks step 4 — settled no.
+  - Whether C drafts the pre-implementation review brief or G does — settled C drafts (role-swap confirmed for this session by Stef's ruling; reverts to standard role map after step 3 close).
+  - Whether the pre-implementation review session includes any artifact edits beyond continuity — settled no; findings only, with continuity bounded to this session's RESTART_PACK and MILESTONE_LOG updates.
+  - Whether any flag identified in the review is net-new to the queue — settled no; all fold into existing open-candidates items.
+  - Whether the CVDR-as-declaration failure pattern is structurally present in the Phase 6 set — settled no.
+  - Whether lazy receipt construction is permitted by the current spec — settled no; blocked by absence of receipt-producing paths in S7-1 and by A→B→C discipline preserved as later-slice input.
+
+## 2026-04-24 -- SESSION LESSON: pin the HEAD SHA explicitly in review briefs anchored at "HEAD"
+
+What happened:
+  - C drafted the pre-implementation review brief under role-swap. The scope clause read "`docs/planning/MKTd03_authority_map_v2.md` at HEAD" without specifying a commit SHA. G's brief-review step flagged this as the only gap in the brief: "HEAD SHA must be filled before C runs the review, because 'authority map v2 at HEAD' is otherwise ambiguous." The SHA (`776aff7394dc3fb7e16cebd7bf081c1489fdb621`) was resolved via `git log -1` and pinned before the review executed.
+
+The lesson:
+  - "HEAD" is a moving reference. In a review brief that declares what artifact set is being reviewed, "at HEAD" is insufficient as an anchor — it must be "at HEAD [SHA]". The SHA is the real anchor; "HEAD" is only a convenience shorthand for "as of the moment of this brief". Without the SHA pinned, the review record is ambiguous the first time HEAD moves, and the review may end up evaluating a different tree than intended.
+  - The brief-review step caught this cleanly. But the drafter (C under role-swap) should not rely on the brief-review step to catch it; pinning HEAD SHA in the brief itself is draft-time discipline, not review-time correction.
+
+Category: process │ review
+
+Apply next time:
+  - Any review brief that anchors against a live repo state must pin the commit SHA explicitly at draft time. Template clause: "anchored to HEAD at [SHA]". If the SHA is not known at brief-draft time (rare — `git log -1` is always available), use a placeholder and fill it as a mandatory step before the review executes.
+  - Candidate for the Playbook-uplift queue under review-brief drafting patterns; not yet promoted.
