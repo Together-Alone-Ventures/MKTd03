@@ -258,3 +258,74 @@ Adjacent drift flagged but not acted on (for a future pass):
   - AGENTS Working discipline bullet ("…binding for interface-prep work…") carries a pre-Phase-6 descriptor that is now linguistically stale. Scope brief §3.2 instructed preserve-unchanged; followed literally.
   - AGENTS Non-goals bullet 3 ("No premature library implementation before the formal-interface gate is complete") is now a historical marker; bullet 4 supersedes it operationally. Both coexist per scope brief §3.2 preserve-unchanged instruction. G's preferred remediation (from secondary review of this packet): prefix with "(Historical — pre-Phase-6)".
   - Authority map row ("Conceptual interface seed artifact") retains "pre-freeze draft" status language, which is linguistically stale. Scope brief §3.1 did not enumerate this row for update. G's preferred remediation: explicit "non-authoritative and must not diverge from frozen interface on overlapping types".
+
+## 2026-04-24 -- MILESTONE: §5 reuse-audit close-out landed
+
+Decisions made:
+  - Three §5 analysis artifacts promoted from v2 draft to approved status at `docs/analysis/`: `MKTd02_module_taxonomy_for_MKTd03.md`, `MKTd02_module_reuse_audit_v1.md`, `MKTd02_generalise_now_backport_later_candidates_v1.md`. G review 2026-04-24 approved all three with one directed edit (taxonomy §3.4 explicit Category E "absent in MKTd02" row added); reuse audit and candidate list approved without substantive changes.
+  - MKTd02 primary anchor pinned: repo `Together-Alone-Ventures/ICP-Delete-Leaf` (formerly `MKTd02`) at commit `54f1e2dc24dd0b79705a66894b2f25138e28a9ad`. Same SHA as the Phase-4 reuse-generalisation audit v1 at `docs/spec/MKTd03_mktd02_reuse_generalisation_audit_v1.md`; the SHA resolves transparently under the renamed repo.
+  - `zombie-core` secondary anchor pinned: repo `Together-Alone-Ventures/zombie-core` at tag `zombie-core-v0.3.1` commit `508f2f8bb88f4395293168c6ef25c92a67dee894`. Dependency pin confirmed in `mktd02/Cargo.toml`.
+  - Eight open questions across the three artifacts resolved; rulings recorded per-artifact in their "Resolved questions" sections. Cross-indexed here:
+    - Taxonomy Q1 (Category E representation): explicit §3.4 "absent in MKTd02" row added.
+    - Reuse audit Q2 (`zombie-core::nns_keys` assumption promotion): audit-local; do not promote until certification/trust-root slice.
+    - Reuse audit Q3 (Finalization-lock shape, §5.3): Phase-7 planning input; not an ADR-03 reopening.
+    - Reuse audit Q4 (tag-namespace strategy, §5.4): decision deferred to first-slice scope proposal; option (c) — MKTd03-owned tag constants — recorded as preferred default.
+    - Candidate list Q1 (Candidate 6): Phase-7 planning input; not an ADR-03 reopening.
+    - Candidate list Q2 (Candidate 3): precondition before any hashing/preimage slice (S7-3 or later); not a precondition for S7-1.
+    - Candidate list Q3 (Candidate 7): left analytical; do not promote to normative companion-rule text until a later slice issues receipts.
+    - Candidate list Q4 (missing candidates): none.
+  - Session role map: C drafts, G reviews (role-swap allowance per session open; same as the allowance under which the v2 drafts were originally written).
+  - `RESTART_PACK.md` refreshed for post-§5 state: CURRENT GOAL updated; new §5 REUSE-AUDIT CLOSE-OUT section added; SESSION LESSONS entries for 2026-04-24 appended; NEXT BOUNDED SESSION framing updated to C pre-implementation adversarial review per G's four-step sequence step 3.
+
+Irreversible actions taken:
+  - Committed 936b873fd1c511cd8125a8143a25e588b1dcfa7f (MKTd03) — analysis: promote section 5 reuse-audit drafts to approved at docs/analysis/ (G review 2026-04-24; anchors pinned). Commit 1 of this session's sequence; amended once to correct file mode from 100755 to 100644.
+  - Committed 23b70c6bd3ee07faa5841c9fb1cfa17b2c3ea66f (MKTd03) — restart_pack: update for post-section-5 state; next session is C pre-implementation adversarial review. Commit 2 of this session's sequence; amended once to resolve three [SHA-2] self-reference placeholders with the commit's own SHA.
+
+Do not revisit:
+  - Whether the v2 drafts graduate cleanly — settled yes; G approved all three on 2026-04-24.
+  - Whether the MKTd02 SHA from Phase-4 reuse-generalisation audit v1 carries to the §5 artifacts — settled yes; same SHA `54f1e2dc…` resolves under the renamed `ICP-Delete-Leaf` repo.
+  - Whether Candidate 6, Candidate 7, or the Finalization-lock-shape finding reopens ADR-03 — settled no; all three are Phase-7 planning inputs only.
+  - Whether the tag-namespace strategy is decided now — settled no; option (c) preferred, final decision deferred to the first-slice scope proposal.
+  - Whether the `zombie-core::nns_keys` carry-over assumption graduates to normative text now — settled no; stays audit-local until the certification/trust-root slice.
+  - Whether the `zombie-core::receipt` split classification is restored — settled no; v2 single-bucket (Leaf-mode-specific) stands; derivation discipline is carried as Candidate 7 narrative only.
+
+Standing constraint surfaced:
+  - Tag-namespace option (c) — MKTd03-owned tag constants, never using `zombie-core`-declared constants directly — is the preferred default for any MKTd03 slice that touches hashing or preimage composition. First-slice scope proposal is the authoritative place to finalise the decision; any deviation from option (c) at slice-planning time must be explicit and re-gated.
+  - Candidate 3 (tag-discipline extraction) becomes a precondition before any MKTd03 slice that uses hashing or preimage composition. S7-1 does not hit this; S7-3 or later slices do. Slice scope proposals from S7-3 onward must confirm Candidate-3 precondition status before opening.
+
+Adjacent drift flagged but not acted on (for a future pass):
+  - Phase-4 reuse-generalisation audit v1 at `docs/spec/MKTd03_mktd02_reuse_generalisation_audit_v1.md` still references the old repo URL `https://github.com/Together-Alone-Ventures/MKTd02` in its `Audit Scope` block. The SHA it pins is canonical under the rename so the reference remains correct-in-fact, but the URL is now a redirect. Candidate for a bounded hygiene pass: update the Phase-4 audit's `MKTd02 repo URL` field to the renamed repo. Not in §5 close-out scope.
+
+## 2026-04-24 -- SESSION LESSON: repo-rename SHA carry-over
+
+What happened:
+  - The §5 close-out required pinning an MKTd02 audited-commit SHA. The Phase-4 reuse-generalisation audit v1 had previously pinned `54f1e2dc24dd0b79705a66894b2f25138e28a9ad` under the old repo name `Together-Alone-Ventures/MKTd02`. The repository had since been renamed to `Together-Alone-Ventures/ICP-Delete-Leaf` with no history rewrite.
+  - G's ruling 2026-04-24 was to keep the same SHA; it resolves transparently under the renamed repo. No re-audit of the source tree was required. The anchor description in each of the three §5 artifacts flags the rename explicitly: "formerly `MKTd02`; internal source name still `mktd02`".
+
+The lesson:
+  - Pure repository renames do not invalidate previously-pinned commit SHAs. When a repo is renamed without history rewrite, SHAs remain canonical across the rename; subsequent artifacts may pin the same SHA under the new repo name. The audit-target identity travels with the commit, not with the URL.
+  - The URL of the repo at the old name is now a redirect. Any artifact that embeds a full repo URL alongside a SHA is correct-in-fact until the redirect is retired, but should be updated on any subsequent touch of that artifact.
+
+Category: process │ repository-hygiene
+
+Apply next time:
+  - When an anchor SHA has been pinned in a prior artifact and the repo has since been renamed, the default is to carry the SHA under the new repo name. No re-pinning is required. Flag the rename explicitly in the new artifact's anchor description.
+  - When any prior-artifact URL field is visible in the scope of a later bounded session, note stale-but-functional URLs in the Adjacent drift flagged list, to be corrected in a future hygiene pass.
+  - Playbook uplift candidate: "Anchor-SHA carry across repo rename" as a named pattern.
+
+## 2026-04-24 -- SESSION LESSON: Dropbox → WSL file-transfer carries NTFS executable-bit
+
+What happened:
+  - Commit 1 of this session's sequence staged three markdown files copied from Dropbox (`/mnt/c/Users/Stef/Dropbox/…/MKTd03/`) to `docs/analysis/` via `cp`. The resulting `git commit` output showed `create mode 100755` on all three — the NTFS executable-bit from the Dropbox-side copy carried through to the working tree on `git add`.
+  - Inconsistent with the existing `docs/analysis/` convention (the pre-existing `MKTd03_rst_evaluation_lens_v1.md` in the same directory was at mode 100644). Required a `chmod 644` + `git commit --amend --no-edit` cycle to correct. No correctness impact; markdown at 100755 is functionally identical to 100644. Repo-convention issue only.
+
+The lesson:
+  - Any file copied from `/mnt/c/` into the WSL checkout inherits NTFS file-mode semantics at `git add` time. For non-executable assets (markdown, JSON, text), this produces `mode 100755` on the first commit, which deviates from repo convention.
+  - The correct pattern for Dropbox → WSL → git transfer of non-executable assets is: `cp` → `chmod 644 <files>` → `git add` → `git commit`. The `chmod` step is not optional; it is a required part of the transfer pattern.
+
+Category: process │ file-transfer
+
+Apply next time:
+  - C's file-transfer instructions for Dropbox → WSL → git of non-executable assets include a `chmod 644` step between `cp` and `git add`, not as a post-commit correction. Verify mode with `ls -la` before staging.
+  - If the first `git commit` on a transferred file shows `create mode 100755` and the file is non-executable, the correct response is immediate `chmod 644` + amend before any downstream commit lands in the sequence.
+  - Playbook uplift candidate: standing `chmod 644` step in the Dropbox → WSL → git transfer pattern for non-executable assets.
