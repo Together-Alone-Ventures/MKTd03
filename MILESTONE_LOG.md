@@ -223,3 +223,38 @@ Category: process │ review
 Apply next time:
   - Before issuing edit instructions, C states the edit method explicitly (CLI or web editor) and cites the Playbook clause that governs the choice. No "editor of your choice" language for multi-line edits.
   - If the operator nonetheless uses the web editor for a multi-line edit, the immediate next step is a `git show` on the resulting commit to inspect whether the web editor's line handling produced the intended change, before any follow-up commit is planned.
+
+## 2026-04-24 -- MILESTONE: Authority-map / AGENTS refresh packet landed
+
+Decisions made:
+  - `docs/planning/MKTd03_authority_map_v1.md` superseded by `docs/planning/MKTd03_authority_map_v2.md`. Version bump per G's prior-session ruling that the post-Session-3 refresh warrants v2, not v1-with-stamp. v1 file retained in place as historical record; future disposition deferred (G's preferred disposition: relocation to `docs/planning/history/`).
+  - `AGENTS.md` refreshed. Three "Current phase" lines rewritten to reflect post-specification-tightening reality and to re-scope the coding-start gate against `docs/planning/MKTd03_first_slice_scope_v1.md` §6 (currently `MKTd03_first_slice_scope_planning_DRAFT_v2.md` §6 until promoted). One new Non-goals bullet added covering the coding-start gate dependencies. Working discipline block preserved unchanged.
+  - All 10 authority-map rows flagged for update in the refresh-packet scope (§3.1) absorbed. Row "Refreshed overall protocol narrative" landed at "settled" with citation to housekeeping commit `4ea134a`, per G's ruling D and HEAD evidence.
+  - All 5 new authority-map rows enumerated in the refresh-packet scope added.
+  - TAV-Engineering-Standards residual-trust note row carries literal "non-normative cross-repo reference; not MKTd03 authority" labelling in its status cell, per G's end-of-prior-session instruction on pointer framing.
+  - Per G's secondary review on this packet, authority map v2 gained one additional row ("Coding-start readiness gate") pointing to `docs/planning/MKTd03_first_slice_scope_v1.md` §6 as sole authority, with status "binding; must not be re-authored outside this artifact". Rationale: coding-start is now a first-class phase boundary referenced from AGENTS, RESTART_PACK, and the authority map; elevating it to an authority-map row eliminates future drift where someone "summarises the gate" elsewhere.
+  - Per G's secondary review on this packet, AGENTS "Current phase" section gained one additional bullet establishing `docs/planning/MKTd03_first_slice_scope_v1.md` §6 as the sole authoritative definition of the coding-start gate, with explicit statement that AGENTS does not restate or reinterpret it. Rationale: eliminates dual-authority ambiguity between AGENTS (operationally read) and §6 (actually correct).
+  - `RESTART_PACK.md` refreshed to correct the stale HEAD self-reference and to update the NEXT BOUNDED SESSION framing to match post-last-session sequencing: §5 reuse-audit close-out → C pre-implementation adversarial review → G's coding-start decision. Refresh-packet scope §2 declined a RESTART_PACK update in principle; G ratified the widen at packet-draft review.
+
+Irreversible actions taken:
+  - Committed f0c1ed497f8af779f13f4799782f405a36e37f1e (MKTd03) — authority_map: add v2 reflecting post-Session-3 reality; v1 retained as historical.
+  - Committed 274f6015b44977ad7338996d620a75d3074ea517 (MKTd03) — agents: refresh current-phase framing and re-scope coding-start gate.
+  - Committed 8038f79d59eb91a3496a7b3f8cd2a734c713c8fc (MKTd03) — restart_pack: update HEAD self-reference and next-session framing for post-refresh state.
+
+Do not revisit:
+  - Whether the authority map bumps to v2 or stays at v1-with-stamp — settled v2.
+  - Whether the refresh-packet scope itself required promotion from DRAFT — settled no; operating-brief status sufficient.
+  - Whether `docs/spec/MKTd03_protocol_refresh_v1.md` authority-block housekeeping is closed — settled yes at `4ea134a`, confirmed by HEAD evidence.
+  - Whether the TAV-Engineering-Standards residual-trust note is MKTd03 authority — settled no; listed as non-normative cross-repo reference with explicit labelling.
+  - Whether the refresh session should also touch `interfaces/mktd03_tree_mode_conceptual_interface_v1.did` itself — settled no per refresh-packet scope §8.
+  - Whether `docs/spec/MKTd03_adapter_contract_concept_v1.md` should be deleted rather than marked reference-only — settled no; retained in place with reference-only status, per minimum-change principle.
+  - Whether the coding-start gate should be defined or restated in AGENTS or the authority map — settled no; first-slice scope §6 is the sole authoritative definition; AGENTS and the authority map only point to it.
+
+Standing constraint surfaced:
+  - The coding-start gate is specified by `docs/planning/MKTd03_first_slice_scope_v1.md` §6 readiness checklist (currently the draft `MKTd03_first_slice_scope_planning_DRAFT_v2.md` §6 until promoted). The AGENTS "Current phase" coding-start line and the authority map v2 both reference this. Any future change to the readiness checklist must land in first-slice scope §6 and must not be silently re-authored in AGENTS or the authority map.
+  - RESTART_PACK updates are normally out-of-scope for bounded packets. This instance is an exception due to multi-field staleness (HEAD reference + session framing).
+
+Adjacent drift flagged but not acted on (for a future pass):
+  - AGENTS Working discipline bullet ("…binding for interface-prep work…") carries a pre-Phase-6 descriptor that is now linguistically stale. Scope brief §3.2 instructed preserve-unchanged; followed literally.
+  - AGENTS Non-goals bullet 3 ("No premature library implementation before the formal-interface gate is complete") is now a historical marker; bullet 4 supersedes it operationally. Both coexist per scope brief §3.2 preserve-unchanged instruction. G's preferred remediation (from secondary review of this packet): prefix with "(Historical — pre-Phase-6)".
+  - Authority map row ("Conceptual interface seed artifact") retains "pre-freeze draft" status language, which is linguistically stale. Scope brief §3.1 did not enumerate this row for update. G's preferred remediation: explicit "non-authoritative and must not diverge from frozen interface on overlapping types".
