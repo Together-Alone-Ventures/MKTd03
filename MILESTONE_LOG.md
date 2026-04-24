@@ -373,3 +373,33 @@ Category: process │ review
 Apply next time:
   - Any review brief that anchors against a live repo state must pin the commit SHA explicitly at draft time. Template clause: "anchored to HEAD at [SHA]". If the SHA is not known at brief-draft time (rare — `git log -1` is always available), use a placeholder and fill it as a mandatory step before the review executes.
   - Candidate for the Playbook-uplift queue under review-brief drafting patterns; not yet promoted.
+
+## 2026-04-24 — MILESTONE: S7-1 coding-start opened; first-slice scope promoted
+
+Decisions made:
+  - First-slice scope document promoted from draft to authoritative:
+    `docs/planning/MKTd03_first_slice_scope_v1.md`.
+  - Promotion commit: 8204b2c (parent c284c59).
+  - Four mechanical edits applied during promotion:
+    1. Title desuffixed (removed "Draft v2").
+    2. Status line updated to authoritative coding-start state.
+    3. Intended-path line deleted.
+    4. §1 gating paragraph replaced with state statement ("all gates closed; authorised for S7-1 coding-start").
+  - Context anchor inside the document updated separately from 3319c3f → c284c59.
+    (This is a document context anchor, not the promotion commit SHA.)
+  - Coding-start decision: OPEN under G ruling, with five binding constraints:
+    strict slice containment; module_hash status-only discipline; `.did` zero-divergence gate;
+    observable fail-loud behaviour; no forward-semantics leakage.
+  - Standard role map restored (G drafter, C adversarial reviewer, Codex executor).
+
+Irreversible actions taken:
+  - 8204b2c — planning: add first-slice scope v1 (S7-1) for coding-start
+
+Do not revisit:
+  - Whether S7-1 is open for implementation — settled OPEN under G ruling.
+  - Whether the draft status is still in effect — settled no; document is authoritative.
+  - Whether the context anchor equals the commit SHA — settled no; they are distinct.
+
+Standing constraint surfaced:
+  - S7-1 must remain a closed minimal slice; any introduction of deletion, receipt, proof,
+    certification, or provenance semantics is a hard stop, not an extension.
