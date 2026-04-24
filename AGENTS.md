@@ -8,9 +8,10 @@ Current boundary
 Current phase
 - Prep is closed.
 - Repo-boundary cleanup is closed and must not be reopened unless a specific regression is identified.
-- The Phase 1-5 protocol baseline exists in repo artifacts and current work is the bounded formal-interface pre-freeze phase.
-- This phase is for interface hygiene, authority cleanup, conceptual-interface refinement, companion-rule tightening, and vector/fixture preparation.
-- Do not start protocol-library implementation until the formal-interface gate is explicitly satisfied.
+- The Phase 1–5 protocol baseline is landed; the formal-interface pre-freeze phase is closed; the specification-tightening stream (Sessions 1, 2, 3) is complete; the authority-block housekeeping pass is complete. Current work is Phase-7 planning.
+- Phase-7 planning activities: first-slice scope planning, §5 reuse-audit close-out, C pre-implementation adversarial review of the Phase 6 artifact set as a post-Session-3 whole, and G's explicit coding-start decision. No library code is written at this stage.
+- Do not start protocol-library implementation until the coding-start gate is explicitly satisfied per `docs/planning/MKTd03_first_slice_scope_v1.md` §6 readiness checklist (currently `MKTd03_first_slice_scope_planning_DRAFT_v2.md` §6 until promoted).
+- The readiness checklist in `docs/planning/MKTd03_first_slice_scope_v1.md` §6 is the sole authoritative definition of this gate. AGENTS does not restate or reinterpret it.
 
 Working discipline
 - Keep protocol work dApp-agnostic.
@@ -29,3 +30,4 @@ Non-goals
 - No repo-cleanup reopening without a specific regression.
 - No TinyPress-local app work in this repo.
 - No premature library implementation before the formal-interface gate is complete.
+- No premature first-slice coding before authority-map refresh is landed, §5 reuse-audit is G-approved, C pre-implementation adversarial review is complete, and G has given explicit coding-start approval.
