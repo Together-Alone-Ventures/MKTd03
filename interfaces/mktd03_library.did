@@ -138,7 +138,7 @@ type VersionCheckResult = variant {
 
 service : {
   // Status / diagnostics
-  get_status : () -> (StatusSurface) query;
+  get_tree_mode_status : () -> (StatusSurface) query;
   get_evidence_readiness : () -> (EvidenceReadiness) query;
   get_version_info : () -> (VersionInfo) query;
   check_version_support : (SemanticVersion) -> (VersionCheckResult) query;
