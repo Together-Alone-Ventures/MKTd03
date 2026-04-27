@@ -403,3 +403,21 @@ Do not revisit:
 Standing constraint surfaced:
   - S7-1 must remain a closed minimal slice; any introduction of deletion, receipt, proof,
     certification, or provenance semantics is a hard stop, not an extension.
+
+## 2026-04-27 -- MILESTONE: S7-1 status-surface implementation landed
+
+Decisions made:
+  - S7-1 implementation landed as a status-surface skeleton with lifecycle scaffold only.
+  - Exposed canister surface is limited to init, post_upgrade, and get_tree_mode_status.
+  - Stable storage introduced by this slice is limited to lifecycle_state and module_hash.
+  - module_hash is used only for StatusSurface.build_identity.module_hash, not for hash preimages, receipts, evidence, certification, provenance, or verifier semantics.
+  - The S7-1 .did zero-divergence gate is interpreted as Candid-canonical equivalence: blob/vec nat8 aliasing, record-field order, and whitespace are non-semantic and normalized before comparison. Type names, field names, variants, field types, and method signatures are not normalized away.
+  - cargo fmt --check remains red at parent a476baf due pre-existing non-S7-1 rustfmt drift.
+  - full cargo test --offline remains red due pre-existing verifier fixture-loader issue for missing_transition_derivation_version.
+  - dfx/local deploy was not run because the repo has no dfx.json; wasm32 build plus S7-1 lib tests are accepted for this slice.
+  - The verifier fixture-loader issue is queued as a blocker before the first verifier-touching slice.
+
+Validation evidence:
+  - cargo test --offline --lib passed.
+  - cargo build --offline --target wasm32-unknown-unknown passed.
+  - Current uncommitted implementation files before commit were Cargo.toml, Cargo.lock, and src/lib.rs only.
