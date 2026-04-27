@@ -136,6 +136,21 @@ pub struct StatusSurface {
     pub operation_context: Option<OperationContext>,
 }
 
+#[derive(CandidType, Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct VersionInfo {
+    pub protocol_version: SemanticVersion,
+    pub interface_version: SemanticVersion,
+    pub compatibility: Compatibility,
+}
+
+#[derive(CandidType, Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub enum VersionCheckResult {
+    #[serde(rename = "supported")]
+    Supported(VersionInfo),
+    #[serde(rename = "unsupported_version")]
+    UnsupportedVersion(VersionInfo),
+}
+
 #[derive(Clone, Debug, Eq, PartialEq)]
 struct StoredLifecycleState(u8);
 
@@ -207,6 +222,7 @@ enum StatusSurfaceError {
     },
     ModuleHashMissing,
     InvalidModuleHashLength(usize),
+    ConditionallyCompatiblePolicyUndefined,
 }
 
 impl StatusSurfaceError {
@@ -232,6 +248,9 @@ impl StatusSurfaceError {
                 "S7-1 module_hash storage is invalid or inconsistent: expected {} bytes, found {}.",
                 MODULE_HASH_LENGTH, length
             ),
+            Self::ConditionallyCompatiblePolicyUndefined => {
+                "S7-2 conditionally_compatible policy not yet defined".to_string()
+            }
         }
     }
 }
@@ -408,6 +427,32 @@ fn build_status_surface() -> Result<StatusSurface, StatusSurfaceError> {
     })
 }
 
+fn build_version_info(compatibility: Compatibility) -> VersionInfo {
+    VersionInfo {
+        protocol_version: PROTOCOL_VERSION.clone(),
+        interface_version: INTERFACE_VERSION.clone(),
+        compatibility,
+    }
+}
+
+fn check_protocol_version_support(
+    input: SemanticVersion,
+) -> Result<VersionCheckResult, StatusSurfaceError> {
+    if input == PROTOCOL_VERSION {
+        return Ok(VersionCheckResult::Supported(build_version_info(
+            Compatibility::Compatible,
+        )));
+    }
+
+    if input.major != PROTOCOL_VERSION.major {
+        return Ok(VersionCheckResult::UnsupportedVersion(build_version_info(
+            Compatibility::Unsupported,
+        )));
+    }
+
+    Err(StatusSurfaceError::ConditionallyCompatiblePolicyUndefined)
+}
+
 fn trap_on_error<T>(result: Result<T, StatusSurfaceError>) -> T {
     match result {
         Ok(value) => value,
@@ -431,6 +476,12 @@ fn post_upgrade(module_hash: Vec<u8>) {
 #[candid_method(query, rename = "get_tree_mode_status")]
 fn get_tree_mode_status() -> StatusSurface {
     trap_on_error(build_status_surface())
+}
+
+#[query]
+#[candid_method(query, rename = "check_version_support")]
+fn check_version_support(input: SemanticVersion) -> VersionCheckResult {
+    trap_on_error(check_protocol_version_support(input))
 }
 
 ic_cdk::export_candid!();
@@ -630,6 +681,8 @@ mod tests {
             "BlockedCode",
             "BlockedReason",
             "StatusSurface",
+            "VersionInfo",
+            "VersionCheckResult",
         ] {
             assert_eq!(
                 normalize_definition(&extract_named_block(&generated, name)),
@@ -645,6 +698,64 @@ mod tests {
                 "get_tree_mode_status"
             )),
             "generated .did diverged for get_tree_mode_status",
+        );
+
+        assert_eq!(
+            normalize_definition(&extract_service_method(&generated, "check_version_support")),
+            normalize_definition(&extract_service_method(
+                &authoritative,
+                "check_version_support"
+            )),
+            "generated .did diverged for check_version_support",
+        );
+    }
+
+    #[test]
+    fn check_version_support_returns_supported_for_exact_protocol_version() {
+        let result =
+            check_protocol_version_support(PROTOCOL_VERSION.clone()).expect("exact version supported");
+
+        assert_eq!(
+            result,
+            VersionCheckResult::Supported(VersionInfo {
+                protocol_version: PROTOCOL_VERSION.clone(),
+                interface_version: INTERFACE_VERSION.clone(),
+                compatibility: Compatibility::Compatible,
+            })
+        );
+    }
+
+    #[test]
+    fn check_version_support_returns_unsupported_for_different_major_version() {
+        let result = check_protocol_version_support(SemanticVersion {
+            major: PROTOCOL_VERSION.major + 1,
+            minor: 0,
+            patch: 0,
+        })
+        .expect("different major version should be unsupported");
+
+        assert_eq!(
+            result,
+            VersionCheckResult::UnsupportedVersion(VersionInfo {
+                protocol_version: PROTOCOL_VERSION.clone(),
+                interface_version: INTERFACE_VERSION.clone(),
+                compatibility: Compatibility::Unsupported,
+            })
+        );
+    }
+
+    #[test]
+    fn check_version_support_fails_loud_for_same_major_different_version() {
+        let error = check_protocol_version_support(SemanticVersion {
+            major: PROTOCOL_VERSION.major,
+            minor: PROTOCOL_VERSION.minor + 1,
+            patch: PROTOCOL_VERSION.patch,
+        })
+        .expect_err("same-major different version must fail loud");
+
+        assert_eq!(
+            error.message(),
+            "S7-2 conditionally_compatible policy not yet defined"
         );
     }
 }

@@ -421,3 +421,25 @@ Validation evidence:
   - cargo test --offline --lib passed.
   - cargo build --offline --target wasm32-unknown-unknown passed.
   - Current uncommitted implementation files before commit were Cargo.toml, Cargo.lock, and src/lib.rs only.
+
+## 2026-04-27 -- MILESTONE: S7-2 version-support surface landed
+
+Decisions made:
+  - S7-2 implemented check_version_support(SemanticVersion) -> VersionCheckResult per frozen .did.
+  - VersionInfo introduced carrying protocol_version, interface_version, and compatibility.
+  - protocol_version field always reports the library-supported PROTOCOL_VERSION.
+  - supported(...) returned only for exact protocol version match.
+  - unsupported_version(...) returned for major-version mismatch.
+  - same-major but different version triggers explicit fail-loud:
+    "S7-2 conditionally_compatible policy not yet defined"
+  - conditionally_compatible classification intentionally not implemented in this slice.
+  - .did zero-divergence gate extended using Candid-canonical equivalence for:
+    VersionInfo, VersionCheckResult, and check_version_support.
+  - no malformed-input trap required for typed SemanticVersion input.
+  - full cargo test --offline remains red due pre-existing verifier fixture-loader issue.
+  - cargo fmt --check remains red due pre-existing repo-wide formatting drift.
+
+Validation evidence:
+  - cargo test --offline --lib passed.
+  - cargo build --offline --target wasm32-unknown-unknown passed.
+  - implementation confined to src/lib.rs only.
