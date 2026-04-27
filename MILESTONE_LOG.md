@@ -443,3 +443,19 @@ Validation evidence:
   - cargo test --offline --lib passed.
   - cargo build --offline --target wasm32-unknown-unknown passed.
   - implementation confined to src/lib.rs only.
+
+## 2026-04-27 -- MILESTONE: S7-3 tag-discipline scaffold landed
+
+Decisions made:
+  - S7-3 establishes the MKTd03-owned tag namespace scaffold.
+  - Exactly one sentinel tag was added: MKTD03_SCAFFOLD_V1.
+  - The sentinel is not used in any hash preimage and exists only to validate tag-discipline tests.
+  - No receipt, tombstone, commitment, tree-node, or evidence tags were declared.
+  - Hashing and preimage construction remain deferred to a later slice.
+  - No public canister method, Candid type, .did file, Cargo dependency, storage, adapter, verifier, or orchestration change was introduced.
+
+Validation evidence:
+  - cargo test --offline --lib passed.
+  - cargo build --offline --target wasm32-unknown-unknown passed.
+  - generated .did remains unchanged.
+  - diff confined to src/lib.rs and src/tags.rs.
