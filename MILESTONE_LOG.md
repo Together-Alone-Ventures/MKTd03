@@ -459,3 +459,21 @@ Validation evidence:
   - cargo build --offline --target wasm32-unknown-unknown passed.
   - generated .did remains unchanged.
   - diff confined to src/lib.rs and src/tags.rs.
+
+## 2026-04-27 -- MILESTONE: S7-4 generic hashing helper landed
+
+Decisions made:
+  - S7-4 introduced the protocol-owned generic hashing helper hash_with_tag(tag, parts).
+  - The helper computes SHA-256 over the exact byte concatenation tag || parts[0] || parts[1] || ...
+  - Tag bytes are consumed exactly as supplied.
+  - Part bytes are consumed exactly as supplied.
+  - No separator, null terminator, length-prefix, Unicode normalization, or object encoding is added implicitly.
+  - Integer, principal, and protocol-object encoding remain caller responsibilities for later slices.
+  - No commitment object, receipt logic, tree logic, proof logic, certification logic, storage change, adapter/orchestration/verifier change, or .did change was introduced.
+  - sha2 was added as a direct exact-pinned dependency at =0.10.9, matching the version already present transitively.
+
+Validation evidence:
+  - cargo test --offline --lib passed.
+  - cargo build --offline --target wasm32-unknown-unknown passed.
+  - generated .did remained unchanged.
+  - diff was confined to Cargo.toml, Cargo.lock, src/lib.rs, and src/hashing.rs.
