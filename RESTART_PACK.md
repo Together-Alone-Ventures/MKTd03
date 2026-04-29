@@ -1,7 +1,7 @@
 DATE: 2026-04-29
 
 CURRENT GOAL:
-S7-12 is closed and pushed after the S7-5 through S7-11 structural proof-frame line. The next implementation slice after S7-12 must be scope-planned; do not infer proof-verification semantics from S7-12.
+S7-13 is closed. The next non-implementation slice is the fmt-sweep continuity slice unless G explicitly defers it. The next implementation slice is not yet opened.
 
 IMPORTANT SCOPE RULE:
 This file is for MKTd03 protocol work only.
@@ -31,7 +31,8 @@ S7-11 landed at 0dca301 — `implementation: add S7-11 per-frame proof serializa
 S7-11 continuity close landed at b72624c — `continuity: record S7-11 close`.
 S7-12 landed at 224f84e — `implementation: add S7-12 proof envelope serialization`.
 S7-12 continuity close is recorded by this commit.
-MKTd03 main is now beyond 224f84e on the S7-12 continuity line.
+S7-13 landed at bf26d44 — `implementation: add S7-13 direction-vs-record-position-key validator`.
+MKTd03 main is now beyond `bf26d44` on the S7-13 continuity line.
 MKTd03 remains dApp-agnostic; TinyPress remains a reference target only.
 
 HASHING / SMT-FOUNDATION BLOCK SUMMARY:
@@ -81,6 +82,15 @@ S7-12 does not verify proofs, recompute roots, validate direction against record
 No `.did`, Cargo, docs/spec, fixtures, hashing/preimage/tag bytes, or public canister API changes were made in S7-12.
 
 Current library test count after S7-12: 97 tests passing.
+wasm build passes.
+
+PROOF-DIRECTION VALIDATION SUMMARY:
+
+S7-13 added structural direction-vs-record-position-key validation over an already-parsed proof envelope.
+
+S7-13 does not verify proofs, recompute roots, validate sibling contents, derive `record_position_key`, or reopen hashing/preimage/tag work.
+
+Current library test count after S7-13: 109 tests passing.
 wasm build passes.
 
 KNOWN TRACKED DEBT:
@@ -165,13 +175,13 @@ The six queued candidates remain unchanged and none blocks S7-1 implementation:
 
 NEXT BOUNDED DECISION:
 
-The next implementation slice after S7-12 must be scope-planned.
+The next non-implementation slice is the fmt-sweep continuity slice unless G explicitly defers it.
 
 This is not yet approved for implementation and must not be treated as settled continuity.
 
-Do not infer proof-verification semantics from S7-12.
+The next implementation slice is not yet opened.
 
-The first step in the next chat should be C pre-execution adversarial review of the next bounded slice.
+Do not infer proof-verification semantics from S7-13.
 
 Standing constraints to carry forward:
 - Future envelope-adjacent work must preserve the settled S7-12 envelope posture: 2-byte big-endian step count followed by exactly 256 serialized frames.
@@ -180,4 +190,4 @@ Standing constraints to carry forward:
 
 SAFE RESTART PROMPT:
 
-MKTd03 main is now on the S7-12 continuity-close line beyond source commit `224f84e`. S7-9 added `transition_material` derivation, S7-10 added wrapper-only `pre_state_commitment` / `post_state_commitment`, S7-11 added per-frame tree-proof serialization/parsing, and S7-12 added fixed-envelope proof serialization/parsing. S7-10 still does not compute roots; §6.3 remains deferred. S7-12 is structural only and must not be treated as proof verification, root recomputation, direction-vs-record-position-key validation, empty-subtree reconstruction, or hashing/preimage/tag work. No `.did`, Cargo, docs/spec, fixtures, hashing/preimage/tag bytes, or public canister API changes were made in S7-12. Current library test count is 97 passing and wasm build passes. Parallel Candid-bound and reference-runtime type-surface debt is tracked in `MILESTONE_LOG` at 523fe00 and should not be consolidated absent a concrete call site or later §11/§12 pressure. The next implementation slice after S7-12 must be scope-planned with C adversarial review first, and future review bundles must include full source file contents and full unified diffs.
+MKTd03 main is now on the S7-13 continuity-close line beyond implementation commit `bf26d44`. S7-9 added `transition_material` derivation, S7-10 added wrapper-only `pre_state_commitment` / `post_state_commitment`, S7-11 added per-frame tree-proof serialization/parsing, S7-12 added fixed-envelope proof serialization/parsing, and S7-13 added structural direction-vs-record-position-key validation over an already-parsed proof envelope. S7-13 is structural only and must not be treated as proof verification, root recomputation, sibling validation, `record_position_key` derivation, empty-subtree reconstruction, or hashing/preimage/tag work. No `.did`, Cargo, docs/spec, fixtures, hashing/preimage/tag bytes, or public canister API changes were made in S7-13. Current library test count is 109 passing and wasm build passes. Parallel Candid-bound and reference-runtime type-surface debt is tracked in `MILESTONE_LOG` at 523fe00 and should not be consolidated absent a concrete call site or later §11/§12 pressure. The next non-implementation slice is the fmt-sweep continuity slice unless G explicitly defers it; the next implementation slice is not yet opened. Future review bundles must include full source file contents and full unified diffs.

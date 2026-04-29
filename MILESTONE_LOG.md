@@ -552,3 +552,32 @@ Do not revisit:
   - Whether S7-12 triggers Candidate-3 tag-discipline/hash-preimage work — settled no; S7-12 is pure structural byte serialization/parsing.
   - Whether S7-12 changes `.did`, fixtures, specs, or Cargo dependencies — settled no.
   - Whether the envelope parser should accept trailing bytes — settled no for this slice; strict rejection is the approved posture.
+
+## 2026-04-29 -- MILESTONE: S7-13 direction-vs-record-position-key validator landed
+
+Decisions made:
+  - S7-13 direction-vs-record-position-key validator landed.
+  - Files changed: `src/proof_direction_check.rs` and `src/lib.rs` only.
+  - Implementation commit SHA: `bf26d44c893206c257fff059f151da832e8c361a`.
+  - `cargo test --offline --lib` passed: 109 tests.
+  - `cargo build --offline --target wasm32-unknown-unknown` passed.
+  - Touched-file rustfmt passed using:
+    `rustfmt --edition 2021 --check src/lib.rs src/proof_direction_check.rs`
+  - repo-wide cargo fmt --check waiver:
+    "repo-wide cargo fmt --check failed due to pre-existing drift inherited from HEAD 674f60d; touched-file rustfmt check passed; waiver granted for S7-13."
+  - inherited fmt drift tracked debt:
+    `src/adapter.rs`
+    `src/fixtures.rs`
+    `src/library.rs`
+    `src/orchestration.rs`
+    `src/tags.rs`
+    `src/verifier.rs`
+    `tests/fixtures.rs`
+  - G ruling on fmt debt:
+    "Open a dedicated fmt-sweep continuity slice after S7-13 close and before the next implementation slice unless explicitly deferred."
+  - Command nuance:
+    "`cargo fmt --check -- src/lib.rs src/proof_direction_check.rs` was not used as the touched-file gate because it still checked repo-wide formatting in this environment; direct rustfmt was used instead."
+  - Cosmetic debt, non-blocking:
+    `first_mismatch_posture_reports_earliest_frame` contains two no-op direction assignments; `error_variant_carries_exact_mismatch_details` duplicates the middle-mismatch body. Both are harmless and were not changed to avoid post-review churn.
+  - Hard exclusions respected:
+    no `.did`, `docs/spec`, `docs/test-vectors`, fixture, Cargo, public API, hashing, root recomputation, empty-subtree reconstruction, sibling validation, `record_position_key` derivation, or `canisters/mktd-store` consumption.
