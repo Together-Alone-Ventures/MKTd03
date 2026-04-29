@@ -1,12 +1,38 @@
 /// Sentinel only. Not used in any hash preimage. Exists to validate tag-discipline tests.
 pub const MKTD03_SCAFFOLD_V1: &[u8] = b"MKTD03_SCAFFOLD_V1";
+/// Protocol tag defined by the commitment/preimage spec v1.
+pub const TAG_RECORD_POSITION_KEY: &[u8] = b"MKTD03_RECORD_POSITION_KEY_V1";
+/// Protocol tag defined by the commitment/preimage spec v1.
+pub const TAG_LEAF: &[u8] = b"MKTD03_LEAF_V1";
+/// Protocol tag defined by the commitment/preimage spec v1.
+pub const TAG_INTERNAL_NODE: &[u8] = b"MKTD03_INTERNAL_NODE_V1";
+/// Protocol tag defined by the commitment/preimage spec v1.
+pub const TAG_PRE_STATE_COMMITMENT: &[u8] = b"MKTD03_PRE_STATE_COMMITMENT_V1";
+/// Protocol tag defined by the commitment/preimage spec v1.
+pub const TAG_POST_STATE_COMMITMENT: &[u8] = b"MKTD03_POST_STATE_COMMITMENT_V1";
+/// Protocol tag defined by the commitment/preimage spec v1.
+pub const TAG_TRANSITION_MATERIAL: &[u8] = b"MKTD03_TRANSITION_MATERIAL_V1";
+/// Protocol tag defined by the commitment/preimage spec v1.
+pub const TAG_CERTIFIED_COMMITMENT: &[u8] = b"MKTD03_CERTIFIED_COMMITMENT_V1";
+/// Protocol tag defined by the commitment/preimage spec v1.
+pub const TAG_RECEIPT_ID: &[u8] = b"MKTD03_RECEIPT_ID_V1";
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use std::collections::HashSet;
 
-    const ALL_TAGS: [&[u8]; 1] = [MKTD03_SCAFFOLD_V1];
+    const ALL_TAGS: [&[u8]; 9] = [
+        MKTD03_SCAFFOLD_V1,
+        TAG_RECORD_POSITION_KEY,
+        TAG_LEAF,
+        TAG_INTERNAL_NODE,
+        TAG_PRE_STATE_COMMITMENT,
+        TAG_POST_STATE_COMMITMENT,
+        TAG_TRANSITION_MATERIAL,
+        TAG_CERTIFIED_COMMITMENT,
+        TAG_RECEIPT_ID,
+    ];
 
     #[test]
     fn all_tag_constants_begin_with_mktd03_prefix() {
