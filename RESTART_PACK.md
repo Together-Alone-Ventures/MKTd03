@@ -1,7 +1,7 @@
 DATE: 2026-04-29
 
 CURRENT GOAL:
-S7-9 and S7-10 are closed and pushed after the S7-5 through S7-8 hashing / SMT-foundation block. The next likely decision point is whether to open an S7-11 tree-proof frame serialization scope for adversarial review.
+S7-11 is closed and pushed after the S7-5 through S7-10 hashing / commitment-wrapper line. The next likely bounded decision is whether to open S7-12 tree-proof envelope serialization/parsing.
 
 IMPORTANT SCOPE RULE:
 This file is for MKTd03 protocol work only.
@@ -27,7 +27,9 @@ S7-8 landed at 9866217 — `implementation: add S7-8 empty-subtree root ladder`.
 S7-9 landed at ce32acd — `implementation: add S7-9 transition_material derivation`.
 Parallel type-surface debt was logged at 523fe00 — `milestone_log: track parallel type-surface debt`.
 S7-10 landed at 4a056a6 — `implementation: add S7-10 state commitment wrappers`.
-MKTd03 main is at 4a056a6.
+S7-11 landed at 0dca301 — `implementation: add S7-11 per-frame proof serialization/parsing`.
+S7-11 continuity close landed at b72624c — `continuity: record S7-11 close`.
+MKTd03 main is at b72624c.
 MKTd03 remains dApp-agnostic; TinyPress remains a reference target only.
 
 HASHING / SMT-FOUNDATION BLOCK SUMMARY:
@@ -57,6 +59,12 @@ No `.did`, Cargo, docs/spec, fixtures, proof-frame, certified-commitment, receip
 
 Current library test count after S7-10: 67 tests passing.
 wasm build passes.
+
+PROOF-FRAME SERIALIZATION SUMMARY:
+
+S7-11 added deterministic byte-level serialization and parsing for individual tree-proof frames under §9.3–§9.5.
+
+Worktree was clean at the previous close.
 
 KNOWN TRACKED DEBT:
 
@@ -140,16 +148,17 @@ The six queued candidates remain unchanged and none blocks S7-1 implementation:
 
 NEXT BOUNDED DECISION:
 
-S7-11 is a likely candidate for §9.3–§9.5 per-frame tree-proof serialization/parsing.
+S7-12 is a likely candidate for §9.2 tree-proof envelope serialization/parsing.
 
 This is not yet approved for implementation and must not be treated as settled continuity.
 
-The first step in the next chat should be C pre-execution adversarial review of the exact S7-11 scope, especially:
-- public `Frame` type shape
-- direction encoding
-- sibling-kind handling
-- hard exclusion of proof verification / root walking
+The first step in the next chat should be C pre-execution adversarial review of the exact S7-12 scope.
+
+Standing constraints to carry forward:
+- S7-12 envelope work must compose `parse_proof_frame` over the §9.2 fixed proof envelope.
+- §9.2 envelope is 2-byte big-endian step count followed by exactly 256 serialized frames.
+- Future implementation review bundles must include full source file contents and full unified diffs, not placeholders or stats alone.
 
 SAFE RESTART PROMPT:
 
-MKTd03 main is at 4a056a6. S7-5 through S7-8 closed the pure hashing / SMT-foundation block, and S7-9 / S7-10 then added `transition_material` derivation plus wrapper-only `pre_state_commitment` / `post_state_commitment` construction. S7-10 does not compute roots; §6.3 remains deferred. No `.did`, Cargo, docs/spec, fixtures, proof-frame, certified-commitment, receipt-ID, or public canister API changes were made in S7-9/S7-10. Current library test count is 67 passing and wasm build passes. Parallel Candid-bound and reference-runtime type-surface debt is tracked in `MILESTONE_LOG` at 523fe00 and should not be consolidated absent a concrete call site or later §11/§12 pressure. The next likely decision point is whether to open an S7-11 tree-proof frame serialization/parsing scope, with C adversarial review first on `Frame` shape, direction encoding, sibling-kind handling, and strict exclusion of proof verification / root walking.
+MKTd03 main is at b72624c. S7-9 added `transition_material` derivation, S7-10 added wrapper-only `pre_state_commitment` / `post_state_commitment`, and S7-11 added per-frame tree-proof serialization/parsing. S7-10 still does not compute roots; §6.3 remains deferred. No `.did`, Cargo, docs/spec, fixtures, proof-frame envelope, certified-commitment, receipt-ID, or public canister API changes were made in S7-9/S7-11 beyond the bounded slice scopes. Current library test count remains 67 passing and wasm build passes at the recorded close. Parallel Candid-bound and reference-runtime type-surface debt is tracked in `MILESTONE_LOG` at 523fe00 and should not be consolidated absent a concrete call site or later §11/§12 pressure. The next likely bounded decision is whether to open S7-12 tree-proof envelope serialization/parsing, with C adversarial review first. Standing constraints: S7-12 must compose `parse_proof_frame` over the fixed §9.2 envelope; the envelope is 2-byte big-endian step count plus exactly 256 serialized frames; and future implementation review bundles must include full source file contents and full unified diffs.
