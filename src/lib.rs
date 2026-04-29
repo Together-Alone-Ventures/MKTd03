@@ -4,6 +4,8 @@ pub mod hashing;
 pub mod leaf_hash;
 pub mod library;
 pub mod orchestration;
+pub mod record_position;
+mod scope_encoding;
 pub mod tags;
 pub mod verifier;
 

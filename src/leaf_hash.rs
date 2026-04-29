@@ -1,4 +1,5 @@
 use crate::hashing::hash_with_tag;
+use crate::scope_encoding::{encode_scope_reference, ScopeEncodingError};
 use crate::tags::TAG_LEAF;
 
 const EMPTY_LEAF_DISCRIMINANT: [u8; 1] = [0x00];
@@ -37,17 +38,10 @@ fn trap_on_error<T>(result: Result<T, LeafHashError>) -> T {
     }
 }
 
-fn encode_scope_reference(scope_reference: Option<&[u8]>) -> Result<Vec<u8>, LeafHashError> {
-    match scope_reference {
-        None => Ok(vec![0x00]),
-        Some(bytes) if bytes.is_empty() => Err(LeafHashError::EmptyScopeReference),
-        Some(bytes) => {
-            let mut encoded = Vec::with_capacity(bytes.len() + 1);
-            encoded.push(0x01);
-            encoded.extend_from_slice(bytes);
-            Ok(encoded)
-        }
-    }
+fn encode_leaf_scope_reference(scope_reference: Option<&[u8]>) -> Result<Vec<u8>, LeafHashError> {
+    encode_scope_reference(scope_reference).map_err(|error| match error {
+        ScopeEncodingError::EmptyScopeReference => LeafHashError::EmptyScopeReference,
+    })
 }
 
 fn validate_subject_reference(subject_reference: &[u8]) -> Result<(), LeafHashError> {
@@ -72,7 +66,7 @@ fn compute_occupied_leaf(
     transition_material: &[u8; 32],
 ) -> Result<[u8; 32], LeafHashError> {
     validate_subject_reference(subject_reference)?;
-    let encoded_scope = encode_scope_reference(scope_reference)?;
+    let encoded_scope = encode_leaf_scope_reference(scope_reference)?;
     Ok(hash_with_tag(
         TAG_LEAF,
         &[
@@ -90,7 +84,7 @@ fn compute_tombstoned_leaf(
     deletion_state_material: &[u8],
 ) -> Result<[u8; 32], LeafHashError> {
     validate_subject_reference(subject_reference)?;
-    let encoded_scope = encode_scope_reference(scope_reference)?;
+    let encoded_scope = encode_leaf_scope_reference(scope_reference)?;
     validate_deletion_state_material(deletion_state_material)?;
     Ok(hash_with_tag(
         TAG_LEAF,
