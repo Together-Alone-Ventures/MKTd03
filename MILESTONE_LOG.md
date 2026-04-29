@@ -477,3 +477,26 @@ Validation evidence:
   - cargo build --offline --target wasm32-unknown-unknown passed.
   - generated .did remained unchanged.
   - diff was confined to Cargo.toml, Cargo.lock, src/lib.rs, and src/hashing.rs.
+
+## 2026-04-29 -- SESSION LESSON: parallel Candid-bound and reference-runtime type surfaces
+
+What happened:
+  - During S7-9 review, C identified that the codebase has two parallel Rust type surfaces, not merely a duplicated `SemanticVersion`.
+  - `src/lib.rs` carries the Candid/.did-bound canister-facing surface.
+  - `src/library.rs` carries the reference-runtime / fixture / receipt-side surface.
+  - Duplicated or parallel types include: `SemanticVersion`, `BuildIdentity`, `Compatibility`, `LifecycleState`, `OperationContext`, `BlockedCode`, `BlockedReason`, `StatusSurface`, `VersionInfo`, and `VersionCheckResult`.
+
+Current convention:
+  - Receipt-construction and reference-runtime code uses `crate::library::*`.
+  - `.did`-bound query/init/upgrade code uses the `crate::*` surface in `src/lib.rs`.
+  - S7-9 correctly used `crate::library::SemanticVersion` for `derive_transition_material`.
+
+Decision:
+  - Do not consolidate the type hierarchy now.
+  - Do not create speculative conversion functions without a concrete call site.
+  - Treat this as tracked architectural debt, not a blocker for proof-frame, commitment, or receipt-construction slices.
+
+Revisit trigger:
+  - Reopen type-surface consolidation if a concrete call site needs a `crate::*` Candid-bound type to flow into receipt-construction logic, or after §11/§12 receipt-construction work lands and the full duplicate-type pressure is visible.
+
+Category: implementation │ architecture-debt
