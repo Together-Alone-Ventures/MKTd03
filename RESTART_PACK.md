@@ -1,7 +1,7 @@
 DATE: 2026-04-29
 
 CURRENT GOAL:
-Hashing / SMT-foundation implementation block S7-5 through S7-8 is closed and pushed. The next bounded decision is whether S7-9 should enter commitment construction or tree-proof frame serialization work.
+S7-9 and S7-10 are closed and pushed after the S7-5 through S7-8 hashing / SMT-foundation block. The next likely decision point is whether to open an S7-11 tree-proof frame serialization scope for adversarial review.
 
 IMPORTANT SCOPE RULE:
 This file is for MKTd03 protocol work only.
@@ -24,7 +24,10 @@ S7-5 landed at f0c9493 — `implementation: add S7-5 leaf hash constructors`.
 S7-6 landed at 6b36448 — `implementation: add S7-6 record-position-key derivation`.
 S7-7 landed at af091e2 — `implementation: add S7-7 internal-node hashing`.
 S7-8 landed at 9866217 — `implementation: add S7-8 empty-subtree root ladder`.
-MKTd03 main is at 9866217.
+S7-9 landed at ce32acd — `implementation: add S7-9 transition_material derivation`.
+Parallel type-surface debt was logged at 523fe00 — `milestone_log: track parallel type-surface debt`.
+S7-10 landed at 4a056a6 — `implementation: add S7-10 state commitment wrappers`.
+MKTd03 main is at 4a056a6.
 MKTd03 remains dApp-agnostic; TinyPress remains a reference target only.
 
 HASHING / SMT-FOUNDATION BLOCK SUMMARY:
@@ -41,6 +44,25 @@ No `.did`, Cargo, docs/spec, fixtures, commitment, proof, receipt, or canister p
 
 Current library test count after S7-8: 52 tests passing.
 wasm build passes.
+
+POST-FOUNDATION HASH / COMMITMENT WRAPPER SUMMARY:
+
+S7-9 added §4.4 `transition_material` derivation, including private §4.1 `SemanticVersion` big-endian encoding.
+
+S7-10 added wrapper-only §7.2 / §8.2 `pre_state_commitment` and `post_state_commitment` functions.
+
+S7-10 deliberately does not compute roots; §6.3 root computation remains deferred.
+
+No `.did`, Cargo, docs/spec, fixtures, proof-frame, certified-commitment, receipt-ID, or public canister API changes were made in S7-9/S7-10.
+
+Current library test count after S7-10: 67 tests passing.
+wasm build passes.
+
+KNOWN TRACKED DEBT:
+
+Parallel Candid-bound and reference-runtime type surfaces are tracked in `MILESTONE_LOG` at 523fe00.
+
+Do not consolidate those type surfaces unless a concrete call site requires it, or after §11/§12 receipt-construction work makes the pressure visible.
 
 ROLE MAP:
 
@@ -118,14 +140,16 @@ The six queued candidates remain unchanged and none blocks S7-1 implementation:
 
 NEXT BOUNDED DECISION:
 
-Choose whether S7-9 should be:
-- A. transition-material / pre-state/post-state commitment construction, or
-- B. tree-proof frame serialization / validation shape.
+S7-11 is a likely candidate for §9.3–§9.5 per-frame tree-proof serialization/parsing.
 
-This decision is not yet taken and must not be treated as settled continuity.
+This is not yet approved for implementation and must not be treated as settled continuity.
 
-G's provisional preference is to ask C to review the ordering before Codex implements either option, because this is the transition from pure hash constructors into proof/commitment semantics.
+The first step in the next chat should be C pre-execution adversarial review of the exact S7-11 scope, especially:
+- public `Frame` type shape
+- direction encoding
+- sibling-kind handling
+- hard exclusion of proof verification / root walking
 
 SAFE RESTART PROMPT:
 
-MKTd03 main is at 9866217. S7-5 through S7-8 are closed and pushed, establishing the pure hashing / SMT-foundation layer: leaf hashes, record-position keys, internal-node hashes, and empty-subtree roots. These slices were source-only and did not change `.did`, Cargo, docs/spec, fixtures, commitment/proof/receipt semantics, or the canister public API. Current library test count is 52 passing and wasm build passes. The next bounded decision is whether S7-9 should enter commitment construction or tree-proof frame serialization / validation shape. G's provisional preference is to ask C to review that ordering before Codex implements either option.
+MKTd03 main is at 4a056a6. S7-5 through S7-8 closed the pure hashing / SMT-foundation block, and S7-9 / S7-10 then added `transition_material` derivation plus wrapper-only `pre_state_commitment` / `post_state_commitment` construction. S7-10 does not compute roots; §6.3 remains deferred. No `.did`, Cargo, docs/spec, fixtures, proof-frame, certified-commitment, receipt-ID, or public canister API changes were made in S7-9/S7-10. Current library test count is 67 passing and wasm build passes. Parallel Candid-bound and reference-runtime type-surface debt is tracked in `MILESTONE_LOG` at 523fe00 and should not be consolidated absent a concrete call site or later §11/§12 pressure. The next likely decision point is whether to open an S7-11 tree-proof frame serialization/parsing scope, with C adversarial review first on `Frame` shape, direction encoding, sibling-kind handling, and strict exclusion of proof verification / root walking.
