@@ -8,6 +8,7 @@ pub mod library;
 pub mod orchestration;
 pub mod record_position;
 mod scope_encoding;
+pub mod state_commitment;
 pub mod tags;
 pub mod transition_material;
 pub mod verifier;
