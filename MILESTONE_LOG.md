@@ -528,3 +528,27 @@ Do not revisit:
 Standing constraint surfaced:
   - Future S7-12 envelope work must compose `parse_proof_frame` over the §9.2 fixed proof envelope: 2-byte big-endian step count followed by exactly 256 serialized frames.
   - Future implementation review bundles must include full source file contents and full unified diffs, not placeholders or stats alone.
+
+## 2026-04-29 -- MILESTONE: S7-12 proof-envelope serialization/parsing landed
+
+Decisions made:
+  - S7-12 §9.2 proof-envelope serialization/parsing is complete and pushed at `224f84e`.
+  - Added `src/proof_envelope.rs`.
+  - Added `pub mod proof_envelope;` to `src/lib.rs`.
+  - Implemented `ProofEnvelope`, `ProofEnvelopeError`, `serialize_proof_envelope`, and strict `parse_proof_envelope`.
+  - Envelope format is a 2-byte big-endian step count, where baseline v1 requires exactly 256, followed by exactly 256 serialized proof frames.
+  - Parser posture is a strict envelope parser; trailing bytes after the 256th frame are rejected.
+  - S7-12 composes over S7-11 `serialize_proof_frame` / `parse_proof_frame`.
+  - No proof verification, root walking, root recomputation, direction-vs-record-position-key validation, empty-subtree reconstruction, deletion semantics, receipt issuance, certification/BLS, adapter behavior, fixtures, specs, Cargo changes, `.did` changes, hashing, preimage, or tag-byte work were introduced.
+
+Validation evidence:
+  - `cargo test --offline --lib` passed: 97 tests.
+  - `cargo build --offline --target wasm32-unknown-unknown` passed.
+  - No Candid-surface drift.
+
+Do not revisit:
+  - Whether S7-12 verifies Merkle proofs — settled no.
+  - Whether S7-12 computes roots or validates proof direction against record-position-key bits — settled no.
+  - Whether S7-12 triggers Candidate-3 tag-discipline/hash-preimage work — settled no; S7-12 is pure structural byte serialization/parsing.
+  - Whether S7-12 changes `.did`, fixtures, specs, or Cargo dependencies — settled no.
+  - Whether the envelope parser should accept trailing bytes — settled no for this slice; strict rejection is the approved posture.
