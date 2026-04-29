@@ -6,6 +6,7 @@ pub mod internal_node;
 pub mod leaf_hash;
 pub mod library;
 pub mod orchestration;
+pub mod proof_envelope;
 pub mod proof_frame;
 pub mod record_position;
 mod scope_encoding;
