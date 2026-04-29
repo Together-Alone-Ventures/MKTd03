@@ -145,7 +145,8 @@ pub struct ReferenceAdapterRuntime {
     pub selected_status_fixture_id: Option<String>,
     pub capability_error_fixtures: BTreeMap<String, AdapterError>,
     pub selected_capability_error_fixture_id: Option<String>,
-    resolve_subject_scope_outcomes: BTreeMap<ResolveSubjectScopeKey, ResolveSubjectScopeFixtureOutcome>,
+    resolve_subject_scope_outcomes:
+        BTreeMap<ResolveSubjectScopeKey, ResolveSubjectScopeFixtureOutcome>,
     capture_pre_state_errors: BTreeMap<SubjectScopeKey, AdapterError>,
     capture_post_state_errors: BTreeMap<SubjectScopeKey, AdapterError>,
     transition_mutation_error_fixtures: BTreeMap<String, (TransitionMutationKey, AdapterError)>,
@@ -204,7 +205,10 @@ pub fn validate_adapter_status_facts(
     }
 
     if matches!(
-        status_facts.blocked_reason.as_ref().map(|reason| &reason.code),
+        status_facts
+            .blocked_reason
+            .as_ref()
+            .map(|reason| &reason.code),
         Some(AdapterBlockedReasonCode::RebuildRequired)
     ) && !status_facts.is_blocked
     {
@@ -420,7 +424,10 @@ impl ReferenceAdapterRuntime {
         fixture_id: impl Into<String>,
     ) -> Result<(), ReferenceAdapterRuntimeError> {
         let fixture_id = fixture_id.into();
-        if self.transition_mutation_error_fixtures.contains_key(&fixture_id) {
+        if self
+            .transition_mutation_error_fixtures
+            .contains_key(&fixture_id)
+        {
             self.selected_transition_mutation_fixture_id = Some(fixture_id);
             Ok(())
         } else {
@@ -457,11 +464,9 @@ impl ReferenceAdapterRuntime {
         let key = subject_scope_key(subject_scope);
         Ok(match self.capture_pre_state_errors.get(&key) {
             Some(error) => AdapterResult::Err(error.clone()),
-            None => {
-                return Err(ReferenceAdapterRuntimeError::MissingConfiguration(
-                    "no fixture-backed pre-state capture success path or matching error is configured",
-                ))
-            }
+            None => return Err(ReferenceAdapterRuntimeError::MissingConfiguration(
+                "no fixture-backed pre-state capture success path or matching error is configured",
+            )),
         })
     }
 
@@ -472,11 +477,9 @@ impl ReferenceAdapterRuntime {
         let key = subject_scope_key(subject_scope);
         Ok(match self.capture_post_state_errors.get(&key) {
             Some(error) => AdapterResult::Err(error.clone()),
-            None => {
-                return Err(ReferenceAdapterRuntimeError::MissingConfiguration(
-                    "no fixture-backed post-state capture success path or matching error is configured",
-                ))
-            }
+            None => return Err(ReferenceAdapterRuntimeError::MissingConfiguration(
+                "no fixture-backed post-state capture success path or matching error is configured",
+            )),
         })
     }
 
@@ -596,7 +599,11 @@ fn parse_transition_mutation_key(
 
     Ok(TransitionMutationKey {
         subject_scope: SubjectScopeKey {
-            subject_reference: method_args.subject_scope.subject_reference.as_bytes().to_vec(),
+            subject_reference: method_args
+                .subject_scope
+                .subject_reference
+                .as_bytes()
+                .to_vec(),
             scope_reference: method_args
                 .subject_scope
                 .scope_reference

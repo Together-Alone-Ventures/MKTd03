@@ -14,9 +14,7 @@ use mktd03::library::{
     EvidenceReadiness, LifecycleState, ReceiptError, ReferenceLibraryRuntime, SemanticVersion,
     StatusSurface, VersionCheckResult,
 };
-use mktd03::orchestration::{
-    ReferenceBoundaryEvaluation, ReferenceOrchestrator,
-};
+use mktd03::orchestration::{ReferenceBoundaryEvaluation, ReferenceOrchestrator};
 use mktd03::verifier::{validate_fixture_receipt_semantics, VerificationFailure};
 use std::fs;
 use std::path::Path;
@@ -26,15 +24,17 @@ use std::time::{SystemTime, UNIX_EPOCH};
 fn fixture_index_loads() {
     let index_path = Path::new("docs/test-vectors/fixtures/index.json");
     let index = load_fixture_index(index_path).expect("fixture index should parse");
-    assert!(!index.entries.is_empty(), "fixture index should not be empty");
+    assert!(
+        !index.entries.is_empty(),
+        "fixture index should not be empty"
+    );
 }
 
 #[test]
 fn fixture_entries_are_discoverable_and_parseable() {
     let index_path = Path::new("docs/test-vectors/fixtures/index.json");
     let fixture_base_dir = index_path.parent().expect("index path should have parent");
-    let index = load_fixture_index(index_path)
-        .expect("fixture index should parse");
+    let index = load_fixture_index(index_path).expect("fixture index should parse");
 
     for entry in &index.entries {
         let full_path = validate_index_entry(fixture_base_dir, entry)
@@ -52,8 +52,7 @@ fn fixture_entries_are_discoverable_and_parseable() {
 fn fixture_metadata_shape_matches_manifest_conventions() {
     let index_path = Path::new("docs/test-vectors/fixtures/index.json");
     let fixture_base_dir = index_path.parent().expect("index path should have parent");
-    let index = load_fixture_index(index_path)
-        .expect("fixture index should parse");
+    let index = load_fixture_index(index_path).expect("fixture index should parse");
 
     for entry in &index.entries {
         let full_path = validate_index_entry(fixture_base_dir, entry)
@@ -87,7 +86,9 @@ fn fixture_metadata_shape_matches_manifest_conventions() {
             | (FixtureSurface::Adapter, FixturePolarity::Positive)
             | (FixtureSurface::Adapter, FixturePolarity::Negative)
             | (FixtureSurface::Verifier, FixturePolarity::Negative) => {}
-            unsupported => panic!("unexpected fixture surface/polarity combination: {unsupported:?}"),
+            unsupported => {
+                panic!("unexpected fixture surface/polarity combination: {unsupported:?}")
+            }
         }
     }
 }
@@ -96,8 +97,7 @@ fn fixture_metadata_shape_matches_manifest_conventions() {
 fn fixture_files_parse_into_typed_families() {
     let index_path = Path::new("docs/test-vectors/fixtures/index.json");
     let fixture_base_dir = index_path.parent().expect("index path should have parent");
-    let index = load_fixture_index(index_path)
-        .expect("fixture index should parse");
+    let index = load_fixture_index(index_path).expect("fixture index should parse");
 
     for entry in &index.entries {
         let full_path = validate_index_entry(fixture_base_dir, entry)
@@ -123,8 +123,7 @@ fn fixture_files_parse_into_typed_families() {
 fn typed_fixture_parsing_enforces_current_invariants() {
     let index_path = Path::new("docs/test-vectors/fixtures/index.json");
     let fixture_base_dir = index_path.parent().expect("index path should have parent");
-    let index = load_fixture_index(index_path)
-        .expect("fixture index should parse");
+    let index = load_fixture_index(index_path).expect("fixture index should parse");
 
     let mut saw_verifier = false;
     let mut saw_adapter_blocked = false;
@@ -134,7 +133,8 @@ fn typed_fixture_parsing_enforces_current_invariants() {
     for entry in &index.entries {
         let full_path = validate_index_entry(fixture_base_dir, entry)
             .expect("fixture index entry should be valid");
-        let typed = load_typed_fixture(&full_path).expect("fixture should satisfy typed invariants");
+        let typed =
+            load_typed_fixture(&full_path).expect("fixture should satisfy typed invariants");
 
         match typed.case {
             TypedFixtureCase::LibraryPositiveStatus(fixture) => {
@@ -159,7 +159,9 @@ fn typed_fixture_parsing_enforces_current_invariants() {
                     | ReceiptError::NotFound
                     | ReceiptError::NotYetIssued => {}
                     ReceiptError::InvalidSubjectReference => {
-                        panic!("current fixture set should not parse invalid_subject_reference here")
+                        panic!(
+                            "current fixture set should not parse invalid_subject_reference here"
+                        )
                     }
                 }
             }
@@ -182,14 +184,19 @@ fn typed_fixture_parsing_enforces_current_invariants() {
                     .code
                 {
                     BlockedCode::OperatorHold | BlockedCode::InitialisationIncomplete => {}
-                    other => panic!("unexpected blocked status code in current fixture set: {other:?}"),
+                    other => {
+                        panic!("unexpected blocked status code in current fixture set: {other:?}")
+                    }
                 }
             }
             TypedFixtureCase::VerifierNegativeReceipt(fixture) => {
                 saw_verifier = true;
                 assert_eq!(fixture.expected.primary_class, "invalid_evidence");
                 assert!(fixture.expected.must_fail_loud);
-                assert_eq!(fixture.expected.validation_outcome, "reject_receipt_artifact");
+                assert_eq!(
+                    fixture.expected.validation_outcome,
+                    "reject_receipt_artifact"
+                );
             }
             TypedFixtureCase::AdapterPositiveSubjectScopeResolution(fixture) => {
                 assert_eq!(fixture.expected.result_variant, "ok");
@@ -231,7 +238,10 @@ fn typed_fixture_parsing_enforces_current_invariants() {
         }
     }
 
-    assert!(saw_verifier, "current fixture set should include verifier fixtures");
+    assert!(
+        saw_verifier,
+        "current fixture set should include verifier fixtures"
+    );
     assert!(
         saw_adapter_blocked,
         "current fixture set should include adapter blocked-boundary fixtures"
@@ -250,8 +260,7 @@ fn typed_fixture_parsing_enforces_current_invariants() {
 fn verifier_fixture_semantics_are_executed_without_claiming_tree_proof_validation() {
     let index_path = Path::new("docs/test-vectors/fixtures/index.json");
     let fixture_base_dir = index_path.parent().expect("index path should have parent");
-    let index = load_fixture_index(index_path)
-        .expect("fixture index should parse");
+    let index = load_fixture_index(index_path).expect("fixture index should parse");
 
     let mut saw_deferred_wrong_tree_proof = false;
     let mut saw_malformed_certification = false;
@@ -265,7 +274,8 @@ fn verifier_fixture_semantics_are_executed_without_claiming_tree_proof_validatio
 
         let full_path = validate_index_entry(fixture_base_dir, entry)
             .expect("fixture index entry should be valid");
-        let typed = load_typed_fixture(&full_path).expect("fixture should satisfy typed invariants");
+        let typed =
+            load_typed_fixture(&full_path).expect("fixture should satisfy typed invariants");
 
         let TypedFixtureCase::VerifierNegativeReceipt(fixture) = typed.case else {
             panic!("verifier entry should parse as verifier negative receipt fixture");
@@ -379,8 +389,7 @@ fn library_semantic_helpers_cover_version_status_and_readiness_rules() {
 fn status_fixture_semantics_round_trip_through_library_helpers() {
     let index_path = Path::new("docs/test-vectors/fixtures/index.json");
     let fixture_base_dir = index_path.parent().expect("index path should have parent");
-    let index = load_fixture_index(index_path)
-        .expect("fixture index should parse");
+    let index = load_fixture_index(index_path).expect("fixture index should parse");
 
     let mut checked_status_fixture = false;
 
@@ -391,7 +400,8 @@ fn status_fixture_semantics_round_trip_through_library_helpers() {
 
         let full_path = validate_index_entry(fixture_base_dir, entry)
             .expect("fixture index entry should be valid");
-        let typed = load_typed_fixture(&full_path).expect("fixture should satisfy typed invariants");
+        let typed =
+            load_typed_fixture(&full_path).expect("fixture should satisfy typed invariants");
 
         let status_fixture = match typed.case {
             TypedFixtureCase::LibraryPositiveStatus(fixture)
@@ -404,13 +414,17 @@ fn status_fixture_semantics_round_trip_through_library_helpers() {
         checked_status_fixture = true;
     }
 
-    assert!(checked_status_fixture, "expected to check at least one status fixture");
+    assert!(
+        checked_status_fixture,
+        "expected to check at least one status fixture"
+    );
 }
 
 #[test]
 fn reference_library_runtime_answers_version_status_and_readiness_from_library_fixtures() {
-    let mut runtime = ReferenceLibraryRuntime::from_fixture_index("docs/test-vectors/fixtures/index.json")
-        .expect("reference runtime should load from fixture index");
+    let mut runtime =
+        ReferenceLibraryRuntime::from_fixture_index("docs/test-vectors/fixtures/index.json")
+            .expect("reference runtime should load from fixture index");
 
     let version_info = runtime.get_version_info();
     assert_eq!(
@@ -445,7 +459,9 @@ fn reference_library_runtime_answers_version_status_and_readiness_from_library_f
         other => panic!("expected unsupported version from reference runtime, got {other:?}"),
     }
 
-    let ready_status = runtime.get_status().expect("default status fixture should be configured");
+    let ready_status = runtime
+        .get_status()
+        .expect("default status fixture should be configured");
     assert!(!ready_status.is_blocked);
     assert_eq!(ready_status.lifecycle_state, LifecycleState::Ready);
 
@@ -488,8 +504,9 @@ fn reference_library_runtime_answers_version_status_and_readiness_from_library_f
 
 #[test]
 fn reference_library_runtime_receipt_lookup_stays_on_retrieval_surface_only() {
-    let runtime = ReferenceLibraryRuntime::from_fixture_index("docs/test-vectors/fixtures/index.json")
-        .expect("reference runtime should load from fixture index");
+    let runtime =
+        ReferenceLibraryRuntime::from_fixture_index("docs/test-vectors/fixtures/index.json")
+            .expect("reference runtime should load from fixture index");
 
     let subject = b"SUBJECT_REFERENCE_PLACEHOLDER".to_vec();
     let receipt_result = runtime
@@ -625,7 +642,10 @@ fn adapter_reference_runtime_surfaces_current_negative_taxonomy_only() {
     let unsupported_scope_result = runtime
         .resolve_subject_scope(&unsupported_scope_request)
         .expect("scope_not_supported fixture should be configured");
-    assert_adapter_error_code(unsupported_scope_result, AdapterErrorCode::ScopeNotSupported);
+    assert_adapter_error_code(
+        unsupported_scope_result,
+        AdapterErrorCode::ScopeNotSupported,
+    );
 
     let subject_not_found_request = SubjectScopeRequest {
         request_material: b"SUBJECT_LOOKUP_REQUEST_PLACEHOLDER".to_vec(),
@@ -640,7 +660,8 @@ fn adapter_reference_runtime_surfaces_current_negative_taxonomy_only() {
         request_material: b"SUBJECT_LOOKUP_REQUEST_PLACEHOLDER".to_vec(),
         operation_context_material: None,
     };
-    let mismatched_subject_lookup_result = runtime.resolve_subject_scope(&mismatched_subject_lookup_request);
+    let mismatched_subject_lookup_result =
+        runtime.resolve_subject_scope(&mismatched_subject_lookup_request);
     assert!(matches!(
         mismatched_subject_lookup_result,
         Err(ReferenceAdapterRuntimeError::MissingConfiguration(
@@ -656,12 +677,18 @@ fn adapter_reference_runtime_surfaces_current_negative_taxonomy_only() {
     let pre_state_result = runtime
         .capture_pre_state(&subject_scope)
         .expect("pre_state_capture_unavailable fixture should be configured");
-    assert_adapter_error_code(pre_state_result, AdapterErrorCode::PreStateCaptureUnavailable);
+    assert_adapter_error_code(
+        pre_state_result,
+        AdapterErrorCode::PreStateCaptureUnavailable,
+    );
 
     let post_state_result = runtime
         .capture_post_state(&subject_scope)
         .expect("post_state_capture_unavailable fixture should be configured");
-    assert_adapter_error_code(post_state_result, AdapterErrorCode::PostStateCaptureUnavailable);
+    assert_adapter_error_code(
+        post_state_result,
+        AdapterErrorCode::PostStateCaptureUnavailable,
+    );
 
     let stale_precondition_request = TransitionMutationRequest {
         subject_scope: subject_scope.clone(),
@@ -671,14 +698,18 @@ fn adapter_reference_runtime_surfaces_current_negative_taxonomy_only() {
     let stale_precondition_result = runtime
         .execute_transition_mutation(&stale_precondition_request)
         .expect("stale_precondition fixture should be configured");
-    assert_adapter_error_code(stale_precondition_result, AdapterErrorCode::StalePrecondition);
+    assert_adapter_error_code(
+        stale_precondition_result,
+        AdapterErrorCode::StalePrecondition,
+    );
 
     runtime.clear_transition_mutation_fixture();
-    let ambiguous_transition_result = runtime.execute_transition_mutation(&TransitionMutationRequest {
-        subject_scope: subject_scope.clone(),
-        mutation_material: b"MUTATION_MATERIAL_PLACEHOLDER".to_vec(),
-        operation_context_material: Some(b"BOUNDARY_CONTEXT_PLACEHOLDER".to_vec()),
-    });
+    let ambiguous_transition_result =
+        runtime.execute_transition_mutation(&TransitionMutationRequest {
+            subject_scope: subject_scope.clone(),
+            mutation_material: b"MUTATION_MATERIAL_PLACEHOLDER".to_vec(),
+            operation_context_material: Some(b"BOUNDARY_CONTEXT_PLACEHOLDER".to_vec()),
+        });
     assert!(matches!(
         ambiguous_transition_result,
         Err(ReferenceAdapterRuntimeError::MissingConfiguration(
@@ -705,7 +736,9 @@ fn adapter_reference_runtime_surfaces_current_negative_taxonomy_only() {
     );
 
     runtime
-        .select_transition_mutation_fixture("mktd03_adapter_negative_internal_adapter_failure_01_v1")
+        .select_transition_mutation_fixture(
+            "mktd03_adapter_negative_internal_adapter_failure_01_v1",
+        )
         .expect("internal_adapter_failure fixture should exist");
     let internal_failure_request = TransitionMutationRequest {
         subject_scope,
@@ -747,7 +780,9 @@ fn adapter_reference_runtime_surfaces_fixture_backed_positive_resolve_success() 
                 Some(b"SCOPE_REFERENCE_PLACEHOLDER".to_vec())
             );
         }
-        AdapterResult::Err(error) => panic!("expected positive resolve fixture result, got {error:?}"),
+        AdapterResult::Err(error) => {
+            panic!("expected positive resolve fixture result, got {error:?}")
+        }
     }
 }
 
@@ -761,7 +796,8 @@ fn adapter_reference_runtime_rejects_duplicate_automatic_lookup_keys() {
         duplicated_resolve
             .iter()
             .find(|fixture| {
-                fixture.envelope.fixture_id == "mktd03_adapter_negative_invalid_request_material_01_v1"
+                fixture.envelope.fixture_id
+                    == "mktd03_adapter_negative_invalid_request_material_01_v1"
             })
             .expect("resolve fixture should exist"),
         "mktd03_adapter_negative_invalid_request_material_duplicate_01_v1",
@@ -806,8 +842,7 @@ fn adapter_reference_runtime_rejects_duplicate_automatic_lookup_keys() {
         })
         .expect("blocked status fixture should exist")
         .clone();
-    duplicated_status_fixture.envelope.input_summary =
-        serde_json::json!({ "method_args": [], "semantic_context": "Duplicated status fixture id for collision testing." });
+    duplicated_status_fixture.envelope.input_summary = serde_json::json!({ "method_args": [], "semantic_context": "Duplicated status fixture id for collision testing." });
     duplicated_status_fixture_id.push(duplicated_status_fixture);
     let duplicated_status_result = ReferenceAdapterRuntime::from_typed_fixtures(
         &duplicated_status_fixture_id,
@@ -921,8 +956,9 @@ fn adapter_reference_runtime_rejects_inconsistent_contract_versions() {
 
 #[test]
 fn reference_orchestrator_stops_at_blocked_adapter_boundary() {
-    let library = ReferenceLibraryRuntime::from_fixture_index("docs/test-vectors/fixtures/index.json")
-        .expect("library reference runtime should load from fixture index");
+    let library =
+        ReferenceLibraryRuntime::from_fixture_index("docs/test-vectors/fixtures/index.json")
+            .expect("library reference runtime should load from fixture index");
     let adapter = ReferenceAdapterRuntime::from_fixture_index(
         "docs/test-vectors/fixtures/index.json",
         vec![
@@ -967,8 +1003,9 @@ fn reference_orchestrator_stops_at_blocked_adapter_boundary() {
 
 #[test]
 fn reference_orchestrator_propagates_capability_report_error() {
-    let library = ReferenceLibraryRuntime::from_fixture_index("docs/test-vectors/fixtures/index.json")
-        .expect("library reference runtime should load from fixture index");
+    let library =
+        ReferenceLibraryRuntime::from_fixture_index("docs/test-vectors/fixtures/index.json")
+            .expect("library reference runtime should load from fixture index");
     let mut adapter = build_unblocked_adapter_runtime(vec![
         AdapterCapability::SubjectScopeResolution,
         AdapterCapability::PreStateCapture,
@@ -1006,8 +1043,9 @@ fn reference_orchestrator_propagates_capability_report_error() {
 
 #[test]
 fn reference_orchestrator_reports_missing_required_capability() {
-    let library = ReferenceLibraryRuntime::from_fixture_index("docs/test-vectors/fixtures/index.json")
-        .expect("library reference runtime should load from fixture index");
+    let library =
+        ReferenceLibraryRuntime::from_fixture_index("docs/test-vectors/fixtures/index.json")
+            .expect("library reference runtime should load from fixture index");
     let adapter = build_unblocked_adapter_runtime(vec![
         AdapterCapability::SubjectScopeResolution,
         AdapterCapability::StatusFacts,
@@ -1226,9 +1264,8 @@ fn typed_fixture_loading_from_index_is_relative_to_index_parent() {
 
     let fixture_source =
         Path::new("docs/test-vectors/fixtures/library/positive/mktd03_library_positive_status_ready_minimal_01_v1.json");
-    let fixture_target = fixture_dir.join(
-        "mktd03_library_positive_status_ready_minimal_01_v1.json",
-    );
+    let fixture_target =
+        fixture_dir.join("mktd03_library_positive_status_ready_minimal_01_v1.json");
     fs::copy(fixture_source, &fixture_target).expect("sample fixture should be copied");
 
     let index_path = nested_dir.join("index.json");

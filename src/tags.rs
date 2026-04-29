@@ -37,7 +37,10 @@ mod tests {
     #[test]
     fn all_tag_constants_begin_with_mktd03_prefix() {
         for tag in ALL_TAGS {
-            assert!(tag.starts_with(b"MKTD03_"), "tag missing MKTD03_ prefix: {tag:?}");
+            assert!(
+                tag.starts_with(b"MKTD03_"),
+                "tag missing MKTD03_ prefix: {tag:?}"
+            );
         }
     }
 

@@ -1,7 +1,5 @@
 use crate::fixtures::{FixtureReceipt, VerifierReceiptFixture};
-use crate::library::{
-    CertificationProvenancePosture, CertificationProvenanceRoute, Receipt,
-};
+use crate::library::{CertificationProvenancePosture, CertificationProvenanceRoute, Receipt};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum VerificationFailure {

@@ -724,8 +724,8 @@ mod tests {
 
     #[test]
     fn check_version_support_returns_supported_for_exact_protocol_version() {
-        let result =
-            check_protocol_version_support(PROTOCOL_VERSION.clone()).expect("exact version supported");
+        let result = check_protocol_version_support(PROTOCOL_VERSION.clone())
+            .expect("exact version supported");
 
         assert_eq!(
             result,

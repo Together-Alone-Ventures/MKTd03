@@ -357,7 +357,10 @@ pub fn load_all_typed_fixtures_from_index(
     Ok(documents)
 }
 
-pub fn validate_fixture_envelope(path: &Path, fixture: &FixtureEnvelope) -> Result<(), FixtureError> {
+pub fn validate_fixture_envelope(
+    path: &Path,
+    fixture: &FixtureEnvelope,
+) -> Result<(), FixtureError> {
     if fixture.authority_refs.is_empty() {
         return Err(FixtureError::Validation(format!(
             "{} has no authority_refs",
@@ -373,7 +376,9 @@ pub fn validate_fixture_envelope(path: &Path, fixture: &FixtureEnvelope) -> Resu
     let stem = path
         .file_stem()
         .and_then(|value| value.to_str())
-        .ok_or_else(|| FixtureError::Validation(format!("{} has invalid filename", path.display())))?;
+        .ok_or_else(|| {
+            FixtureError::Validation(format!("{} has invalid filename", path.display()))
+        })?;
     if fixture.fixture_id != stem {
         return Err(FixtureError::Validation(format!(
             "{} fixture_id {} does not match filename stem {}",
@@ -386,7 +391,10 @@ pub fn validate_fixture_envelope(path: &Path, fixture: &FixtureEnvelope) -> Resu
     Ok(())
 }
 
-pub fn validate_index_entry(base_dir: &Path, entry: &FixtureIndexEntry) -> Result<PathBuf, FixtureError> {
+pub fn validate_index_entry(
+    base_dir: &Path,
+    entry: &FixtureIndexEntry,
+) -> Result<PathBuf, FixtureError> {
     let full_path = base_dir.join(&entry.filename);
     if !full_path.exists() {
         return Err(FixtureError::Validation(format!(
@@ -404,8 +412,15 @@ pub fn validate_index_entry(base_dir: &Path, entry: &FixtureIndexEntry) -> Resul
     Ok(full_path)
 }
 
-fn parse_typed_case(path: &Path, envelope: &FixtureEnvelope) -> Result<TypedFixtureCase, FixtureError> {
-    match (&envelope.surface, &envelope.polarity, envelope.family.as_str()) {
+fn parse_typed_case(
+    path: &Path,
+    envelope: &FixtureEnvelope,
+) -> Result<TypedFixtureCase, FixtureError> {
+    match (
+        &envelope.surface,
+        &envelope.polarity,
+        envelope.family.as_str(),
+    ) {
         (FixtureSurface::Library, FixturePolarity::Positive, "status") => {
             let input = parse_input_summary::<GenericInputSummary>(path, envelope)?;
             let expected = parse_expected_outcome::<LibraryStatusExpectedOutcome>(path, envelope)?;
@@ -415,30 +430,53 @@ fn parse_typed_case(path: &Path, envelope: &FixtureEnvelope) -> Result<TypedFixt
                 path,
                 "positive status fixture must target get_status",
             )?;
-            require(expected.result_variant == "status_surface", path, "positive status fixture must use result_variant status_surface")?;
-            require(expected.primary_class == "ready", path, "positive status fixture must use primary_class ready")?;
-            require(!expected.status_surface.is_blocked, path, "positive status fixture must not be blocked")?;
+            require(
+                expected.result_variant == "status_surface",
+                path,
+                "positive status fixture must use result_variant status_surface",
+            )?;
+            require(
+                expected.primary_class == "ready",
+                path,
+                "positive status fixture must use primary_class ready",
+            )?;
+            require(
+                !expected.status_surface.is_blocked,
+                path,
+                "positive status fixture must not be blocked",
+            )?;
             ensure_exact_keys(
                 path,
                 &envelope.expected_outcome,
                 &["result_variant", "primary_class", "status_surface"],
                 "positive status fixture must use the status-surface shape only",
             )?;
-            Ok(TypedFixtureCase::LibraryPositiveStatus(LibraryStatusFixture {
-                semantic_context: input.semantic_context,
-                expected,
-            }))
+            Ok(TypedFixtureCase::LibraryPositiveStatus(
+                LibraryStatusFixture {
+                    semantic_context: input.semantic_context,
+                    expected,
+                },
+            ))
         }
         (FixtureSurface::Library, FixturePolarity::Positive, "receipt") => {
             let input = parse_input_summary::<GenericInputSummary>(path, envelope)?;
-            let expected = parse_expected_outcome::<LibraryPositiveReceiptExpectedOutcome>(path, envelope)?;
+            let expected =
+                parse_expected_outcome::<LibraryPositiveReceiptExpectedOutcome>(path, envelope)?;
             require(
                 envelope.target_method == "get_receipt",
                 path,
                 "positive receipt fixture must target get_receipt",
             )?;
-            require(expected.result_variant == "ok", path, "positive receipt fixture must return ok")?;
-            require(expected.primary_class == "receipt_returned", path, "positive receipt fixture must use primary_class receipt_returned")?;
+            require(
+                expected.result_variant == "ok",
+                path,
+                "positive receipt fixture must return ok",
+            )?;
+            require(
+                expected.primary_class == "receipt_returned",
+                path,
+                "positive receipt fixture must use primary_class receipt_returned",
+            )?;
             require(
                 certification_shape_is_consistent(&expected.receipt.certification_provenance),
                 path,
@@ -450,44 +488,66 @@ fn parse_typed_case(path: &Path, envelope: &FixtureEnvelope) -> Result<TypedFixt
                 &["result_variant", "primary_class", "receipt"],
                 "positive receipt fixture must remain a receipt-return fixture and must not masquerade as verifier invalidity",
             )?;
-            Ok(TypedFixtureCase::LibraryPositiveReceipt(LibraryPositiveReceiptFixture {
-                semantic_context: input.semantic_context,
-                expected,
-            }))
+            Ok(TypedFixtureCase::LibraryPositiveReceipt(
+                LibraryPositiveReceiptFixture {
+                    semantic_context: input.semantic_context,
+                    expected,
+                },
+            ))
         }
         (FixtureSurface::Library, FixturePolarity::Positive, "version_support") => {
             let input = parse_input_summary::<GenericInputSummary>(path, envelope)?;
-            let expected = parse_expected_outcome::<LibraryVersionSupportExpectedOutcome>(path, envelope)?;
+            let expected =
+                parse_expected_outcome::<LibraryVersionSupportExpectedOutcome>(path, envelope)?;
             require(
                 envelope.target_method == "check_version_support",
                 path,
                 "positive version support fixture must target check_version_support",
             )?;
-            require(expected.result_variant == "supported", path, "positive version support fixture must return supported")?;
-            require(expected.primary_class == "supported", path, "positive version support fixture must use primary_class supported")?;
+            require(
+                expected.result_variant == "supported",
+                path,
+                "positive version support fixture must return supported",
+            )?;
+            require(
+                expected.primary_class == "supported",
+                path,
+                "positive version support fixture must use primary_class supported",
+            )?;
             ensure_exact_keys(
                 path,
                 &envelope.expected_outcome,
                 &["result_variant", "primary_class", "version_info"],
                 "positive version support fixture must use the version-info shape only",
             )?;
-            Ok(TypedFixtureCase::LibraryPositiveVersionSupport(LibraryVersionSupportFixture {
-                semantic_context: input.semantic_context,
-                expected,
-            }))
+            Ok(TypedFixtureCase::LibraryPositiveVersionSupport(
+                LibraryVersionSupportFixture {
+                    semantic_context: input.semantic_context,
+                    expected,
+                },
+            ))
         }
         (FixtureSurface::Library, FixturePolarity::Negative, "unsupported_version")
         | (FixtureSurface::Library, FixturePolarity::Negative, "not_found")
         | (FixtureSurface::Library, FixturePolarity::Negative, "not_yet_issued") => {
             let input = parse_input_summary::<GenericInputSummary>(path, envelope)?;
-            let expected = parse_expected_outcome::<LibraryReceiptErrorExpectedOutcome>(path, envelope)?;
+            let expected =
+                parse_expected_outcome::<LibraryReceiptErrorExpectedOutcome>(path, envelope)?;
             require(
                 envelope.target_method == "get_receipt",
                 path,
                 "library retrieval negative fixture must target get_receipt",
             )?;
-            require(expected.result_variant == "err", path, "library retrieval negative fixture must return err")?;
-            require(expected.must_fail_loud, path, "library retrieval negative fixture must fail loud")?;
+            require(
+                expected.result_variant == "err",
+                path,
+                "library retrieval negative fixture must return err",
+            )?;
+            require(
+                expected.must_fail_loud,
+                path,
+                "library retrieval negative fixture must fail loud",
+            )?;
             require(
                 matches!(
                     expected.error_code,
@@ -509,10 +569,12 @@ fn parse_typed_case(path: &Path, envelope: &FixtureEnvelope) -> Result<TypedFixt
                 &["result_variant", "primary_class", "error_code", "must_fail_loud"],
                 "library retrieval negative fixture must stay on the retrieval-result surface and must not masquerade as verifier invalidity",
             )?;
-            Ok(TypedFixtureCase::LibraryNegativeReceiptError(LibraryReceiptErrorFixture {
-                semantic_context: input.semantic_context,
-                expected,
-            }))
+            Ok(TypedFixtureCase::LibraryNegativeReceiptError(
+                LibraryReceiptErrorFixture {
+                    semantic_context: input.semantic_context,
+                    expected,
+                },
+            ))
         }
         (FixtureSurface::Library, FixturePolarity::Negative, "blocked_status") => {
             let input = parse_input_summary::<GenericInputSummary>(path, envelope)?;
@@ -523,24 +585,39 @@ fn parse_typed_case(path: &Path, envelope: &FixtureEnvelope) -> Result<TypedFixt
                 path,
                 "blocked status fixture must target get_status",
             )?;
-            require(expected.result_variant == "status_surface", path, "blocked status fixture must use result_variant status_surface")?;
-            require(expected.primary_class == "blocked_status", path, "blocked status fixture must use primary_class blocked_status")?;
-            require(expected.status_surface.is_blocked, path, "blocked status fixture must have is_blocked true")?;
+            require(
+                expected.result_variant == "status_surface",
+                path,
+                "blocked status fixture must use result_variant status_surface",
+            )?;
+            require(
+                expected.primary_class == "blocked_status",
+                path,
+                "blocked status fixture must use primary_class blocked_status",
+            )?;
+            require(
+                expected.status_surface.is_blocked,
+                path,
+                "blocked status fixture must have is_blocked true",
+            )?;
             ensure_exact_keys(
                 path,
                 &envelope.expected_outcome,
                 &["result_variant", "primary_class", "status_surface"],
                 "blocked status fixture must use the status-surface shape only",
             )?;
-            Ok(TypedFixtureCase::LibraryNegativeBlockedStatus(LibraryStatusFixture {
-                semantic_context: input.semantic_context,
-                expected,
-            }))
+            Ok(TypedFixtureCase::LibraryNegativeBlockedStatus(
+                LibraryStatusFixture {
+                    semantic_context: input.semantic_context,
+                    expected,
+                },
+            ))
         }
         (FixtureSurface::Library, FixturePolarity::Negative, "rebuild_required")
         | (FixtureSurface::Library, FixturePolarity::Negative, "not_evidence_ready") => {
             let input = parse_input_summary::<GenericInputSummary>(path, envelope)?;
-            let expected = parse_expected_outcome::<LibraryEvidenceReadinessExpectedOutcome>(path, envelope)?;
+            let expected =
+                parse_expected_outcome::<LibraryEvidenceReadinessExpectedOutcome>(path, envelope)?;
             require(
                 envelope.target_method == "get_evidence_readiness",
                 path,
@@ -562,13 +639,18 @@ fn parse_typed_case(path: &Path, envelope: &FixtureEnvelope) -> Result<TypedFixt
         }
         (FixtureSurface::Verifier, FixturePolarity::Negative, "wrong_tree_proof")
         | (FixtureSurface::Verifier, FixturePolarity::Negative, "wrong_commitment_relationship")
-        | (FixtureSurface::Verifier, FixturePolarity::Negative, "malformed_certification_provenance")
+        | (
+            FixtureSurface::Verifier,
+            FixturePolarity::Negative,
+            "malformed_certification_provenance",
+        )
         | (
             FixtureSurface::Verifier,
             FixturePolarity::Negative,
             "missing_transition_derivation_version",
         )
-        | (FixtureSurface::Verifier, FixturePolarity::Negative, "receipt_subject_scope_mismatch") => {
+        | (FixtureSurface::Verifier, FixturePolarity::Negative, "receipt_subject_scope_mismatch") =>
+        {
             require(
                 envelope.target_method == "receipt_validation",
                 path,
@@ -576,18 +658,42 @@ fn parse_typed_case(path: &Path, envelope: &FixtureEnvelope) -> Result<TypedFixt
             )?;
             let input = parse_input_summary::<VerifierInputSummary>(path, envelope)?;
             let expected = parse_expected_outcome::<VerifierExpectedOutcome>(path, envelope)?;
-            require(expected.primary_class == "invalid_evidence", path, "verifier invalidity fixture must use primary_class invalid_evidence")?;
-            require(expected.family == envelope.family, path, "verifier expected family must match fixture family")?;
-            require(expected.must_fail_loud, path, "verifier invalidity fixture must fail loud")?;
-            require(expected.validation_outcome == "reject_receipt_artifact", path, "verifier invalidity fixture must reject receipt artifact")?;
+            require(
+                expected.primary_class == "invalid_evidence",
+                path,
+                "verifier invalidity fixture must use primary_class invalid_evidence",
+            )?;
+            require(
+                expected.family == envelope.family,
+                path,
+                "verifier expected family must match fixture family",
+            )?;
+            require(
+                expected.must_fail_loud,
+                path,
+                "verifier invalidity fixture must fail loud",
+            )?;
+            require(
+                expected.validation_outcome == "reject_receipt_artifact",
+                path,
+                "verifier invalidity fixture must reject receipt artifact",
+            )?;
             ensure_exact_keys(
                 path,
                 &envelope.expected_outcome,
-                &["primary_class", "family", "must_fail_loud", "validation_outcome"],
+                &[
+                    "primary_class",
+                    "family",
+                    "must_fail_loud",
+                    "validation_outcome",
+                ],
                 "verifier invalidity fixture must stay on the verifier-input shape only",
             )?;
-            let cert_consistent =
-                certification_shape_is_consistent(&input.receipt_artifact_under_validation.certification_provenance);
+            let cert_consistent = certification_shape_is_consistent(
+                &input
+                    .receipt_artifact_under_validation
+                    .certification_provenance,
+            );
             if envelope.family == "malformed_certification_provenance" {
                 require(
                     !cert_consistent,
@@ -601,15 +707,15 @@ fn parse_typed_case(path: &Path, envelope: &FixtureEnvelope) -> Result<TypedFixt
                     "non-malformed verifier fixtures must use a shape-consistent certification/provenance block",
                 )?;
             }
-            Ok(TypedFixtureCase::VerifierNegativeReceipt(VerifierReceiptFixture {
-                input,
-                expected,
-            }))
+            Ok(TypedFixtureCase::VerifierNegativeReceipt(
+                VerifierReceiptFixture { input, expected },
+            ))
         }
         (FixtureSurface::Adapter, FixturePolarity::Positive, "subject_scope_resolution") => {
             let input = parse_input_summary::<GenericInputSummary>(path, envelope)?;
-            let expected =
-                parse_expected_outcome::<AdapterPositiveSubjectScopeExpectedOutcome>(path, envelope)?;
+            let expected = parse_expected_outcome::<AdapterPositiveSubjectScopeExpectedOutcome>(
+                path, envelope,
+            )?;
             require(
                 envelope.target_method == "resolve_subject_scope",
                 path,
@@ -640,15 +746,28 @@ fn parse_typed_case(path: &Path, envelope: &FixtureEnvelope) -> Result<TypedFixt
         }
         (FixtureSurface::Adapter, FixturePolarity::Negative, "blocked_boundary_state") => {
             let input = parse_input_summary::<GenericInputSummary>(path, envelope)?;
-            let expected = parse_expected_outcome::<AdapterBlockedStatusExpectedOutcome>(path, envelope)?;
+            let expected =
+                parse_expected_outcome::<AdapterBlockedStatusExpectedOutcome>(path, envelope)?;
             require(
                 envelope.target_method == "get_adapter_status_facts",
                 path,
                 "adapter blocked status fixture must target get_adapter_status_facts",
             )?;
-            require(expected.result_variant == "ok", path, "adapter blocked status fixture must use result_variant ok")?;
-            require(expected.primary_class == "blocked_boundary_state", path, "adapter blocked status fixture must use primary_class blocked_boundary_state")?;
-            require(expected.status_facts.is_blocked, path, "adapter blocked status fixture must have is_blocked true")?;
+            require(
+                expected.result_variant == "ok",
+                path,
+                "adapter blocked status fixture must use result_variant ok",
+            )?;
+            require(
+                expected.primary_class == "blocked_boundary_state",
+                path,
+                "adapter blocked status fixture must use primary_class blocked_boundary_state",
+            )?;
+            require(
+                expected.status_facts.is_blocked,
+                path,
+                "adapter blocked status fixture must have is_blocked true",
+            )?;
             require(
                 expected.status_facts.blocked_reason.is_some(),
                 path,
@@ -683,31 +802,50 @@ fn parse_typed_case(path: &Path, envelope: &FixtureEnvelope) -> Result<TypedFixt
             FixtureSurface::Adapter,
             FixturePolarity::Negative,
             "stale_precondition"
-                | "transition_mutation_rejected"
-                | "invalid_request_material"
-                | "scope_not_supported"
-                | "subject_not_found"
-                | "pre_state_capture_unavailable"
-                | "post_state_capture_unavailable"
-                | "capability_not_supported"
-                | "internal_adapter_failure",
+            | "transition_mutation_rejected"
+            | "invalid_request_material"
+            | "scope_not_supported"
+            | "subject_not_found"
+            | "pre_state_capture_unavailable"
+            | "post_state_capture_unavailable"
+            | "capability_not_supported"
+            | "internal_adapter_failure",
         ) => {
             let input = parse_input_summary::<GenericInputSummary>(path, envelope)?;
             let expected = parse_expected_outcome::<AdapterErrorExpectedOutcome>(path, envelope)?;
-            require(expected.result_variant == "err", path, "adapter negative fixture must return err")?;
-            require(expected.must_fail_loud, path, "adapter negative fixture must fail loud")?;
+            require(
+                expected.result_variant == "err",
+                path,
+                "adapter negative fixture must return err",
+            )?;
+            require(
+                expected.must_fail_loud,
+                path,
+                "adapter negative fixture must fail loud",
+            )?;
             validate_adapter_error_family(path, envelope.family.as_str(), &expected)?;
-            validate_adapter_target_method(path, envelope.family.as_str(), envelope.target_method.as_str())?;
+            validate_adapter_target_method(
+                path,
+                envelope.family.as_str(),
+                envelope.target_method.as_str(),
+            )?;
             ensure_exact_keys(
                 path,
                 &envelope.expected_outcome,
-                &["result_variant", "primary_class", "error_code", "must_fail_loud"],
+                &[
+                    "result_variant",
+                    "primary_class",
+                    "error_code",
+                    "must_fail_loud",
+                ],
                 "adapter negative error fixture must use the explicit adapter error shape only",
             )?;
-            Ok(TypedFixtureCase::AdapterNegativeError(AdapterErrorFixture {
-                semantic_context: input.semantic_context,
-                expected,
-            }))
+            Ok(TypedFixtureCase::AdapterNegativeError(
+                AdapterErrorFixture {
+                    semantic_context: input.semantic_context,
+                    expected,
+                },
+            ))
         }
         _ => Err(FixtureError::Validation(format!(
             "{} uses unsupported surface/polarity/family combination {:?}/{:?}/{}",
@@ -788,24 +926,42 @@ fn validate_adapter_error_family(
     let matches_family = match family {
         "stale_precondition" => matches!(expected.error_code, AdapterErrorCode::StalePrecondition),
         "transition_mutation_rejected" => {
-            matches!(expected.error_code, AdapterErrorCode::TransitionMutationRejected)
+            matches!(
+                expected.error_code,
+                AdapterErrorCode::TransitionMutationRejected
+            )
         }
         "invalid_request_material" => {
-            matches!(expected.error_code, AdapterErrorCode::InvalidRequestMaterial)
+            matches!(
+                expected.error_code,
+                AdapterErrorCode::InvalidRequestMaterial
+            )
         }
         "scope_not_supported" => matches!(expected.error_code, AdapterErrorCode::ScopeNotSupported),
         "subject_not_found" => matches!(expected.error_code, AdapterErrorCode::SubjectNotFound),
         "pre_state_capture_unavailable" => {
-            matches!(expected.error_code, AdapterErrorCode::PreStateCaptureUnavailable)
+            matches!(
+                expected.error_code,
+                AdapterErrorCode::PreStateCaptureUnavailable
+            )
         }
         "post_state_capture_unavailable" => {
-            matches!(expected.error_code, AdapterErrorCode::PostStateCaptureUnavailable)
+            matches!(
+                expected.error_code,
+                AdapterErrorCode::PostStateCaptureUnavailable
+            )
         }
         "capability_not_supported" => {
-            matches!(expected.error_code, AdapterErrorCode::CapabilityNotSupported)
+            matches!(
+                expected.error_code,
+                AdapterErrorCode::CapabilityNotSupported
+            )
         }
         "internal_adapter_failure" => {
-            matches!(expected.error_code, AdapterErrorCode::InternalAdapterFailure)
+            matches!(
+                expected.error_code,
+                AdapterErrorCode::InternalAdapterFailure
+            )
         }
         _ => false,
     };
@@ -875,7 +1031,10 @@ fn ensure_exact_keys(
     message: &str,
 ) -> Result<(), FixtureError> {
     let object = value.as_object().ok_or_else(|| {
-        FixtureError::Validation(format!("{} expected_outcome is not an object", path.display()))
+        FixtureError::Validation(format!(
+            "{} expected_outcome is not an object",
+            path.display()
+        ))
     })?;
     let allowed: std::collections::BTreeSet<&str> = allowed.iter().copied().collect();
     let actual: std::collections::BTreeSet<&str> = object.keys().map(String::as_str).collect();

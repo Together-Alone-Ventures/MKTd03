@@ -99,13 +99,13 @@ impl ReferenceOrchestrator {
             .get_adapter_capabilities()
             .map_err(ReferenceOrchestrationError::AdapterRuntime)?
         {
-            AdapterResult::Err(error) => Ok(
-                ReferenceBoundaryEvaluation::AdapterCapabilityReportError {
+            AdapterResult::Err(error) => {
+                Ok(ReferenceBoundaryEvaluation::AdapterCapabilityReportError {
                     library_status,
                     adapter_status,
                     error,
-                },
-            ),
+                })
+            }
             AdapterResult::Ok(capability_report) => {
                 if let Some(missing_capability) =
                     self.find_missing_required_capability(&capability_report)
@@ -117,11 +117,13 @@ impl ReferenceOrchestrator {
                         missing_capability,
                     })
                 } else {
-                    Ok(ReferenceBoundaryEvaluation::ReadyToContinuePastBoundaryGate {
-                        library_status,
-                        adapter_status,
-                        capability_report,
-                    })
+                    Ok(
+                        ReferenceBoundaryEvaluation::ReadyToContinuePastBoundaryGate {
+                            library_status,
+                            adapter_status,
+                            capability_report,
+                        },
+                    )
                 }
             }
         }
@@ -144,14 +146,14 @@ impl ReferenceOrchestrator {
                 .resolve_subject_scope(request)
                 .map_err(ReferenceOrchestrationError::AdapterRuntime)?
             {
-                AdapterResult::Err(error) => {
-                    Ok(ReferenceBoundaryEvaluation::ResolveSubjectScopeAdapterError {
+                AdapterResult::Err(error) => Ok(
+                    ReferenceBoundaryEvaluation::ResolveSubjectScopeAdapterError {
                         library_status,
                         adapter_status,
                         capability_report,
                         error,
-                    })
-                }
+                    },
+                ),
                 AdapterResult::Ok(subject_scope) => Ok(
                     ReferenceBoundaryEvaluation::ResolveSubjectScopeContinuationDeferred {
                         library_status,
@@ -177,7 +179,9 @@ impl ReferenceOrchestrator {
         self.required_adapter_capabilities
             .iter()
             .find(|capability| {
-                !capability_report.supported_capabilities.contains(capability)
+                !capability_report
+                    .supported_capabilities
+                    .contains(capability)
             })
             .cloned()
     }

@@ -219,8 +219,10 @@ pub fn evaluate_version_support(
     interface_version: &SemanticVersion,
     requested_protocol_version: &SemanticVersion,
 ) -> VersionCheckResult {
-    let compatibility =
-        classify_exact_version_compatibility(supported_protocol_version, requested_protocol_version);
+    let compatibility = classify_exact_version_compatibility(
+        supported_protocol_version,
+        requested_protocol_version,
+    );
     let version_info = VersionInfo {
         protocol_version: requested_protocol_version.clone(),
         interface_version: interface_version.clone(),
@@ -258,9 +260,7 @@ pub fn validate_evidence_readiness_semantics(
 }
 
 impl ReferenceLibraryRuntime {
-    pub fn from_fixture_index(
-        index_path: impl AsRef<Path>,
-    ) -> Result<Self, ReferenceRuntimeError> {
+    pub fn from_fixture_index(index_path: impl AsRef<Path>) -> Result<Self, ReferenceRuntimeError> {
         let documents = load_all_typed_fixtures_from_index(index_path)
             .map_err(|error| ReferenceRuntimeError::FixtureLoad(error.to_string()))?;
         Self::from_typed_fixtures(&documents)
@@ -283,12 +283,14 @@ impl ReferenceLibraryRuntime {
                 TypedFixtureCase::LibraryPositiveVersionSupport(fixture) => {
                     supported_protocol_version =
                         Some(fixture.expected.version_info.protocol_version.clone());
-                    interface_version = Some(fixture.expected.version_info.interface_version.clone());
+                    interface_version =
+                        Some(fixture.expected.version_info.interface_version.clone());
                 }
                 TypedFixtureCase::LibraryPositiveStatus(fixture) => {
                     let status = materialize_status_surface(&fixture.expected.status_surface);
-                    validate_status_surface_semantics(&status)
-                        .map_err(|error| ReferenceRuntimeError::FixtureLoad(format!("{error:?}")))?;
+                    validate_status_surface_semantics(&status).map_err(|error| {
+                        ReferenceRuntimeError::FixtureLoad(format!("{error:?}"))
+                    })?;
                     if selected_status_fixture_id.is_none() {
                         selected_status_fixture_id = Some(document.envelope.fixture_id.clone());
                     }
@@ -296,13 +298,15 @@ impl ReferenceLibraryRuntime {
                 }
                 TypedFixtureCase::LibraryNegativeBlockedStatus(fixture) => {
                     let status = materialize_status_surface(&fixture.expected.status_surface);
-                    validate_status_surface_semantics(&status)
-                        .map_err(|error| ReferenceRuntimeError::FixtureLoad(format!("{error:?}")))?;
+                    validate_status_surface_semantics(&status).map_err(|error| {
+                        ReferenceRuntimeError::FixtureLoad(format!("{error:?}"))
+                    })?;
                     status_fixtures.insert(document.envelope.fixture_id.clone(), status);
                 }
                 TypedFixtureCase::LibraryNegativeEvidenceReadiness(fixture) => {
-                    validate_evidence_readiness_semantics(&fixture.expected.enum_value)
-                        .map_err(|error| ReferenceRuntimeError::FixtureLoad(format!("{error:?}")))?;
+                    validate_evidence_readiness_semantics(&fixture.expected.enum_value).map_err(
+                        |error| ReferenceRuntimeError::FixtureLoad(format!("{error:?}")),
+                    )?;
                     if selected_readiness_fixture_id.is_none() {
                         selected_readiness_fixture_id = Some(document.envelope.fixture_id.clone());
                     }
@@ -380,7 +384,10 @@ impl ReferenceLibraryRuntime {
         }
     }
 
-    pub fn check_version_support(&self, requested_protocol_version: &SemanticVersion) -> VersionCheckResult {
+    pub fn check_version_support(
+        &self,
+        requested_protocol_version: &SemanticVersion,
+    ) -> VersionCheckResult {
         evaluate_version_support(
             &self.supported_protocol_version,
             &self.interface_version,
@@ -390,7 +397,9 @@ impl ReferenceLibraryRuntime {
 
     pub fn get_status(&self) -> Result<StatusSurface, ReferenceRuntimeError> {
         let fixture_id = self.selected_status_fixture_id.as_ref().ok_or(
-            ReferenceRuntimeError::MissingConfiguration("status fixture selection is not configured"),
+            ReferenceRuntimeError::MissingConfiguration(
+                "status fixture selection is not configured",
+            ),
         )?;
         self.status_fixtures
             .get(fixture_id)
@@ -410,10 +419,7 @@ impl ReferenceLibraryRuntime {
             .ok_or_else(|| ReferenceRuntimeError::MissingFixture(fixture_id.clone()))
     }
 
-    pub fn get_receipt(
-        &self,
-        subject_reference: &[u8],
-    ) -> Option<ReceiptResult> {
+    pub fn get_receipt(&self, subject_reference: &[u8]) -> Option<ReceiptResult> {
         if let Some(receipt) = self.receipt_successes.get(subject_reference) {
             return Some(ReceiptResult::Ok {
                 receipt: receipt.clone(),
@@ -504,12 +510,15 @@ fn materialize_receipt(fixture_receipt: &FixtureReceipt) -> Receipt {
                 .tree_proof
                 .as_bytes()
                 .to_vec(),
-            deletion_state_material: match &fixture_receipt.core_transition_evidence.deletion_state_material {
-                FixtureDeletionStateMaterial::TombstonedPosition { tombstoned_position } => {
-                    DeletionStateMaterial::TombstonedPosition(
-                        tombstoned_position.as_bytes().to_vec(),
-                    )
-                }
+            deletion_state_material: match &fixture_receipt
+                .core_transition_evidence
+                .deletion_state_material
+            {
+                FixtureDeletionStateMaterial::TombstonedPosition {
+                    tombstoned_position,
+                } => DeletionStateMaterial::TombstonedPosition(
+                    tombstoned_position.as_bytes().to_vec(),
+                ),
                 FixtureDeletionStateMaterial::EmptyPosition { empty_position } => {
                     DeletionStateMaterial::EmptyPosition(empty_position.as_bytes().to_vec())
                 }
@@ -545,7 +554,9 @@ impl LibraryScaffold {
 
     pub fn get_evidence_readiness(&self) -> Result<EvidenceReadiness, LibraryScaffoldError> {
         // TODO: implement protocol predicate evaluation without duplicating blocked diagnosis.
-        Err(LibraryScaffoldError::NotImplemented("get_evidence_readiness"))
+        Err(LibraryScaffoldError::NotImplemented(
+            "get_evidence_readiness",
+        ))
     }
 
     pub fn get_version_info(&self) -> Result<VersionInfo, LibraryScaffoldError> {
@@ -558,7 +569,9 @@ impl LibraryScaffold {
         _version: &SemanticVersion,
     ) -> Result<VersionCheckResult, LibraryScaffoldError> {
         // TODO: implement explicit multi-surface compatibility policy dispatch.
-        Err(LibraryScaffoldError::NotImplemented("check_version_support"))
+        Err(LibraryScaffoldError::NotImplemented(
+            "check_version_support",
+        ))
     }
 
     pub fn get_receipt(&self, _subject_reference: &[u8]) -> Result<Receipt, LibraryScaffoldError> {
