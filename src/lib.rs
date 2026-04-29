@@ -1,4 +1,5 @@
 pub mod adapter;
+pub mod empty_subtree;
 pub mod fixtures;
 pub mod hashing;
 pub mod internal_node;
