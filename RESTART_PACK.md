@@ -1,7 +1,7 @@
-DATE: 2026-04-24
+DATE: 2026-04-29
 
 CURRENT GOAL:
-S7-1 implementation is open. The first implementation slice is the status-surface skeleton with lifecycle scaffold defined by `docs/planning/MKTd03_first_slice_scope_v1.md`.
+Hashing / SMT-foundation implementation block S7-5 through S7-8 is closed and pushed. The next bounded decision is whether S7-9 should enter commitment construction or tree-proof frame serialization work.
 
 IMPORTANT SCOPE RULE:
 This file is for MKTd03 protocol work only.
@@ -20,8 +20,27 @@ Authority-map / AGENTS refresh packet landed at 274f6015.
 Pre-implementation adversarial review continuity update landed at 1dcdee1.
 Pre-implementation milestone update landed at c284c59.
 First-slice scope promotion landed at 8204b2c — `planning: add first-slice scope v1 (S7-1) for coding-start`.
-MKTd03 main is at 8204b2c.
+S7-5 landed at f0c9493 — `implementation: add S7-5 leaf hash constructors`.
+S7-6 landed at 6b36448 — `implementation: add S7-6 record-position-key derivation`.
+S7-7 landed at af091e2 — `implementation: add S7-7 internal-node hashing`.
+S7-8 landed at 9866217 — `implementation: add S7-8 empty-subtree root ladder`.
+MKTd03 main is at 9866217.
 MKTd03 remains dApp-agnostic; TinyPress remains a reference target only.
+
+HASHING / SMT-FOUNDATION BLOCK SUMMARY:
+
+S7-5 through S7-8 establish the pure hashing / SMT-foundation layer:
+- leaf hashes
+- record-position keys
+- internal-node hashes
+- empty-subtree roots
+
+These were source-only implementation slices.
+
+No `.did`, Cargo, docs/spec, fixtures, commitment, proof, receipt, or canister public API changes were made in these slices.
+
+Current library test count after S7-8: 52 tests passing.
+wasm build passes.
 
 ROLE MAP:
 
@@ -97,18 +116,16 @@ The six queued candidates remain unchanged and none blocks S7-1 implementation:
 5. Phase-4 reuse-generalisation audit v1 still references the old MKTd02 repo URL; update to renamed `ICP-Delete-Leaf` URL on next touch.
 6. Playbook uplift candidates: acronym-gap stop-and-escalate, standing-constraint propagation, repo-rename SHA carry-over, and multi-line web-editor edit lesson.
 
-NEXT BOUNDED TASK:
+NEXT BOUNDED DECISION:
 
-Draft and review the Codex bounded implementation prompt for S7-1.
+Choose whether S7-9 should be:
+- A. transition-material / pre-state/post-state commitment construction, or
+- B. tree-proof frame serialization / validation shape.
 
-The prompt must:
-- implement only the status-surface skeleton with lifecycle scaffold;
-- honour the five S7-1 binding constraints above;
-- define exact scope and acceptance checks;
-- prohibit Codex from making architecture, sequencing, future-slice, receipt, proof, certification, or provenance decisions.
+This decision is not yet taken and must not be treated as settled continuity.
 
-No README, marketing, TinyPress, or housekeeping work is to be batched into S7-1 implementation.
+G's provisional preference is to ask C to review the ordering before Codex implements either option, because this is the transition from pure hash constructors into proof/commitment semantics.
 
 SAFE RESTART PROMPT:
 
-MKTd03 main is at 8204b2c. `docs/planning/MKTd03_first_slice_scope_v1.md` is authoritative and S7-1 is open for implementation. Standard role map is restored: G drafts and judges, C reviews adversarially, Codex executes bounded implementation tasks. S7-1 is status-surface only and is governed by five binding constraints: strict slice containment, `module_hash` status-only discipline, `.did` zero-divergence gate, observable fail-loud behavior, and no forward-semantics leakage. The next bounded task is to draft and review the Codex implementation prompt for S7-1. No housekeeping or README work is to be batched.
+MKTd03 main is at 9866217. S7-5 through S7-8 are closed and pushed, establishing the pure hashing / SMT-foundation layer: leaf hashes, record-position keys, internal-node hashes, and empty-subtree roots. These slices were source-only and did not change `.did`, Cargo, docs/spec, fixtures, commitment/proof/receipt semantics, or the canister public API. Current library test count is 52 passing and wasm build passes. The next bounded decision is whether S7-9 should enter commitment construction or tree-proof frame serialization / validation shape. G's provisional preference is to ask C to review that ordering before Codex implements either option.
