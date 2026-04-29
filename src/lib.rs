@@ -1,6 +1,7 @@
 pub mod adapter;
 pub mod fixtures;
 pub mod hashing;
+pub mod internal_node;
 pub mod leaf_hash;
 pub mod library;
 pub mod orchestration;
