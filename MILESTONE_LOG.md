@@ -500,3 +500,31 @@ Revisit trigger:
   - Reopen type-surface consolidation if a concrete call site needs a `crate::*` Candid-bound type to flow into receipt-construction logic, or after §11/§12 receipt-construction work lands and the full duplicate-type pressure is visible.
 
 Category: implementation │ architecture-debt
+
+## 2026-04-29 -- MILESTONE: S7-11 per-frame proof serialization/parsing landed
+
+Decisions made:
+  - S7-11 is complete and pushed at `0dca301`.
+  - Implements deterministic byte-level serialization and parsing for individual tree-proof frames under `docs/spec/MKTd03_commitment_and_preimage_spec_v1.md` §9.3–§9.5.
+  - Per-frame only: no §9.2 envelope, proof verification, root walking, root recomputation, direction-vs-record-position-key validation, empty-sibling reconstruction, receipt validation, certification/provenance handling, or public canister/API surface.
+  - Direction byte semantics were verified against the spec before implementation:
+    - `0x00` = current node is left child; sibling is on right; future hash order `hash(current, sibling)`.
+    - `0x01` = current node is right child; sibling is on left; future hash order `hash(sibling, current)`.
+  - Parser posture is Result-returning, not trap-loud, because it consumes externally supplied bytes and must compose with the future envelope parser.
+  - `parse_proof_frame` intentionally accepts trailing bytes and returns `bytes_consumed`.
+  - No `.did`, Cargo, docs/spec, fixture, receipt, certified-commitment, or public canister API changes were made.
+
+Irreversible actions taken:
+  - Committed `0dca301` — `implementation: add S7-11 per-frame proof-frame ser/parse`
+  - Added `src/proof_frame.rs`.
+  - Added `pub mod proof_frame;` to `src/lib.rs`.
+
+Do not revisit:
+  - Whether S7-11 should include the §9.2 envelope — settled no; envelope serialization/parsing is deferred to S7-12.
+  - Whether frame parsing should reject trailing bytes — settled no; trailing bytes are required for envelope composition and are handled by the caller using `bytes_consumed`.
+  - Whether frame-level sibling taxonomy includes tombstone/leaf/occupied variants — settled no; frame-level sibling kind is exactly explicit hash or canonical empty.
+  - Whether this slice triggers tag-discipline or hash/preimage work — settled no; S7-11 is pure structural byte serialization/parsing.
+
+Standing constraint surfaced:
+  - Future S7-12 envelope work must compose `parse_proof_frame` over the §9.2 fixed proof envelope: 2-byte big-endian step count followed by exactly 256 serialized frames.
+  - Future implementation review bundles must include full source file contents and full unified diffs, not placeholders or stats alone.
