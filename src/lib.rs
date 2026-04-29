@@ -9,6 +9,7 @@ pub mod orchestration;
 pub mod record_position;
 mod scope_encoding;
 pub mod tags;
+pub mod transition_material;
 pub mod verifier;
 
 use candid::{candid_method, CandidType, Deserialize};
