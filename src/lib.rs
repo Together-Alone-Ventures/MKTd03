@@ -1,4 +1,5 @@
 pub mod adapter;
+mod deletion_state_material_check;
 pub mod empty_subtree;
 pub mod fixtures;
 pub mod hashing;
