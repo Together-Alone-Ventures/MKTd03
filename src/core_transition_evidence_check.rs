@@ -6,8 +6,6 @@ use crate::proof_envelope::{parse_proof_envelope, ProofEnvelopeError};
 
 const DIGEST_LENGTH: usize = 32;
 
-// staged for future receipt/verifier structural validation; no production caller in S7-15.
-#[allow(dead_code)]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub(crate) enum CoreTransitionEvidenceError {
     EmptySubjectReference,
@@ -19,8 +17,7 @@ pub(crate) enum CoreTransitionEvidenceError {
     DeletionStateMaterialInvalid { source: DeletionStateMaterialError },
 }
 
-// staged for future receipt/verifier structural validation; no production caller in S7-15.
-#[allow(dead_code)]
+// consumed by validate_receipt as the first structural pre-check.
 pub(crate) fn validate_core_transition_evidence(
     evidence: &CoreTransitionEvidence,
 ) -> Result<(), CoreTransitionEvidenceError> {
