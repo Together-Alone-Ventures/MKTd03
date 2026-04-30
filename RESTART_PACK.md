@@ -1,7 +1,7 @@
 DATE: 2026-04-30
 
 CURRENT GOAL:
-S7-14 is closed and pushed. Repo-wide `cargo fmt --check` remains a hard gate. The next slice is TBD / await G+C scoping.
+S7-15 and S7-16 are closed and pushed through `928c9be`. Repo-wide `cargo fmt --check` remains a hard gate. The next slice is TBD / await G+C scoping.
 
 IMPORTANT SCOPE RULE:
 This file is for MKTd03 protocol work only.
@@ -34,7 +34,9 @@ S7-12 continuity close is recorded by this commit.
 S7-13 landed at bf26d44 — `implementation: add S7-13 direction-vs-record-position-key validator`.
 Inherited rustfmt sweep landed at 7612775 — `chore: apply inherited rustfmt sweep`.
 S7-14 landed at d601375 — `implementation: add S7-14 deletion-state material validator`.
-MKTd03 main is now at or beyond `d601375` on the post-S7-14 continuity line.
+S7-15 landed at d250051 — `implementation: add S7-15 core transition evidence validator`.
+S7-16 landed at 928c9be — `implementation: wire S7-16 receipt structural precheck`.
+MKTd03 main is now at or beyond `928c9be` on the post-S7-16 continuity line.
 MKTd03 remains dApp-agnostic; TinyPress remains a reference target only.
 
 HASHING / SMT-FOUNDATION BLOCK SUMMARY:
@@ -104,6 +106,21 @@ S7-14 accepts only `TombstonedPosition(vec![0x01])`, rejects all `EmptyPosition(
 S7-14 added no hashing, tag, preimage, proof, root, fixture, `.did`, Cargo, public API, or `leaf_hash.rs` changes.
 
 Current library test count after S7-14: 118 tests passing.
+wasm build passes.
+
+STRUCTURAL EVIDENCE-READINESS SUMMARY:
+
+S7-15 added a private structural-readiness validator for `CoreTransitionEvidence`.
+
+S7-15 checks non-empty subject/scope shape, 32-byte commitment/material lengths, tree-proof envelope shape via the S7-12 parser, and `deletion_state_material` shape via the S7-14 validator.
+
+S7-16 wired that structural validator into `validate_receipt(receipt: &Receipt)` only.
+
+S7-16 leaves downstream proof, certification, version, and receipt semantics unimplemented after the structural pre-check passes.
+
+No `.did`, Cargo, docs/spec, docs/test-vectors, fixture, public API, hashing/preimage/tag bytes, or `leaf_hash.rs` changes were made in S7-15/S7-16.
+
+Current library test count after S7-16: 135 tests passing.
 wasm build passes.
 
 KNOWN TRACKED DEBT:
@@ -192,7 +209,7 @@ The next slice is TBD / await G+C scoping.
 
 This is not yet approved for implementation and must not be treated as settled continuity.
 
-Do not infer proof-verification semantics or receipt semantics from S7-14.
+Do not infer proof-verification semantics or receipt semantics from S7-15/S7-16.
 
 Standing constraints to carry forward:
 - Future envelope-adjacent work must preserve the settled S7-12 envelope posture: 2-byte big-endian step count followed by exactly 256 serialized frames.
@@ -202,4 +219,4 @@ Standing constraints to carry forward:
 
 SAFE RESTART PROMPT:
 
-MKTd03 main is now on the post-S7-14 continuity line beyond implementation commit `d601375`. S7-9 added `transition_material` derivation, S7-10 added wrapper-only `pre_state_commitment` / `post_state_commitment`, S7-11 added per-frame tree-proof serialization/parsing, S7-12 added fixed-envelope proof serialization/parsing, S7-13 added structural direction-vs-record-position-key validation over an already-parsed proof envelope, and S7-14 added a standalone private structural validator for `DeletionStateMaterial`. S7-14 is structural only and must not be treated as hashing, tag/preimage work, proof verification, root recomputation, sibling validation, `record_position_key` derivation, empty-subtree reconstruction, or receipt semantics. No `.did`, Cargo, docs/spec, fixtures, hashing/preimage/tag bytes, public canister API, or `leaf_hash.rs` changes were made in S7-14. Repo-wide `cargo fmt --check` remains a hard gate. Current library test count is 118 passing and wasm build passes. Parallel Candid-bound and reference-runtime type-surface debt is tracked in `MILESTONE_LOG` at 523fe00 and should not be consolidated absent a concrete call site or later §11/§12 pressure. The next slice is TBD / await G+C scoping. Future review bundles must include full source file contents and full unified diffs.
+MKTd03 main is now on the post-S7-16 continuity line beyond implementation commit `928c9be`. S7-9 added `transition_material` derivation, S7-10 added wrapper-only `pre_state_commitment` / `post_state_commitment`, S7-11 added per-frame tree-proof serialization/parsing, S7-12 added fixed-envelope proof serialization/parsing, S7-13 added structural direction-vs-record-position-key validation over an already-parsed proof envelope, S7-14 added a standalone private structural validator for `DeletionStateMaterial`, S7-15 added a private structural-readiness validator for `CoreTransitionEvidence`, and S7-16 wired that structural pre-check into `validate_receipt` without opening proof or certification semantics. S7-15/S7-16 remain structural only and must not be treated as proof verification, `record_position_key` derivation, root recomputation, sibling validation, empty-subtree reconstruction, transition-derivation-version semantics, compatibility semantics, or receipt issuance/storage logic. No `.did`, Cargo, docs/spec, docs/test-vectors, fixtures, hashing/preimage/tag bytes, public canister API, or `leaf_hash.rs` changes were made in S7-15/S7-16. Repo-wide `cargo fmt --check` remains a hard gate. Current library test count is 135 passing and wasm build passes. Parallel Candid-bound and reference-runtime type-surface debt is tracked in `MILESTONE_LOG` at 523fe00 and should not be consolidated absent a concrete call site or later §11/§12 pressure. The next slice is TBD / await G+C scoping. Future review bundles must include full source file contents and full unified diffs.

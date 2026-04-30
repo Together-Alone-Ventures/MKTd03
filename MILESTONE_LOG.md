@@ -627,3 +627,35 @@ Validation evidence:
 Do not revisit:
   - Whether S7-14 reopens hashing, tag, preimage, proof, root, or `record_position_key` work — settled no.
   - Whether S7-14 changes `.did`, fixtures, docs/spec, docs/test-vectors, Cargo, public API, or `leaf_hash.rs` — settled no.
+
+## 2026-04-30 -- MILESTONE: S7-15 and S7-16 structural evidence-readiness wiring landed
+
+Decisions made:
+  - S7-15 private `CoreTransitionEvidence` structural-readiness validator landed at `d250051`.
+  - S7-15 added `src/core_transition_evidence_check.rs` plus one private module line in `src/lib.rs`.
+  - S7-15 validates non-empty `subject_reference`, non-empty `scope_reference` when present, 32-byte `pre_state_commitment`, 32-byte `post_state_commitment`, 32-byte `transition_material`, tree-proof envelope shape via the S7-12 parser, and `deletion_state_material` via the S7-14 validator.
+  - S7-15 does not inspect `transition_derivation_version` and does not verify proof semantics, sibling contents, direction-vs-position relationship, `record_position_key` correctness, or any root claim.
+  - S7-15 added exactly 10 tests.
+  - S7-16 wiring landed at `928c9be`.
+  - S7-16 wires the S7-15 validator into `src/verifier.rs` `validate_receipt(receipt: &Receipt)` only.
+  - `validate_fixture_receipt_semantics` and the fixture-only helper validators were not modified.
+  - No fixture-to-library coercion, `FixtureReceipt -> Receipt` adapter, or string-to-bytes bridging was introduced.
+  - Structural `CoreTransitionEvidence` failures now map to `VerificationFailure::InvalidEvidence("<family>")`.
+  - Structurally valid receipts still return `VerificationFailure::NotImplemented(...)`, preserving downstream unimplemented proof, certification, version, and receipt semantics.
+  - S7-16 removed the stale S7-15 no-production-caller dead-code annotations/comments once `validate_receipt` became the first production caller.
+  - S7-16 added exactly 7 tests.
+
+Validation evidence:
+  - After S7-15: `cargo fmt --check` passed.
+  - After S7-15: `cargo test --offline --lib` passed: 128 tests.
+  - After S7-15: `cargo build --offline --target wasm32-unknown-unknown` passed.
+  - After S7-16: `cargo fmt --check` passed.
+  - After S7-16: `cargo test --offline --lib` passed: 135 tests.
+  - After S7-16: `cargo build --offline --target wasm32-unknown-unknown` passed.
+
+Future uplift candidate:
+  - Review-bundle integrity should later be promoted into the Playbook candidate queue: for new files, the full file contents and unified diff must agree byte-for-byte. This surfaced during S7-15 when a stale add-file diff disagreed with the direct file read and had to be recaptured before commit.
+
+Do not revisit:
+  - Whether S7-15 or S7-16 introduced `.did`, docs/spec, docs/test-vectors, fixture, Cargo, public API, or `leaf_hash.rs` changes — settled no.
+  - Whether S7-15 or S7-16 introduced proof verification, direction-vs-record-position-key validation calls, `record_position_key` derivation, root walking, root recomputation, claimed-root comparison, empty-subtree reconstruction, sibling-content validation, transition-derivation-version value semantics, protocol/receipt/interface compatibility checks, certification/BLS validation, receipt issuance/storage, hashing, tags, or preimage assembly — settled no.
