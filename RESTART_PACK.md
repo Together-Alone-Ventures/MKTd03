@@ -1,7 +1,7 @@
 DATE: 2026-04-29
 
 CURRENT GOAL:
-S7-13 is closed. The next non-implementation slice is the fmt-sweep continuity slice unless G explicitly defers it. The next implementation slice is not yet opened.
+S7-13 is closed and the inherited rustfmt sweep is complete. Repo-wide `cargo fmt --check` is restored as a hard gate. The next implementation slice is not yet opened.
 
 IMPORTANT SCOPE RULE:
 This file is for MKTd03 protocol work only.
@@ -32,7 +32,8 @@ S7-11 continuity close landed at b72624c — `continuity: record S7-11 close`.
 S7-12 landed at 224f84e — `implementation: add S7-12 proof envelope serialization`.
 S7-12 continuity close is recorded by this commit.
 S7-13 landed at bf26d44 — `implementation: add S7-13 direction-vs-record-position-key validator`.
-MKTd03 main is now beyond `bf26d44` on the S7-13 continuity line.
+Inherited rustfmt sweep landed at 7612775 — `chore: apply inherited rustfmt sweep`.
+MKTd03 main is now beyond `7612775` on the post-sweep continuity line.
 MKTd03 remains dApp-agnostic; TinyPress remains a reference target only.
 
 HASHING / SMT-FOUNDATION BLOCK SUMMARY:
@@ -175,19 +176,18 @@ The six queued candidates remain unchanged and none blocks S7-1 implementation:
 
 NEXT BOUNDED DECISION:
 
-The next non-implementation slice is the fmt-sweep continuity slice unless G explicitly defers it.
+The next implementation slice is not yet opened.
 
 This is not yet approved for implementation and must not be treated as settled continuity.
-
-The next implementation slice is not yet opened.
 
 Do not infer proof-verification semantics from S7-13.
 
 Standing constraints to carry forward:
 - Future envelope-adjacent work must preserve the settled S7-12 envelope posture: 2-byte big-endian step count followed by exactly 256 serialized frames.
 - Carry forward the no-hashing/preimage/tag-work constraint unless the next slice explicitly opens that gate.
+- Repo-wide `cargo fmt --check` is restored as a hard gate.
 - Future implementation review bundles must include full source file contents and full unified diffs, not placeholders or stats alone.
 
 SAFE RESTART PROMPT:
 
-MKTd03 main is now on the S7-13 continuity-close line beyond implementation commit `bf26d44`. S7-9 added `transition_material` derivation, S7-10 added wrapper-only `pre_state_commitment` / `post_state_commitment`, S7-11 added per-frame tree-proof serialization/parsing, S7-12 added fixed-envelope proof serialization/parsing, and S7-13 added structural direction-vs-record-position-key validation over an already-parsed proof envelope. S7-13 is structural only and must not be treated as proof verification, root recomputation, sibling validation, `record_position_key` derivation, empty-subtree reconstruction, or hashing/preimage/tag work. No `.did`, Cargo, docs/spec, fixtures, hashing/preimage/tag bytes, or public canister API changes were made in S7-13. Current library test count is 109 passing and wasm build passes. Parallel Candid-bound and reference-runtime type-surface debt is tracked in `MILESTONE_LOG` at 523fe00 and should not be consolidated absent a concrete call site or later §11/§12 pressure. The next non-implementation slice is the fmt-sweep continuity slice unless G explicitly defers it; the next implementation slice is not yet opened. Future review bundles must include full source file contents and full unified diffs.
+MKTd03 main is now on the post-sweep continuity line beyond implementation commit `bf26d44` and hygiene commit `7612775`. S7-9 added `transition_material` derivation, S7-10 added wrapper-only `pre_state_commitment` / `post_state_commitment`, S7-11 added per-frame tree-proof serialization/parsing, S7-12 added fixed-envelope proof serialization/parsing, and S7-13 added structural direction-vs-record-position-key validation over an already-parsed proof envelope. S7-13 is structural only and must not be treated as proof verification, root recomputation, sibling validation, `record_position_key` derivation, empty-subtree reconstruction, or hashing/preimage/tag work. No `.did`, Cargo, docs/spec, fixtures, hashing/preimage/tag bytes, or public canister API changes were made in S7-13. The inherited rustfmt drift tracked at S7-13 close has been cleared, and repo-wide `cargo fmt --check` is restored as a hard gate. Current library test count is 109 passing and wasm build passes. Parallel Candid-bound and reference-runtime type-surface debt is tracked in `MILESTONE_LOG` at 523fe00 and should not be consolidated absent a concrete call site or later §11/§12 pressure. The next implementation slice is not yet opened. Future review bundles must include full source file contents and full unified diffs.

@@ -581,3 +581,28 @@ Decisions made:
     `first_mismatch_posture_reports_earliest_frame` contains two no-op direction assignments; `error_variant_carries_exact_mismatch_details` duplicates the middle-mismatch body. Both are harmless and were not changed to avoid post-review churn.
   - Hard exclusions respected:
     no `.did`, `docs/spec`, `docs/test-vectors`, fixture, Cargo, public API, hashing, root recomputation, empty-subtree reconstruction, sibling validation, `record_position_key` derivation, or `canisters/mktd-store` consumption.
+
+## 2026-04-29 -- HYGIENE: inherited rustfmt drift cleared
+
+Decisions made:
+  - Inherited rustfmt drift recorded as tracked debt at S7-13 close has been discharged at commit `761277516f99771fac88bd975624d557ac3891de`.
+  - Repo-wide `cargo fmt --check` is restored as a hard gate from the next slice forward.
+  - Sweep was scoped to eight files:
+    - `src/adapter.rs`
+    - `src/fixtures.rs`
+    - `src/lib.rs`
+    - `src/library.rs`
+    - `src/orchestration.rs`
+    - `src/tags.rs`
+    - `src/verifier.rs`
+    - `tests/fixtures.rs`
+  - The sweep was formatting-only: wrapping, indentation, spacing, import layout, and assertion/function-call layout only. No semantic changes.
+
+Validation evidence:
+  - `cargo fmt --check` passed repo-wide post-sweep.
+  - `cargo test --offline --lib` passed: 109 tests.
+  - `cargo build --offline --target wasm32-unknown-unknown` passed.
+
+Do not revisit:
+  - Whether per-slice fmt waivers continue going forward — settled no; repo-wide `cargo fmt --check` is a hard gate from the next implementation slice forward.
+  - Whether the eight-file rustfmt sweep should be mixed into a protocol implementation slice — settled no; it was isolated as a hygiene commit.
