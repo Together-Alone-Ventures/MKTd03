@@ -606,3 +606,24 @@ Validation evidence:
 Do not revisit:
   - Whether per-slice fmt waivers continue going forward — settled no; repo-wide `cargo fmt --check` is a hard gate from the next implementation slice forward.
   - Whether the eight-file rustfmt sweep should be mixed into a protocol implementation slice — settled no; it was isolated as a hygiene commit.
+
+## 2026-04-30 -- MILESTONE: S7-14 deletion-state material validator landed
+
+Decisions made:
+  - S7-14 standalone private structural validator for `DeletionStateMaterial` is complete and pushed at `d601375`.
+  - Files changed: `src/deletion_state_material_check.rs` and `src/lib.rs` only.
+  - Accepts only `TombstonedPosition(vec![0x01])`.
+  - Rejects all `EmptyPosition(_)`.
+  - Rejects all `TombstonedPosition` payloads other than the single byte `[0x01]`.
+  - No hashing, tag, preimage, proof, root, fixture, `.did`, Cargo, public API, or `leaf_hash.rs` changes were introduced.
+  - No production caller was added in S7-14; the validator is staged for future receipt/verifier structural validation.
+
+Validation evidence:
+  - `cargo fmt --check` passed.
+  - `cargo test --offline --lib` passed: 118 tests.
+  - `cargo build --offline --target wasm32-unknown-unknown` passed.
+  - Exactly 9 S7-14 tests were added.
+
+Do not revisit:
+  - Whether S7-14 reopens hashing, tag, preimage, proof, root, or `record_position_key` work — settled no.
+  - Whether S7-14 changes `.did`, fixtures, docs/spec, docs/test-vectors, Cargo, public API, or `leaf_hash.rs` — settled no.
