@@ -659,3 +659,29 @@ Future uplift candidate:
 Do not revisit:
   - Whether S7-15 or S7-16 introduced `.did`, docs/spec, docs/test-vectors, fixture, Cargo, public API, or `leaf_hash.rs` changes — settled no.
   - Whether S7-15 or S7-16 introduced proof verification, direction-vs-record-position-key validation calls, `record_position_key` derivation, root walking, root recomputation, claimed-root comparison, empty-subtree reconstruction, sibling-content validation, transition-derivation-version value semantics, protocol/receipt/interface compatibility checks, certification/BLS validation, receipt issuance/storage, hashing, tags, or preimage assembly — settled no.
+
+## 2026-05-01 -- MILESTONE: S7-17 receipt direction-vs-position validation landed
+
+Decisions made:
+  - S7-17 wired proof-direction-vs-record-position validation into `src/verifier.rs` `validate_receipt(receipt: &Receipt)` at `e6b136c`.
+  - `validate_receipt` order is now: S7-16 structural pre-check, non-trapping `compute_record_position_key`, defensive proof-envelope parse, S7-13 `validate_proof_directions`, then the existing downstream `VerificationFailure::NotImplemented(...)` posture.
+  - Direction failures map to `VerificationFailure::InvalidEvidence("tree_proof_direction_mismatch")`.
+  - Residual record-position derivation failure maps to `VerificationFailure::InvalidEvidence("record_position_key_invalid")`.
+  - Residual proof-envelope parse failure maps to `VerificationFailure::InvalidEvidence("tree_proof_envelope_invalid")`.
+  - `compute_record_position_key` and `RecordPositionError` were bumped to `pub(crate)`, not `pub`.
+  - The trap-returning public `record_position_key` remains intact and is not called from `validate_receipt`.
+  - `validate_proof_directions` and `ProofDirectionError` already had `pub(crate)` visibility; no public visibility expansion was needed.
+  - Stale no-production-caller annotations/comments in `proof_direction_check.rs` were removed or updated once `validate_receipt` became a production caller.
+  - S7-17 added exactly 6 verifier-path tests.
+
+Validation evidence:
+  - `cargo fmt --check` passed.
+  - `cargo test --offline --lib` passed: 141 tests.
+  - `cargo build --offline --target wasm32-unknown-unknown` passed.
+
+Future/open tracking only:
+  - C approved S7-17 but flagged a procedural review-bundle question for future Playbook/open-question tracking: for modification-only slices, a full unified diff may be self-describing enough; for new-file slices, full file contents and unified diff must agree byte-for-byte. This follows the S7-15 bundle-integrity incident and is not an immediate standards edit.
+
+Do not revisit:
+  - Whether S7-17 introduced `.did`, docs/spec, docs/test-vectors, fixture, Cargo, public API, or `leaf_hash.rs` changes — settled no.
+  - Whether S7-17 introduced fixture-to-library coercion, `FixtureReceipt -> Receipt` adapters, string-to-bytes bridging, fixture-validator rewiring, proof verification, `record_position_key` derivation semantics beyond calling the existing primitive, root recomputation, claimed-root comparison, empty-subtree reconstruction, sibling-content validation, transition-derivation-version value semantics, protocol/receipt/interface compatibility checks, certification/BLS validation, receipt issuance/storage, hashing, tags, or preimage assembly — settled no.
