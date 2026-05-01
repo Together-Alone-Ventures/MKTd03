@@ -1,8 +1,6 @@
 use crate::proof_envelope::ProofEnvelope;
 use crate::proof_frame::ProofDirection;
 
-// staged for the future proof-verification slice; no production caller in S7-13.
-#[allow(dead_code)]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub(crate) enum ProofDirectionError {
     DirectionMismatch {
@@ -28,8 +26,7 @@ fn key_bit_msb_first(key: &[u8; 32], key_bit_index: usize) -> bool {
     (key[byte_index] & mask) != 0
 }
 
-// staged for the future proof-verification slice; no production caller in S7-13.
-#[allow(dead_code)]
+// consumed by validate_receipt after structural evidence and record-position pre-checks.
 pub(crate) fn validate_proof_directions(
     envelope: &ProofEnvelope,
     key: &[u8; 32],

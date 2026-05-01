@@ -3,6 +3,9 @@ use crate::core_transition_evidence_check::{
 };
 use crate::fixtures::{FixtureReceipt, VerifierReceiptFixture};
 use crate::library::{CertificationProvenancePosture, CertificationProvenanceRoute, Receipt};
+use crate::proof_direction_check::validate_proof_directions;
+use crate::proof_envelope::parse_proof_envelope;
+use crate::record_position::compute_record_position_key;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum VerificationFailure {
@@ -17,6 +20,18 @@ pub fn validate_receipt(receipt: &Receipt) -> Result<(), VerificationFailure> {
             map_core_transition_evidence_error(err),
         ));
     }
+
+    let record_position_key = compute_record_position_key(
+        &receipt.core_transition_evidence.subject_reference,
+        receipt.core_transition_evidence.scope_reference.as_deref(),
+    )
+    .map_err(|_| VerificationFailure::InvalidEvidence("record_position_key_invalid"))?;
+
+    let parsed_tree_proof = parse_proof_envelope(&receipt.core_transition_evidence.tree_proof)
+        .map_err(|_| VerificationFailure::InvalidEvidence("tree_proof_envelope_invalid"))?;
+
+    validate_proof_directions(&parsed_tree_proof, &record_position_key)
+        .map_err(|_| VerificationFailure::InvalidEvidence("tree_proof_direction_mismatch"))?;
 
     // TODO: implement receipt validation semantics once proof verification logic is authorized.
     Err(VerificationFailure::NotImplemented(
@@ -159,32 +174,61 @@ mod tests {
     use crate::proof_envelope::{serialize_proof_envelope, ProofEnvelope};
     use crate::proof_frame::{ProofDirection, ProofFrame, ProofFrameSibling};
 
-    fn canonical_empty_frame(direction: ProofDirection) -> ProofFrame {
-        ProofFrame {
-            direction,
-            sibling: ProofFrameSibling::CanonicalEmpty,
+    const SUBJECT_REFERENCE: [u8; 32] = [0x42; 32];
+
+    fn direction_for_frame_index(key: &[u8; 32], frame_index: usize) -> ProofDirection {
+        let key_bit_index = 255 - frame_index;
+        let byte_index = key_bit_index / 8;
+        let bit_index_in_byte = key_bit_index % 8;
+        let mask = 1u8 << (7 - bit_index_in_byte);
+        if (key[byte_index] & mask) != 0 {
+            ProofDirection::Right
+        } else {
+            ProofDirection::Left
         }
     }
 
-    fn valid_tree_proof_bytes() -> Vec<u8> {
-        let envelope = ProofEnvelope {
-            frames: std::array::from_fn(|_| canonical_empty_frame(ProofDirection::Left)),
-        };
-        serialize_proof_envelope(&envelope)
+    fn direction_consistent_envelope(
+        subject_reference: &[u8],
+        scope_reference: Option<&[u8]>,
+        explicit_sibling_bytes: [u8; 32],
+    ) -> ProofEnvelope {
+        let key = compute_record_position_key(subject_reference, scope_reference)
+            .expect("direction-consistent test helper should derive record_position_key");
+        ProofEnvelope {
+            frames: std::array::from_fn(|frame_index| ProofFrame {
+                direction: direction_for_frame_index(&key, frame_index),
+                sibling: ProofFrameSibling::Explicit(explicit_sibling_bytes),
+            }),
+        }
     }
 
-    fn structurally_valid_unchecked_direction_tree_proof_bytes() -> Vec<u8> {
-        let envelope = ProofEnvelope {
-            frames: std::array::from_fn(|index| {
-                if index % 2 == 0 {
-                    canonical_empty_frame(ProofDirection::Right)
-                } else {
-                    ProofFrame {
-                        direction: ProofDirection::Left,
-                        sibling: ProofFrameSibling::Explicit([0x42; 32]),
-                    }
-                }
-            }),
+    fn direction_consistent_tree_proof_bytes(
+        subject_reference: &[u8],
+        scope_reference: Option<&[u8]>,
+        explicit_sibling_bytes: [u8; 32],
+    ) -> Vec<u8> {
+        serialize_proof_envelope(&direction_consistent_envelope(
+            subject_reference,
+            scope_reference,
+            explicit_sibling_bytes,
+        ))
+    }
+
+    fn direction_mismatch_tree_proof_bytes(
+        subject_reference: &[u8],
+        scope_reference: Option<&[u8]>,
+        explicit_sibling_bytes: [u8; 32],
+        frame_index: usize,
+    ) -> Vec<u8> {
+        let mut envelope = direction_consistent_envelope(
+            subject_reference,
+            scope_reference,
+            explicit_sibling_bytes,
+        );
+        envelope.frames[frame_index].direction = match envelope.frames[frame_index].direction {
+            ProofDirection::Left => ProofDirection::Right,
+            ProofDirection::Right => ProofDirection::Left,
         };
         serialize_proof_envelope(&envelope)
     }
@@ -202,7 +246,7 @@ mod tests {
                 patch: 0,
             },
             core_transition_evidence: CoreTransitionEvidence {
-                subject_reference: vec![0x42],
+                subject_reference: SUBJECT_REFERENCE.to_vec(),
                 scope_reference: None,
                 pre_state_commitment: vec![0x11; 32],
                 post_state_commitment: vec![0x22; 32],
@@ -212,7 +256,11 @@ mod tests {
                     minor: 0,
                     patch: 0,
                 },
-                tree_proof: valid_tree_proof_bytes(),
+                tree_proof: direction_consistent_tree_proof_bytes(
+                    &SUBJECT_REFERENCE,
+                    None,
+                    [0x42; 32],
+                ),
                 deletion_state_material: DeletionStateMaterial::TombstonedPosition(vec![0x01]),
             },
             certification_provenance: CertificationProvenanceBlock {
@@ -300,10 +348,84 @@ mod tests {
     }
 
     #[test]
-    fn receipt_validation_does_not_run_direction_validation() {
+    fn receipt_validation_returns_invalid_evidence_tree_proof_direction_mismatch_at_frame_zero() {
         let mut receipt = minimal_receipt();
         receipt.core_transition_evidence.tree_proof =
-            structurally_valid_unchecked_direction_tree_proof_bytes();
+            direction_mismatch_tree_proof_bytes(&SUBJECT_REFERENCE, None, [0x42; 32], 0);
+        assert_eq!(
+            validate_receipt(&receipt),
+            Err(VerificationFailure::InvalidEvidence(
+                "tree_proof_direction_mismatch"
+            ))
+        );
+    }
+
+    #[test]
+    fn receipt_validation_returns_invalid_evidence_tree_proof_direction_mismatch_at_frame_255() {
+        let mut receipt = minimal_receipt();
+        receipt.core_transition_evidence.tree_proof =
+            direction_mismatch_tree_proof_bytes(&SUBJECT_REFERENCE, None, [0x42; 32], 255);
+        assert_eq!(
+            validate_receipt(&receipt),
+            Err(VerificationFailure::InvalidEvidence(
+                "tree_proof_direction_mismatch"
+            ))
+        );
+    }
+
+    #[test]
+    fn receipt_validation_with_direction_consistent_evidence_reaches_not_implemented() {
+        let receipt = minimal_receipt();
+        assert!(matches!(
+            validate_receipt(&receipt),
+            Err(VerificationFailure::NotImplemented(_))
+        ));
+    }
+
+    #[test]
+    fn receipt_validation_does_not_validate_sibling_content() {
+        let mut receipt = minimal_receipt();
+        receipt.core_transition_evidence.tree_proof =
+            direction_consistent_tree_proof_bytes(&SUBJECT_REFERENCE, None, [0x99; 32]);
+        assert!(matches!(
+            validate_receipt(&receipt),
+            Err(VerificationFailure::NotImplemented(_))
+        ));
+    }
+
+    #[test]
+    fn receipt_validation_still_rejects_structural_failure_before_direction_check() {
+        let mut receipt = minimal_receipt();
+        receipt.core_transition_evidence.subject_reference = vec![];
+        assert_eq!(
+            validate_receipt(&receipt),
+            Err(VerificationFailure::InvalidEvidence(
+                "empty_subject_reference"
+            ))
+        );
+    }
+
+    #[test]
+    fn receipt_validation_does_not_validate_roots() {
+        let mut receipt = minimal_receipt();
+        receipt.core_transition_evidence.pre_state_commitment = vec![0xaa; 32];
+        receipt.core_transition_evidence.post_state_commitment = vec![0xbb; 32];
+        assert!(matches!(
+            validate_receipt(&receipt),
+            Err(VerificationFailure::NotImplemented(_))
+        ));
+    }
+
+    #[test]
+    fn receipt_validation_does_not_inspect_transition_derivation_version_after_direction_check() {
+        let mut receipt = minimal_receipt();
+        receipt
+            .core_transition_evidence
+            .transition_derivation_version = SemanticVersion {
+            major: 99,
+            minor: 99,
+            patch: 99,
+        };
         assert!(matches!(
             validate_receipt(&receipt),
             Err(VerificationFailure::NotImplemented(_))

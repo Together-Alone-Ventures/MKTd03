@@ -3,7 +3,7 @@ use crate::scope_encoding::{encode_scope_reference, ScopeEncodingError};
 use crate::tags::TAG_RECORD_POSITION_KEY;
 
 #[derive(Debug, Eq, PartialEq)]
-enum RecordPositionError {
+pub(crate) enum RecordPositionError {
     EmptySubjectReference,
     EmptyScopeReference,
 }
@@ -28,7 +28,7 @@ fn trap_on_error<T>(result: Result<T, RecordPositionError>) -> T {
     }
 }
 
-fn compute_record_position_key(
+pub(crate) fn compute_record_position_key(
     subject_reference: &[u8],
     scope_reference: Option<&[u8]>,
 ) -> Result<[u8; 32], RecordPositionError> {
