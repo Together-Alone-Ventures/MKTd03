@@ -8,7 +8,7 @@ const TOMBSTONED_LEAF_DISCRIMINANT: [u8; 1] = [0x02];
 const TOMBSTONED_DELETION_STATE_MATERIAL_V1: [u8; 1] = [0x01];
 
 #[derive(Debug, Eq, PartialEq)]
-enum LeafHashError {
+pub(crate) enum LeafHashError {
     EmptySubjectReference,
     EmptyScopeReference,
     InvalidDeletionStateMaterial(Vec<u8>),
@@ -78,7 +78,7 @@ fn compute_occupied_leaf(
     ))
 }
 
-fn compute_tombstoned_leaf(
+pub(crate) fn compute_tombstoned_leaf(
     subject_reference: &[u8],
     scope_reference: Option<&[u8]>,
     deletion_state_material: &[u8],
