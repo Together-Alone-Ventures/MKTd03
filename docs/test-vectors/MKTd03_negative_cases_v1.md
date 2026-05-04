@@ -113,6 +113,13 @@ Later fixture sets may refine payload detail, but must not silently merge distin
 **Applies to:** receipt artifacts under validation whose `core_transition_evidence` omits the required `transition_derivation_version` field.
 **Fixture rule:** this family must remain distinct from wrong tree-proof material and from malformed certification/provenance posture, and it does not by itself authorise deeper verifier interpretation of the field's semantic content.
 
+### 3.6 Unsupported protocol version in receipt validation
+
+**Surface:** verifier-input receipt validation  
+**Primary outcome family:** `unsupported_protocol_version`  
+**Applies to:** receipt artifacts under validation whose `protocol_version` is not supported by the current verifier.  
+**Fixture rule:** this family must remain distinct from the library-facing `unsupported_version` family (§2.1), which applies to library request/retrieval surfaces; from `wrong_commitment_relationship`; and from `malformed_certification_provenance`. This family applies only to `protocol_version`; receipt-version handling is not defined by this family.
+
 ## 4. Library-facing negative cases
 
 ### 4.1 Blocked status: rebuild required
@@ -238,6 +245,14 @@ Fixtures must preserve the distinction even if both appear in a larger scenario.
 Subject/scope mismatch at the adapter boundary concerns boundary input or resolution failure.
 Subject/scope mismatch in a receipt concerns verifier-input evidence inconsistency.
 Fixtures must assign each case to the correct surface.
+
+### 6.5 Library-facing unsupported_version vs verifier-input unsupported_protocol_version
+
+Library-facing `unsupported_version` (§2.1) applies to library request/retrieval surfaces — `check_version_support`, `get_receipt`, and any other library-facing request whose declared version is not processable.
+
+Verifier-input `unsupported_protocol_version` (§3.6) applies to a receipt artifact already presented to verifier validation whose `protocol_version` is not supported by the current verifier.
+
+Fixtures must not collapse these two families.
 
 ## 5. Non-goals
 
