@@ -720,3 +720,45 @@ Do not revisit:
   - Whether S7-18 introduced pre-state commitment relationship validation, `transition_material` relationship validation, transition-derivation-version semantics, protocol/receipt/interface compatibility checks, certification/BLS validation, receipt issuance/storage, fixture-path validation, fixture-to-library bridging, or string-to-bytes bridging — settled no.
   - Whether S7-18 introduced `.did`, docs/test-vectors, fixture, Cargo, public API, hashing-primitive, `sha2`, tag, manual-preimage, `empty_subtree.rs`, or `record_position` semantic changes — settled no.
   - Whether accidental `docs/spec/hkjh.md` content should be treated as authored protocol material or recovered from history — settled no.
+
+## 2026-05-04 -- MILESTONE: S7-19 receipt pre-state commitment validation landed
+
+Decisions made:
+  - S7-19 is complete and pushed.
+  - `validate_receipt(receipt: &Receipt)` now validates the pre-state commitment relationship before the S7-18 post-state commitment relationship.
+  - The pre-state path computes the occupied leaf from `subject_reference`, `scope_reference`, and `transition_material`, reconstructs the pre-state root through the existing proof-envelope root-walk convention, wraps it with `pre_state_commitment`, and compares it against receipt evidence.
+  - Pre-state validation is intentionally ordered before post-state validation. If both pre-state and post-state commitments are mismatched but structure, direction, and root reconstruction are otherwise valid, `pre_state_commitment_mismatch` surfaces first.
+  - `compute_occupied_leaf` already existed with the expected signature and native `LeafHashError` surface; S7-19 only widened it to `pub(crate)`.
+  - `pre_state_root_reconstruction_invalid` exists as a defensive verifier mapping, but is currently unreachable through `validate_receipt` because S7-16 structural validation pre-empts the relevant input-shape failures.
+  - No fake success path was introduced. A receipt with valid pre-state and post-state commitment relationships still reaches downstream `NotImplemented(...)`.
+  - Existing S7-18 post-state failure strings and failure-mapping logic remain unchanged.
+
+Implementation details:
+  - Commit `fe5627f` — `implementation: wire S7-19 receipt pre-state commitment validation`.
+  - Files changed: `src/leaf_hash.rs`, `src/verifier.rs`.
+  - Final gates before commit:
+      - `cargo fmt --check` passed.
+      - `cargo test --offline --lib` passed: 149 tests.
+      - `cargo build --offline --target wasm32-unknown-unknown` passed.
+  - Final implementation commit was pushed to `origin/main`.
+
+Irreversible actions taken:
+  - `src/leaf_hash.rs`: widened `compute_occupied_leaf` from private to `pub(crate)`.
+  - `src/verifier.rs`: added pre-state commitment validation into `validate_receipt`.
+  - `src/verifier.rs`: reused the existing root-walk helper for both pre-state and post-state reconstruction.
+  - `src/verifier.rs`: rewrote the obsolete `receipt_validation_does_not_validate_pre_state_commitment_yet` test into `validate_receipt_rejects_pre_state_commitment_mismatch`.
+  - `src/verifier.rs`: adjusted existing S7-18 verifier-path test data only as needed to keep original post-state assertions reachable after pre-state validation became active.
+  - Removed misleading intermediate test coverage for `pre_state_root_reconstruction_invalid`; that failure family is defensive-only at current HEAD.
+
+Do not revisit:
+  - Whether S7-19 validates the pre-state commitment relationship — settled yes.
+  - Whether `transition_material` is semantically validated by S7-19 — settled no; it is only an occupied-leaf input.
+  - Whether `transition_derivation_version` value semantics are checked by S7-19 — settled no.
+  - Whether pre-state validation should run before post-state validation — settled yes for this verifier path; later reordering requires explicit re-gating.
+  - Whether S7-19 introduced public API, `.did`, fixture, docs/test-vectors, Cargo, certification, BLS, issuance, storage, MKTd02, zombie-core, or TinyPress changes — settled no.
+  - Whether `pre_state_root_reconstruction_invalid` needs direct verifier-path tests now — settled no; current structural pre-check makes it defensive/unreachable.
+
+Standing constraints surfaced:
+  - Defensive verifier mappings that are unreachable because of earlier structural gates should carry an explanatory comment to prevent misleading future tests.
+  - Gate A / Gate B reporting gates must remain separate review turns before wiring in future slices; collapsing inspection and implementation in one Codex pass created avoidable misleading test coverage during S7-19.
+  - The direction-mismatch test currently contains a redundant pre-state override inherited from the S7-19 adjustment pass. It is harmless because direction validation fires first, but it is a next-touch cleanup candidate.
