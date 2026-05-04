@@ -115,5 +115,22 @@ S7-20A TAXONOMY CLOSE:
 - Adjacent drift not fixed:
   - `docs/test-vectors/MKTd03_negative_cases_v1.md` has pre-existing heading-order oddity: `## 5. Non-goals` appears after `## 6. Cross-surface distinction rules for fixtures`.
 
+S7-20B IMPLEMENTATION CLOSE:
+- S7-20B landed at `d6bb609`.
+- Verifier precheck for unsupported `receipt.protocol_version` is now first in `validate_receipt`.
+- New `VerificationFailure` variant: `UnsupportedVersion(&'static str)`.
+- New tests:
+  - `validate_receipt_rejects_unsupported_protocol_version`
+  - `validate_receipt_checks_protocol_version_before_commitment_gates`
+- Lib test count after S7-20B: 151.
+- Out-of-scope confirmed at HEAD:
+  - `receipt_version` validation
+  - `interface_version` validation
+  - `transition_derivation_version` validation
+  - `PROTOCOL_VERSION` visibility unchanged; descendant-module access only
+- Adjacent drift not fixed:
+  - redundant pre-state override in direction-mismatch test (S7-19 carry-forward)
+  - heading-order oddity in `docs/test-vectors/MKTd03_negative_cases_v1.md` (`## 5. Non-goals` appears after `## 6`)
+
 NEXT BOUNDED SESSION:
-Scope S7-20B: protocol-version-only verifier precheck consuming the `unsupported_protocol_version` taxonomy family. Do not include receipt_version, interface_version, or transition_derivation_version without separate re-gating.
+Scope the next verifier/protocol slice from the post-S7-20B baseline. Do not assume the next slice until explicitly scoped and reviewed.

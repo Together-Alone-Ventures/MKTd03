@@ -786,3 +786,48 @@ Do not revisit:
 
 Standing constraint surfaced:
   - S7-20B may consume the `unsupported_protocol_version` verifier-input family, but must remain protocol-version-only unless separately re-gated.
+
+## 2026-05-04 -- MILESTONE: S7-20B protocol-version-only verifier precheck landed
+
+Decisions made:
+  - Added `VerificationFailure::UnsupportedVersion(&'static str)` variant.
+  - Added private `receipt_protocol_version_is_supported` helper in `src/verifier.rs`.
+    Helper takes `&crate::library::SemanticVersion` and `&crate::SemanticVersion` and
+    compares `major`/`minor`/`patch` field-by-field. This is the Gate A option (c) bridge.
+  - Inserted protocol-version precheck as the first operation in `validate_receipt`.
+  - Precheck rejects unsupported `receipt.protocol_version` with
+    `VerificationFailure::UnsupportedVersion("unsupported_protocol_version")` before
+    structural validation, proof parsing, root reconstruction, or commitment checks.
+  - `PROTOCOL_VERSION` visibility was deliberately not changed. The constant is private
+    at the crate root in `src/lib.rs` and remains accessible from `src/verifier.rs` via
+    Rust's descendant-module visibility rule. No visibility bump was required or
+    performed.
+  - `tests/fixtures.rs` match on `VerificationFailure` remains exhaustive because of an
+    existing `unexpected => panic!(...)` catch-all arm, not because no fixture
+    exercises the new variant. No edit was needed there.
+  - Receipt-version, interface-version, and `transition_derivation_version` remain
+    explicitly out of scope.
+
+Validation evidence:
+  - `cargo fmt --check` passed.
+  - `cargo test --offline --lib` passed: 151 tests (delta +2 from S7-19's 149).
+  - `cargo build --offline --target wasm32-unknown-unknown` passed.
+  - Diff confined to `src/verifier.rs`.
+
+Irreversible actions taken:
+  - Committed `d6bb609` — `verifier: reject unsupported receipt protocol version`.
+
+Do not revisit:
+  - Whether `validate_receipt` rejects unsupported `receipt.protocol_version` — settled yes.
+  - Whether the precheck fires before structural/proof/commitment gates — settled yes,
+    proven by `validate_receipt_checks_protocol_version_before_commitment_gates`.
+  - Whether the cross-surface bridge required type-surface consolidation — settled no.
+  - Whether `PROTOCOL_VERSION` needed a visibility bump — settled no.
+  - Whether `receipt_version`, `interface_version`, or `transition_derivation_version` were
+    in scope — settled no.
+
+Standing constraint surfaced:
+  - The redundant pre-state override in the direction-mismatch test remains
+    uncleaned. S7-20B added new tests at the bottom of the module rather than
+    editing the direction-mismatch test, so the next-touch cleanup window did not
+    open during this slice. Still a candidate for next-touch cleanup.
