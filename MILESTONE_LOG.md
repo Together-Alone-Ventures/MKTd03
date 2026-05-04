@@ -831,3 +831,40 @@ Standing constraint surfaced:
     uncleaned. S7-20B added new tests at the bottom of the module rather than
     editing the direction-mismatch test, so the next-touch cleanup window did not
     open during this slice. Still a candidate for next-touch cleanup.
+
+## 2026-05-04 -- MILESTONE: S7-21A receipt_version policy authority landed
+
+Decisions made:
+- S7-21A settled `Receipt.receipt_version` policy as a docs/authority slice only.
+- `receipt_version` is the receipt artifact schema/support version.
+- Current supported `receipt_version` is `1.0.0`.
+- Support is exact major/minor/patch equality only.
+- No conditionally-compatible receipt versions are currently defined.
+- `receipt_version` is distinct from `protocol_version`, `interface_version`, and `transition_derivation_version`.
+- Receipt-version support policy does not consult `interface_version`.
+- `transition_derivation_version` policy remains out of scope for the receipt-version policy section.
+- Verifier version-precheck ordering is now documented as: `protocol_version` first, `receipt_version` second, then structural/proof/commitment gates.
+- `docs/spec/MKTd03_versioning_compatibility_note_v1.md` §9 is the policy anchor for receipt-version support and verifier version-precheck ordering.
+- `docs/test-vectors/MKTd03_negative_cases_v1.md` now has verifier-input taxonomy for `unsupported_receipt_version`.
+- `interfaces/mktd03_library_interface_rules.md` v2 §1.4 now cross-references the receipt-version policy anchor.
+- `docs/planning/MKTd03_authority_map_v2.md` now points the versioning/compatibility row at §9.
+
+Irreversible actions taken:
+- Committed `1b65e4124d74bf182b429a6d219f2686550e829a` — `docs: settle receipt version policy`.
+
+Do not revisit:
+- Whether S7-21A should implement verifier code — settled no.
+- Whether S7-21A should add fixtures — settled no.
+- Whether S7-21A should touch ADR-03 — settled no.
+- Whether supported `receipt_version` is exact `1.0.0` only — settled yes.
+- Whether receipt-version support can be inferred from `protocol_version`, `interface_version`, or `transition_derivation_version` — settled no.
+- Whether receipt validation consults `interface_version` for receipt-version support — settled no.
+- Whether verifier version-precheck order is protocol → receipt → structural/proof/commitment — settled yes.
+- Whether the future S7-21B failure should stay in the unsupported-version family rather than proliferating a new family — settled default yes, subject only to Gate A inspection finding a concrete contradiction.
+- Whether `1.0.0` must be rewritten now into structured `{major, minor, patch}` wording — settled no; string rendering is acceptable for the policy note, while implementation/fixtures may encode SemanticVersion structurally.
+
+Standing constraints surfaced:
+- S7-21B must start with inspection before implementation.
+- S7-21B may implement the verifier `receipt_version` precheck only against the S7-21A policy anchor.
+- S7-21B must not reopen protocol_version, interface_version, or transition_derivation_version policy.
+- S7-21B must preserve protocol-version precheck before receipt-version precheck.

@@ -1,136 +1,46 @@
 DATE: 2026-05-04
 
 CURRENT GOAL:
-S7-19 implementation is complete and pushed. Continuity was repaired after a heredoc/paste-damaged close packet. Next bounded session should scope the next verifier/protocol slice; do not begin new implementation without a fresh scope packet and review.
+S7-21A is closed. Next bounded session is S7-21B verifier `receipt_version` precheck implementation scoping/inspection. Current HEAD after the substantive policy commit is `1b65e4124d74bf182b429a6d219f2686550e829a` until the continuity commit lands.
 
 IMPORTANT SCOPE RULE:
 This file is for MKTd03 protocol work only.
 TinyPress implementation sessions must use the TinyPress repo's own RESTART_PACK.md, not this file.
 
 CURRENT REPO STATE:
-- `b2c7be1` (HEAD -> main, origin/main) continuity: repair S7-19 close packet
+- `1b65e4124d74bf182b429a6d219f2686550e829a` docs: settle receipt version policy
+- `577e694` continuity: record S7-20A close
+- `d6bb609` verifier: reject unsupported receipt protocol version
+- `5ca2472` continuity: record S7-20B close
+- `aae057b` test-vectors: add verifier unsupported protocol version family
+- `6a0f830` continuity: finalize S7-19 close references
+- `b2c7be1` continuity: repair S7-19 close packet
 - `9404117` continuity: record S7-19 close
-- `fe5627f` implementation: wire S7-19 receipt pre-state commitment validation
-- `c8082fa` continuity: record S7-18 close
-- `2e1489b` chore: remove accidental uploaded spec file
-- `e5fee37` implementation: wire S7-18 receipt post-state commitment validation
-- `47b57a6` Add files via upload
-- `0d64a42` continuity: record S7-17 close
 
-NOTE:
-`9404117` was pushed but the terminal paste showed a heredoc/paste glitch that truncated/damaged the continuity packet. Forward repair commit `b2c7be1` is the clean S7-19 continuity close.
-
-S7-19 FINAL GATES:
-- `cargo fmt --check` passed.
-- `cargo test --offline --lib` passed: 149 tests.
-- `cargo build --offline --target wasm32-unknown-unknown` passed.
-- Implementation commit `fe5627f` pushed to `origin/main`.
-
-WHAT S7-19 DID:
-- Wired pre-state commitment relationship validation into `src/verifier.rs` `validate_receipt(receipt: &Receipt)`.
-- `validate_receipt` order is now:
-  1. S7-16 `CoreTransitionEvidence` structural pre-check.
-  2. S7-17 non-trapping `record_position_key` derivation.
-  3. S7-17 defensive proof-envelope parse.
-  4. S7-17 `validate_proof_directions`.
-  5. S7-19 non-trapping `compute_occupied_leaf`.
-  6. S7-19 pre-state root reconstruction from parsed `ProofEnvelope`.
-  7. S7-19 `pre_state_commitment` wrapper comparison.
-  8. S7-18 tombstoned-position extraction.
-  9. S7-18 non-trapping `compute_tombstoned_leaf`.
-  10. S7-18 post-state root reconstruction from parsed `ProofEnvelope`.
-  11. S7-18 `post_state_commitment` wrapper comparison.
-  12. Existing downstream `VerificationFailure::NotImplemented(...)` posture.
-
-S7-19 DETAILS:
-- `compute_occupied_leaf` already existed with signature:
-  `fn compute_occupied_leaf(subject_reference: &[u8], scope_reference: Option<&[u8]>, transition_material: &[u8; 32]) -> Result<[u8; 32], LeafHashError>`
-- S7-19 widened `compute_occupied_leaf` to `pub(crate)`, not `pub`.
-- The trap-returning public occupied-leaf wrapper remains intact.
-- Occupied-leaf inputs are:
-  - `subject_reference`
-  - `scope_reference`
-  - `transition_material`
-- Using `transition_material` as an occupied-leaf input is not transition-material relationship validation.
-- Pre-state root reconstruction uses the same `reconstruct_root_from_proof` helper/path convention as S7-18.
-- `pre_state_commitment` mismatch maps to:
-  - `VerificationFailure::InvalidEvidence("pre_state_commitment_mismatch")`
-- Occupied-leaf / pre-state reconstruction defensive failure maps to:
-  - `VerificationFailure::InvalidEvidence("pre_state_root_reconstruction_invalid")`
-- `pre_state_root_reconstruction_invalid` is currently defensive/unreachable through `validate_receipt`, because S7-16 structural validation pre-empts:
-  - empty `subject_reference`
-  - empty `scope_reference`
-  - non-32-byte `transition_material`
-- A comment was added in `src/verifier.rs` documenting that defensive mapping.
-
-TESTING / REVIEW NOTES:
-- Final lib test count is 149.
-- The obsolete S7-18 test `receipt_validation_does_not_validate_pre_state_commitment_yet` was rewritten as `validate_receipt_rejects_pre_state_commitment_mismatch`.
-- Misleading intermediate tests for `pre_state_root_reconstruction_invalid` were removed because they observed structural-gate failures, not the S7-19 failure family.
-- Existing structural-gate coverage exists for:
-  - `empty_subject_reference`
-  - `empty_scope_reference`
-  - `transition_material_unexpected_length`
-- Existing S7-18 verifier-path tests were adjusted only to provide valid pre-state material where needed so their original post-state assertions remain reachable.
-- Direction mismatch remains upstream of pre-state and post-state commitment validation.
-- One redundant pre-state override remains in the direction-mismatch test. It is harmless because the test exits before pre-state validation. Candidate for next-touch cleanup only.
+S7-21A CLOSE:
+- C reviewed and approved the S7-21A docs diff as-is after cleanup.
+- S7-21A landed at `1b65e4124d74bf182b429a6d219f2686550e829a`.
+- S7-21A is docs/authority only. No verifier implementation shipped in this slice.
+- `docs/spec/MKTd03_versioning_compatibility_note_v1.md` §9 now anchors `receipt_version` policy:
+  - `receipt_version` is the receipt artifact schema/support version
+  - supported value is exact `1.0.0`
+  - support is exact major/minor/patch equality only
+  - no conditionally-compatible receipt versions are currently defined
+  - receipt validation does not consult `interface_version`
+  - `transition_derivation_version` policy remains out of scope
+  - verifier version-precheck order is documented as protocol first, receipt second, then structural/proof/commitment gates
+- `docs/test-vectors/MKTd03_negative_cases_v1.md` now includes:
+  - verifier-input family `unsupported_receipt_version` at §3.7
+  - cross-surface distinction rule at §6.6
+- `interfaces/mktd03_library_interface_rules.md` v2 §1.4 now cross-references the receipt-version policy anchor.
+- `docs/planning/MKTd03_authority_map_v2.md` versioning/compatibility row now points to §9.
 
 BOUNDARIES STILL IN FORCE:
-- No transition-material relationship validation.
-- No `transition_derivation_version` value semantics.
-- No pre/post transition semantic validation.
-- No protocol-version / receipt-version / interface-version compatibility checks.
-- No certification material validation.
-- No BLS certificate validation.
-- No certified-data commitment validation.
-- No receipt issuance or receipt storage.
-- No Phase A/B/C issuance/finalization logic.
-- No fixture-path validation.
-- No fixture-to-library bridge.
-- No string-to-bytes bridge.
+- No Rust or verifier implementation changes in S7-21A.
 - No `.did` changes.
-- No docs/test-vectors or fixture changes.
+- No fixture additions or fixture-manifest changes.
 - No Cargo changes.
-- No public canister API or public Rust API expansion; only `pub(crate)` internal visibility.
-- No new hashing primitives, new tags, or new manual preimage semantics.
-- No `empty_subtree.rs` changes.
-- No `record_position` semantics changes.
-- No proof-direction semantics changes.
-- No proof-envelope serialization changes.
-- No MKTd02, zombie-core, TinyPress, or `canisters/mktd-store/**` consumption.
-
-PROCESS LESSON FROM S7-19:
-Gate A / Gate B reporting gates must be real review turns before wiring. In S7-19 the gates and wiring effectively collapsed into one Codex pass, which produced two misleading intermediate tests. The cleanup succeeded, but future slices should enforce: inspect/report first, G/C review second, implementation third.
-
-S7-20A TAXONOMY CLOSE:
-- S7-20A landed at `aae057b`.
-- Added verifier-input taxonomy authority for unsupported `receipt.protocol_version`:
-  - `docs/test-vectors/MKTd03_negative_cases_v1.md` §3.6 `unsupported_protocol_version`
-  - §6.5 separating library-facing `unsupported_version` from verifier-input `unsupported_protocol_version`
-- No code, fixtures, interfaces, Cargo files, or version constants were changed.
-- Reserved for S7-20B:
-  - future verifier failure mapping `VerificationFailure::UnsupportedVersion("unsupported_protocol_version")`
-  - protocol-version-only verifier precheck
-  - receipt_version, interface_version, and transition_derivation_version remain out of scope
-- Adjacent drift not fixed:
-  - `docs/test-vectors/MKTd03_negative_cases_v1.md` has pre-existing heading-order oddity: `## 5. Non-goals` appears after `## 6. Cross-surface distinction rules for fixtures`.
-
-S7-20B IMPLEMENTATION CLOSE:
-- S7-20B landed at `d6bb609`.
-- Verifier precheck for unsupported `receipt.protocol_version` is now first in `validate_receipt`.
-- New `VerificationFailure` variant: `UnsupportedVersion(&'static str)`.
-- New tests:
-  - `validate_receipt_rejects_unsupported_protocol_version`
-  - `validate_receipt_checks_protocol_version_before_commitment_gates`
-- Lib test count after S7-20B: 151.
-- Out-of-scope confirmed at HEAD:
-  - `receipt_version` validation
-  - `interface_version` validation
-  - `transition_derivation_version` validation
-  - `PROTOCOL_VERSION` visibility unchanged; descendant-module access only
-- Adjacent drift not fixed:
-  - redundant pre-state override in direction-mismatch test (S7-19 carry-forward)
-  - heading-order oddity in `docs/test-vectors/MKTd03_negative_cases_v1.md` (`## 5. Non-goals` appears after `## 6`)
+- No policy reopening for `protocol_version`, `interface_version`, or `transition_derivation_version`.
 
 NEXT BOUNDED SESSION:
-Scope the next verifier/protocol slice from the post-S7-20B baseline. Do not assume the next slice until explicitly scoped and reviewed.
+S7-21B should be implementation only after Gate A inspection. No policy reopening. Scope/inspection first, then implementation only against the S7-21A receipt-version policy anchor.
