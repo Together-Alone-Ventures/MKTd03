@@ -742,7 +742,7 @@ Implementation details:
       - `cargo build --offline --target wasm32-unknown-unknown` passed.
   - Implementation commit was pushed to `origin/main`.
   - Continuity commit `9404117` was pushed but contained a heredoc/paste-damaged continuity packet.
-  - This follow-up repair commit replaces the damaged S7-19 continuity block and restores the restart pack.
+  - Forward repair commit `b2c7be1` replaces the damaged S7-19 continuity block and restores the restart pack.
 
 Irreversible actions taken:
   - `src/leaf_hash.rs`: widened `compute_occupied_leaf` from private to `pub(crate)`.

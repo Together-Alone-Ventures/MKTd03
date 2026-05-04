@@ -8,6 +8,7 @@ This file is for MKTd03 protocol work only.
 TinyPress implementation sessions must use the TinyPress repo's own RESTART_PACK.md, not this file.
 
 CURRENT REPO STATE:
+- `b2c7be1` (HEAD -> main, origin/main) continuity: repair S7-19 close packet
 - `9404117` continuity: record S7-19 close
 - `fe5627f` implementation: wire S7-19 receipt pre-state commitment validation
 - `c8082fa` continuity: record S7-18 close
@@ -17,7 +18,7 @@ CURRENT REPO STATE:
 - `0d64a42` continuity: record S7-17 close
 
 NOTE:
-`9404117` was pushed but the terminal paste showed a heredoc/paste glitch that truncated/damaged the continuity packet. A follow-up repair commit should be treated as the clean S7-19 continuity close.
+`9404117` was pushed but the terminal paste showed a heredoc/paste glitch that truncated/damaged the continuity packet. Forward repair commit `b2c7be1` is the clean S7-19 continuity close.
 
 S7-19 FINAL GATES:
 - `cargo fmt --check` passed.
