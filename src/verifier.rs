@@ -29,10 +29,20 @@ fn receipt_protocol_version_is_supported(
         && receipt_protocol_version.patch == supported_protocol_version.patch
 }
 
+fn receipt_version_is_supported(receipt_version: &crate::library::SemanticVersion) -> bool {
+    receipt_version.major == 1 && receipt_version.minor == 0 && receipt_version.patch == 0
+}
+
 pub fn validate_receipt(receipt: &Receipt) -> Result<(), VerificationFailure> {
     if !receipt_protocol_version_is_supported(&receipt.protocol_version, &crate::PROTOCOL_VERSION) {
         return Err(VerificationFailure::UnsupportedVersion(
             "unsupported_protocol_version",
+        ));
+    }
+
+    if !receipt_version_is_supported(&receipt.receipt_version) {
+        return Err(VerificationFailure::UnsupportedVersion(
+            "unsupported_receipt_version",
         ));
     }
 
@@ -767,6 +777,60 @@ mod tests {
             validate_receipt(&receipt),
             Err(VerificationFailure::UnsupportedVersion(
                 "unsupported_protocol_version"
+            ))
+        );
+    }
+
+    #[test]
+    fn validate_receipt_rejects_unsupported_receipt_version() {
+        let mut receipt = minimal_receipt();
+        receipt.receipt_version = SemanticVersion {
+            major: 9,
+            minor: 0,
+            patch: 0,
+        };
+        assert_eq!(
+            validate_receipt(&receipt),
+            Err(VerificationFailure::UnsupportedVersion(
+                "unsupported_receipt_version"
+            ))
+        );
+    }
+
+    #[test]
+    fn validate_receipt_checks_protocol_version_before_receipt_version() {
+        let mut receipt = minimal_receipt();
+        receipt.protocol_version = SemanticVersion {
+            major: 9,
+            minor: 0,
+            patch: 0,
+        };
+        receipt.receipt_version = SemanticVersion {
+            major: 9,
+            minor: 0,
+            patch: 0,
+        };
+        assert_eq!(
+            validate_receipt(&receipt),
+            Err(VerificationFailure::UnsupportedVersion(
+                "unsupported_protocol_version"
+            ))
+        );
+    }
+
+    #[test]
+    fn validate_receipt_checks_receipt_version_before_commitment_gates() {
+        let mut receipt = minimal_receipt();
+        receipt.core_transition_evidence.post_state_commitment = vec![0x55; 32];
+        receipt.receipt_version = SemanticVersion {
+            major: 9,
+            minor: 0,
+            patch: 0,
+        };
+        assert_eq!(
+            validate_receipt(&receipt),
+            Err(VerificationFailure::UnsupportedVersion(
+                "unsupported_receipt_version"
             ))
         );
     }
