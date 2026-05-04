@@ -14,12 +14,28 @@ use crate::state_commitment::{post_state_commitment, pre_state_commitment};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum VerificationFailure {
+    UnsupportedVersion(&'static str),
     InvalidEvidence(&'static str),
     Deferred(&'static str),
     NotImplemented(&'static str),
 }
 
+fn receipt_protocol_version_is_supported(
+    receipt_protocol_version: &crate::library::SemanticVersion,
+    supported_protocol_version: &crate::SemanticVersion,
+) -> bool {
+    receipt_protocol_version.major == supported_protocol_version.major
+        && receipt_protocol_version.minor == supported_protocol_version.minor
+        && receipt_protocol_version.patch == supported_protocol_version.patch
+}
+
 pub fn validate_receipt(receipt: &Receipt) -> Result<(), VerificationFailure> {
+    if !receipt_protocol_version_is_supported(&receipt.protocol_version, &crate::PROTOCOL_VERSION) {
+        return Err(VerificationFailure::UnsupportedVersion(
+            "unsupported_protocol_version",
+        ));
+    }
+
     if let Err(err) = validate_core_transition_evidence(&receipt.core_transition_evidence) {
         return Err(VerificationFailure::InvalidEvidence(
             map_core_transition_evidence_error(err),
@@ -720,5 +736,38 @@ mod tests {
             validate_receipt(&receipt),
             Err(VerificationFailure::NotImplemented(_))
         ));
+    }
+
+    #[test]
+    fn validate_receipt_rejects_unsupported_protocol_version() {
+        let mut receipt = minimal_receipt();
+        receipt.protocol_version = SemanticVersion {
+            major: 9,
+            minor: 0,
+            patch: 0,
+        };
+        assert_eq!(
+            validate_receipt(&receipt),
+            Err(VerificationFailure::UnsupportedVersion(
+                "unsupported_protocol_version"
+            ))
+        );
+    }
+
+    #[test]
+    fn validate_receipt_checks_protocol_version_before_commitment_gates() {
+        let mut receipt = minimal_receipt();
+        receipt.core_transition_evidence.post_state_commitment = vec![0x55; 32];
+        receipt.protocol_version = SemanticVersion {
+            major: 9,
+            minor: 0,
+            patch: 0,
+        };
+        assert_eq!(
+            validate_receipt(&receipt),
+            Err(VerificationFailure::UnsupportedVersion(
+                "unsupported_protocol_version"
+            ))
+        );
     }
 }
