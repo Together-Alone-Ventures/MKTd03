@@ -1,7 +1,7 @@
-DATE: 2026-05-01
+DATE: 2026-05-04
 
 CURRENT GOAL:
-S7-17 is closed and pushed at `e6b136c`. Repo-wide `cargo fmt --check` remains a hard gate. The next slice is TBD / await G+C scoping.
+S7-18 is closed and pushed at `e5fee37`. Repo-wide `cargo fmt --check` remains a hard gate. The next slice is TBD / await G+C scoping.
 
 IMPORTANT SCOPE RULE:
 This file is for MKTd03 protocol work only.
@@ -37,7 +37,9 @@ S7-14 landed at d601375 — `implementation: add S7-14 deletion-state material v
 S7-15 landed at d250051 — `implementation: add S7-15 core transition evidence validator`.
 S7-16 landed at 928c9be — `implementation: wire S7-16 receipt structural precheck`.
 S7-17 landed at e6b136c — `implementation: wire S7-17 receipt direction-vs-position validation`.
-MKTd03 main is now at or beyond `e6b136c` on the post-S7-17 continuity line.
+S7-18 landed at e5fee37 — `implementation: wire S7-18 receipt post-state commitment validation`.
+Accidental web-upload commit 47b57a6 added `docs/spec/hkjh.md`; forward cleanup commit 2e1489b removed it.
+MKTd03 main is now at or beyond `2e1489b` on the post-S7-18 continuity line.
 MKTd03 remains dApp-agnostic; TinyPress remains a reference target only.
 
 HASHING / SMT-FOUNDATION BLOCK SUMMARY:
@@ -137,6 +139,29 @@ No `.did`, Cargo, docs/spec, docs/test-vectors, fixture, public API, hashing/pre
 Current library test count after S7-17: 141 tests passing.
 wasm build passes.
 
+RECEIPT POST-STATE COMMITMENT SUMMARY:
+
+S7-18 wires post-state root/commitment relationship validation into `validate_receipt(receipt: &Receipt)` after the S7-17 structural and direction-consistency checks.
+
+S7-18 extracts only `TombstonedPosition(bytes)` via a discriminating helper, derives the tombstoned leaf through the non-trapping crate-internal Result path, reconstructs the post-state root from the parsed proof envelope, and compares the wrapped `post_state_commitment`.
+
+S7-18 validates post-state commitment relationship only. It does not validate pre-state commitment relationship, transition-material relationship, version semantics, certification/BLS, or issuance/finalization logic.
+
+`compute_tombstoned_leaf` and `LeafHashError` were bumped to `pub(crate)`, not `pub`; `hash_tombstoned_leaf` remains intact and is not called from `validate_receipt`.
+
+No `.did`, docs/spec protocol changes, docs/test-vectors, fixture, Cargo, public API, hashing-primitive, `sha2`, tag, manual-preimage, `empty_subtree.rs`, or `record_position` semantic changes were made in S7-18.
+
+Current library test count after S7-18: 146 tests passing.
+wasm build passes.
+
+REBASE / HYGIENE NOTE:
+
+The canonical pushed S7-18 implementation reference is `e5fee37`.
+
+Any differing pre-rebase local S7-18 hash is superseded by `e5fee37`; no history rewrite occurred on the remote, and the hash change came from rebasing local-only commits before push.
+
+Treat `docs/spec/hkjh.md` as accidental upload residue only. It was removed by forward cleanup commit `2e1489b` and must not be treated as protocol/spec content or as a recovery target.
+
 KNOWN TRACKED DEBT:
 
 Parallel Candid-bound and reference-runtime type surfaces are tracked in `MILESTONE_LOG` at 523fe00.
@@ -223,7 +248,7 @@ The next slice is TBD / await G+C scoping.
 
 This is not yet approved for implementation and must not be treated as settled continuity.
 
-Do not infer proof-verification semantics or receipt semantics from S7-17.
+Do not infer proof-verification semantics or receipt semantics from S7-18.
 
 Standing constraints to carry forward:
 - Future envelope-adjacent work must preserve the settled S7-12 envelope posture: 2-byte big-endian step count followed by exactly 256 serialized frames.
@@ -233,4 +258,4 @@ Standing constraints to carry forward:
 
 SAFE RESTART PROMPT:
 
-MKTd03 main is now on the post-S7-17 continuity line beyond implementation commit `e6b136c`. S7-9 added `transition_material` derivation, S7-10 added wrapper-only `pre_state_commitment` / `post_state_commitment`, S7-11 added per-frame tree-proof serialization/parsing, S7-12 added fixed-envelope proof serialization/parsing, S7-13 added structural direction-vs-record-position-key validation over an already-parsed proof envelope, S7-14 added a standalone private structural validator for `DeletionStateMaterial`, S7-15 added a private structural-readiness validator for `CoreTransitionEvidence`, S7-16 wired that structural pre-check into `validate_receipt`, and S7-17 wired direction-vs-record-position consistency into the same receipt-validation path without opening proof or certification semantics. S7-17 remains structural only and must not be treated as proof verification, root recomputation, claimed-root comparison, empty-subtree reconstruction, sibling validation, transition-derivation-version semantics, compatibility semantics, or receipt issuance/storage logic. No `.did`, Cargo, docs/spec, docs/test-vectors, fixtures, hashing/preimage/tag bytes, public canister API, or `leaf_hash.rs` changes were made in S7-17. Repo-wide `cargo fmt --check` remains a hard gate. Current library test count is 141 passing and wasm build passes. Parallel Candid-bound and reference-runtime type-surface debt is tracked in `MILESTONE_LOG` at 523fe00 and should not be consolidated absent a concrete call site or later §11/§12 pressure. The next slice is TBD / await G+C scoping. Future review bundles must include full source file contents and full unified diffs.
+MKTd03 main is now on the post-S7-18 continuity line beyond implementation commit `e5fee37` and hygiene cleanup commit `2e1489b`. S7-9 added `transition_material` derivation, S7-10 added wrapper-only `pre_state_commitment` / `post_state_commitment`, S7-11 added per-frame tree-proof serialization/parsing, S7-12 added fixed-envelope proof serialization/parsing, S7-13 added structural direction-vs-record-position-key validation over an already-parsed proof envelope, S7-14 added a standalone private structural validator for `DeletionStateMaterial`, S7-15 added a private structural-readiness validator for `CoreTransitionEvidence`, S7-16 wired that structural pre-check into `validate_receipt`, S7-17 wired direction-vs-record-position consistency into the same receipt-validation path, and S7-18 added post-state root/commitment relationship validation for the tombstoned-path case. S7-18 validates only the post-state commitment relationship and must not be treated as pre-state commitment validation, transition-material validation, version semantics, certification/BLS validation, proof verification, or issuance/storage logic. `e5fee37` is the canonical pushed S7-18 implementation reference even if a different local-only pre-rebase hash appeared before push. Accidental `docs/spec/hkjh.md` upload residue was removed by `2e1489b` and must not be treated as protocol content or a recovery target. Repo-wide `cargo fmt --check` remains a hard gate. Current library test count is 146 passing and wasm build passes. Parallel Candid-bound and reference-runtime type-surface debt is tracked in `MILESTONE_LOG` at 523fe00 and should not be consolidated absent a concrete call site or later §11/§12 pressure. The next slice is TBD / await G+C scoping. Future review bundles must include full source file contents and full unified diffs.

@@ -685,3 +685,38 @@ Future/open tracking only:
 Do not revisit:
   - Whether S7-17 introduced `.did`, docs/spec, docs/test-vectors, fixture, Cargo, public API, or `leaf_hash.rs` changes — settled no.
   - Whether S7-17 introduced fixture-to-library coercion, `FixtureReceipt -> Receipt` adapters, string-to-bytes bridging, fixture-validator rewiring, proof verification, `record_position_key` derivation semantics beyond calling the existing primitive, root recomputation, claimed-root comparison, empty-subtree reconstruction, sibling-content validation, transition-derivation-version value semantics, protocol/receipt/interface compatibility checks, certification/BLS validation, receipt issuance/storage, hashing, tags, or preimage assembly — settled no.
+
+## 2026-05-04 -- MILESTONE: S7-18 receipt post-state commitment validation landed
+
+Decisions made:
+  - S7-18 wired post-state root/commitment relationship validation into `src/verifier.rs` `validate_receipt(receipt: &Receipt)` at canonical pushed commit `e5fee37`.
+  - `validate_receipt` order is now: S7-16 structural pre-check, S7-17 non-trapping `record_position_key` derivation, S7-17 defensive proof-envelope parse, S7-17 `validate_proof_directions`, S7-18 tombstoned-position extraction, S7-18 non-trapping `compute_tombstoned_leaf`, S7-18 post-state root reconstruction from the parsed `ProofEnvelope`, S7-18 `post_state_commitment` wrapper comparison, then the existing downstream `VerificationFailure::NotImplemented(...)` posture.
+  - `compute_tombstoned_leaf` and `LeafHashError` were bumped to `pub(crate)`, not `pub`.
+  - The trap-returning public `hash_tombstoned_leaf` remains intact and is not called from `validate_receipt`.
+  - `tombstoned_position_bytes` now discriminates deletion-state material variants: `TombstonedPosition(bytes) -> Some(bytes)` and `EmptyPosition(_) -> None`.
+  - `EmptyPosition(_)` in the receipt-validation path maps defensively to `VerificationFailure::InvalidEvidence("post_state_root_reconstruction_invalid")`.
+  - Residual `compute_tombstoned_leaf` failure maps to `VerificationFailure::InvalidEvidence("post_state_root_reconstruction_invalid")`.
+  - Post-state commitment mismatch maps to `VerificationFailure::InvalidEvidence("post_state_commitment_mismatch")`.
+  - `reconstruct_root_from_proof` documents the settled S7-18 root-walk convention: frames leaf-to-root; `CanonicalEmpty` uses `empty_subtree_root(frame_index)`; `Left` means `hash_internal_node(current, sibling)`; `Right` means `hash_internal_node(sibling, current)`.
+  - Direct slice comparison is used for `post_state_commitment`; no `slice_to_digest` / `copy_from_slice` helper remains.
+  - Final S7-18 verifier-path test set landed after cleanup.
+
+Validation evidence:
+  - `cargo fmt --check` passed.
+  - `cargo test --offline --lib` passed: 146 tests.
+  - `cargo build --offline --target wasm32-unknown-unknown` passed.
+
+Accidental upload cleanup:
+  - Remote briefly carried accidental web-upload commit `47b57a6` adding `docs/spec/hkjh.md`.
+  - Forward cleanup commit `2e1489b` removed `docs/spec/hkjh.md`.
+  - Treat `hkjh.md` as accidental upload residue only, not as protocol/spec content and not as a recovery target. Do not revisit unless the file reappears.
+
+Forward-looking note:
+  - S7-19 is likely the symmetric pre-state commitment slice.
+  - It should reuse the S7-18 root-walk helper pattern and will likely need a parallel `pub(crate)` co-edit exposing `compute_occupied_leaf` and `LeafHashError`.
+  - Remaining post-S7-18 gaps are pre-state relationship, `transition_material` relationship, version semantics, certification/BLS, and issuance/finalization.
+
+Do not revisit:
+  - Whether S7-18 introduced pre-state commitment relationship validation, `transition_material` relationship validation, transition-derivation-version semantics, protocol/receipt/interface compatibility checks, certification/BLS validation, receipt issuance/storage, fixture-path validation, fixture-to-library bridging, or string-to-bytes bridging — settled no.
+  - Whether S7-18 introduced `.did`, docs/test-vectors, fixture, Cargo, public API, hashing-primitive, `sha2`, tag, manual-preimage, `empty_subtree.rs`, or `record_position` semantic changes — settled no.
+  - Whether accidental `docs/spec/hkjh.md` content should be treated as authored protocol material or recovered from history — settled no.
