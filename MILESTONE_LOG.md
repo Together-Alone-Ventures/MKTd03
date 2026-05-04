@@ -736,11 +736,13 @@ Decisions made:
 Implementation details:
   - Commit `fe5627f` — `implementation: wire S7-19 receipt pre-state commitment validation`.
   - Files changed: `src/leaf_hash.rs`, `src/verifier.rs`.
-  - Final gates before commit:
+  - Final gates before implementation commit:
       - `cargo fmt --check` passed.
       - `cargo test --offline --lib` passed: 149 tests.
       - `cargo build --offline --target wasm32-unknown-unknown` passed.
-  - Final implementation commit was pushed to `origin/main`.
+  - Implementation commit was pushed to `origin/main`.
+  - Continuity commit `9404117` was pushed but contained a heredoc/paste-damaged continuity packet.
+  - This follow-up repair commit replaces the damaged S7-19 continuity block and restores the restart pack.
 
 Irreversible actions taken:
   - `src/leaf_hash.rs`: widened `compute_occupied_leaf` from private to `pub(crate)`.
@@ -749,13 +751,14 @@ Irreversible actions taken:
   - `src/verifier.rs`: rewrote the obsolete `receipt_validation_does_not_validate_pre_state_commitment_yet` test into `validate_receipt_rejects_pre_state_commitment_mismatch`.
   - `src/verifier.rs`: adjusted existing S7-18 verifier-path test data only as needed to keep original post-state assertions reachable after pre-state validation became active.
   - Removed misleading intermediate test coverage for `pre_state_root_reconstruction_invalid`; that failure family is defensive-only at current HEAD.
+  - Added a defensive comment in `src/verifier.rs` explaining why `pre_state_root_reconstruction_invalid` is not directly verifier-path-tested at current HEAD.
 
 Do not revisit:
   - Whether S7-19 validates the pre-state commitment relationship — settled yes.
   - Whether `transition_material` is semantically validated by S7-19 — settled no; it is only an occupied-leaf input.
   - Whether `transition_derivation_version` value semantics are checked by S7-19 — settled no.
   - Whether pre-state validation should run before post-state validation — settled yes for this verifier path; later reordering requires explicit re-gating.
-  - Whether S7-19 introduced public API, `.did`, fixture, docs/test-vectors, Cargo, certification, BLS, issuance, storage, MKTd02, zombie-core, or TinyPress changes — settled no.
+  - Whether S7-19 introduced public API, `.did`, fixture, docs/test-vectors, Cargo, certification, BLS, issuance, storage, MKTd02, zombie-core, TinyPress, or `canisters/mktd-store/**` changes — settled no.
   - Whether `pre_state_root_reconstruction_invalid` needs direct verifier-path tests now — settled no; current structural pre-check makes it defensive/unreachable.
 
 Standing constraints surfaced:
