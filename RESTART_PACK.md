@@ -102,5 +102,18 @@ BOUNDARIES STILL IN FORCE:
 PROCESS LESSON FROM S7-19:
 Gate A / Gate B reporting gates must be real review turns before wiring. In S7-19 the gates and wiring effectively collapsed into one Codex pass, which produced two misleading intermediate tests. The cleanup succeeded, but future slices should enforce: inspect/report first, G/C review second, implementation third.
 
+S7-20A TAXONOMY CLOSE:
+- S7-20A landed at `aae057b`.
+- Added verifier-input taxonomy authority for unsupported `receipt.protocol_version`:
+  - `docs/test-vectors/MKTd03_negative_cases_v1.md` §3.6 `unsupported_protocol_version`
+  - §6.5 separating library-facing `unsupported_version` from verifier-input `unsupported_protocol_version`
+- No code, fixtures, interfaces, Cargo files, or version constants were changed.
+- Reserved for S7-20B:
+  - future verifier failure mapping `VerificationFailure::UnsupportedVersion("unsupported_protocol_version")`
+  - protocol-version-only verifier precheck
+  - receipt_version, interface_version, and transition_derivation_version remain out of scope
+- Adjacent drift not fixed:
+  - `docs/test-vectors/MKTd03_negative_cases_v1.md` has pre-existing heading-order oddity: `## 5. Non-goals` appears after `## 6. Cross-surface distinction rules for fixtures`.
+
 NEXT BOUNDED SESSION:
-Scope the next verifier/protocol slice from the post-S7-19 baseline. Do not assume the next slice until explicitly scoped and reviewed.
+Scope S7-20B: protocol-version-only verifier precheck consuming the `unsupported_protocol_version` taxonomy family. Do not include receipt_version, interface_version, or transition_derivation_version without separate re-gating.

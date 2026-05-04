@@ -765,3 +765,24 @@ Standing constraints surfaced:
   - Defensive verifier mappings that are unreachable because of earlier structural gates should carry an explanatory comment to prevent misleading future tests.
   - Gate A / Gate B reporting gates must remain separate review turns before wiring in future slices; collapsing inspection and implementation in one Codex pass created avoidable misleading test coverage during S7-19.
   - The direction-mismatch test currently contains a redundant pre-state override inherited from the S7-19 adjustment pass. It is harmless because direction validation fires first, but it is a next-touch cleanup candidate.
+
+## 2026-05-04 -- MILESTONE: S7-20A taxonomy authority for verifier-side unsupported protocol version landed
+
+Decisions made:
+  - Added §3.6 verifier-input family `unsupported_protocol_version` to `docs/test-vectors/MKTd03_negative_cases_v1.md`.
+  - Added §6.5 cross-reference distinguishing library-facing `unsupported_version` (§2.1) from verifier-input `unsupported_protocol_version` (§3.6).
+  - Reserved future verifier failure mapping `VerificationFailure::UnsupportedVersion("unsupported_protocol_version")` for consumption by S7-20B. This reservation is captured in MILESTONE_LOG and should be restated in the S7-20B scope packet, not in the normative taxonomy doc.
+  - Receipt-version, interface-version, and transition_derivation_version remain explicitly out of scope for S7-20A and the immediately-following S7-20B implementation slice.
+  - The pre-existing heading-order oddity in `docs/test-vectors/MKTd03_negative_cases_v1.md` — `## 5. Non-goals` appearing after `## 6. Cross-surface distinction rules for fixtures` — was identified and deliberately not fixed in S7-20A because the slice was deterministic taxonomy-only.
+
+Irreversible actions taken:
+  - Committed `aae057b` — `test-vectors: add verifier unsupported protocol version family`
+
+Do not revisit:
+  - Whether verifier-side unsupported protocol version has taxonomy authority — settled yes.
+  - Whether this family reuses the library-facing `unsupported_version` family — settled no.
+  - Whether receipt-version handling was settled by S7-20A — settled no.
+  - Whether S7-20A should have implemented verifier code — settled no.
+
+Standing constraint surfaced:
+  - S7-20B may consume the `unsupported_protocol_version` verifier-input family, but must remain protocol-version-only unless separately re-gated.
