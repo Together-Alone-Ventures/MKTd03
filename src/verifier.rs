@@ -4,13 +4,13 @@ use crate::core_transition_evidence_check::{
 use crate::empty_subtree::empty_subtree_root;
 use crate::fixtures::{FixtureReceipt, VerifierReceiptFixture};
 use crate::internal_node::hash_internal_node;
-use crate::leaf_hash::compute_tombstoned_leaf;
+use crate::leaf_hash::{compute_occupied_leaf, compute_tombstoned_leaf};
 use crate::library::{CertificationProvenancePosture, CertificationProvenanceRoute, Receipt};
 use crate::proof_direction_check::validate_proof_directions;
 use crate::proof_envelope::{parse_proof_envelope, ProofEnvelope};
 use crate::proof_frame::{ProofDirection, ProofFrameSibling};
 use crate::record_position::compute_record_position_key;
-use crate::state_commitment::post_state_commitment;
+use crate::state_commitment::{post_state_commitment, pre_state_commitment};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum VerificationFailure {
@@ -37,6 +37,37 @@ pub fn validate_receipt(receipt: &Receipt) -> Result<(), VerificationFailure> {
 
     validate_proof_directions(&parsed_tree_proof, &record_position_key)
         .map_err(|_| VerificationFailure::InvalidEvidence("tree_proof_direction_mismatch"))?;
+
+    // Defensive: validate_core_transition_evidence (S7-16) already rejects every
+    // input shape that can produce these errors (empty subject_reference, empty
+    // scope_reference, non-32-byte transition_material). Mapping retained so this
+    // call site stays correct if structural pre-check is ever loosened or
+    // compute_occupied_leaf grows additional failure modes.
+    let transition_material =
+        transition_material_bytes(&receipt.core_transition_evidence.transition_material).ok_or(
+            VerificationFailure::InvalidEvidence("pre_state_root_reconstruction_invalid"),
+        )?;
+
+    let computed_occupied_leaf = compute_occupied_leaf(
+        &receipt.core_transition_evidence.subject_reference,
+        receipt.core_transition_evidence.scope_reference.as_deref(),
+        transition_material,
+    )
+    .map_err(|_| VerificationFailure::InvalidEvidence("pre_state_root_reconstruction_invalid"))?;
+
+    let computed_pre_state_root =
+        reconstruct_root_from_proof(computed_occupied_leaf, &parsed_tree_proof);
+    let computed_pre_state_commitment = pre_state_commitment(&computed_pre_state_root);
+    if computed_pre_state_commitment.as_ref()
+        != receipt
+            .core_transition_evidence
+            .pre_state_commitment
+            .as_slice()
+    {
+        return Err(VerificationFailure::InvalidEvidence(
+            "pre_state_commitment_mismatch",
+        ));
+    }
 
     let tombstoned_position_bytes =
         tombstoned_position_bytes(&receipt.core_transition_evidence.deletion_state_material)
@@ -78,6 +109,10 @@ fn tombstoned_position_bytes(
         crate::library::DeletionStateMaterial::TombstonedPosition(bytes) => Some(bytes),
         crate::library::DeletionStateMaterial::EmptyPosition(_) => None,
     }
+}
+
+fn transition_material_bytes(transition_material: &[u8]) -> Option<&[u8; 32]> {
+    transition_material.try_into().ok()
 }
 
 // S7-18 root-walk convention:
@@ -339,9 +374,24 @@ mod tests {
         post_state_commitment(&reconstruct_root_from_proof(leaf_hash, &envelope)).to_vec()
     }
 
+    fn matching_pre_state_commitment(
+        subject_reference: &[u8],
+        scope_reference: Option<&[u8]>,
+        transition_material: &[u8; 32],
+        tree_proof: &[u8],
+    ) -> Vec<u8> {
+        let envelope =
+            parse_proof_envelope(tree_proof).expect("test helper should parse its own tree proof");
+        let leaf_hash =
+            compute_occupied_leaf(subject_reference, scope_reference, transition_material)
+                .expect("test helper should derive occupied leaf");
+        pre_state_commitment(&reconstruct_root_from_proof(leaf_hash, &envelope)).to_vec()
+    }
+
     fn minimal_receipt() -> Receipt {
         let tree_proof =
             canonical_empty_direction_consistent_tree_proof_bytes(&SUBJECT_REFERENCE, None);
+        let transition_material = [0x33; 32];
         Receipt {
             protocol_version: SemanticVersion {
                 major: 1,
@@ -356,14 +406,19 @@ mod tests {
             core_transition_evidence: CoreTransitionEvidence {
                 subject_reference: SUBJECT_REFERENCE.to_vec(),
                 scope_reference: None,
-                pre_state_commitment: vec![0x11; 32],
+                pre_state_commitment: matching_pre_state_commitment(
+                    &SUBJECT_REFERENCE,
+                    None,
+                    &transition_material,
+                    &tree_proof,
+                ),
                 post_state_commitment: matching_post_state_commitment(
                     &SUBJECT_REFERENCE,
                     None,
                     b"\x01",
                     &tree_proof,
                 ),
-                transition_material: vec![0x33; 32],
+                transition_material: transition_material.to_vec(),
                 transition_derivation_version: SemanticVersion {
                     major: 1,
                     minor: 0,
@@ -496,6 +551,12 @@ mod tests {
         let mut receipt = minimal_receipt();
         receipt.core_transition_evidence.tree_proof =
             direction_consistent_tree_proof_bytes(&SUBJECT_REFERENCE, None, [0x99; 32]);
+        receipt.core_transition_evidence.pre_state_commitment = matching_pre_state_commitment(
+            &SUBJECT_REFERENCE,
+            None,
+            &[0x33; 32],
+            &receipt.core_transition_evidence.tree_proof,
+        );
         receipt.core_transition_evidence.post_state_commitment = matching_post_state_commitment(
             &SUBJECT_REFERENCE,
             None,
@@ -546,10 +607,10 @@ mod tests {
         let mut receipt = minimal_receipt();
         receipt.core_transition_evidence.tree_proof =
             direction_mismatch_tree_proof_bytes(&SUBJECT_REFERENCE, None, [0x42; 32], 0);
-        receipt.core_transition_evidence.post_state_commitment = matching_post_state_commitment(
+        receipt.core_transition_evidence.pre_state_commitment = matching_pre_state_commitment(
             &SUBJECT_REFERENCE,
             None,
-            b"\x01",
+            &[0x33; 32],
             &canonical_empty_direction_consistent_tree_proof_bytes(&SUBJECT_REFERENCE, None),
         );
         assert_eq!(
@@ -561,19 +622,27 @@ mod tests {
     }
 
     #[test]
-    fn receipt_validation_does_not_validate_pre_state_commitment_yet() {
+    fn validate_receipt_rejects_pre_state_commitment_mismatch() {
         let mut receipt = minimal_receipt();
         receipt.core_transition_evidence.pre_state_commitment = vec![0xaa; 32];
-        assert!(matches!(
+        assert_eq!(
             validate_receipt(&receipt),
-            Err(VerificationFailure::NotImplemented(_))
-        ));
+            Err(VerificationFailure::InvalidEvidence(
+                "pre_state_commitment_mismatch"
+            ))
+        );
     }
 
     #[test]
     fn receipt_validation_does_not_validate_transition_material_yet() {
         let mut receipt = minimal_receipt();
         receipt.core_transition_evidence.transition_material = vec![0xff; 32];
+        receipt.core_transition_evidence.pre_state_commitment = matching_pre_state_commitment(
+            &SUBJECT_REFERENCE,
+            None,
+            &[0xff; 32],
+            &receipt.core_transition_evidence.tree_proof,
+        );
         assert!(matches!(
             validate_receipt(&receipt),
             Err(VerificationFailure::NotImplemented(_))
@@ -601,12 +670,52 @@ mod tests {
         let mut receipt = minimal_receipt();
         receipt.core_transition_evidence.tree_proof =
             mixed_direction_consistent_tree_proof_bytes(&SUBJECT_REFERENCE, None, [0x42; 32]);
+        receipt.core_transition_evidence.pre_state_commitment = matching_pre_state_commitment(
+            &SUBJECT_REFERENCE,
+            None,
+            &[0x33; 32],
+            &receipt.core_transition_evidence.tree_proof,
+        );
         receipt.core_transition_evidence.post_state_commitment = matching_post_state_commitment(
             &SUBJECT_REFERENCE,
             None,
             b"\x01",
             &receipt.core_transition_evidence.tree_proof,
         );
+        assert!(matches!(
+            validate_receipt(&receipt),
+            Err(VerificationFailure::NotImplemented(_))
+        ));
+    }
+
+    #[test]
+    fn validate_receipt_checks_pre_state_before_post_state() {
+        let mut receipt = minimal_receipt();
+        receipt.core_transition_evidence.pre_state_commitment = vec![0xaa; 32];
+        receipt.core_transition_evidence.post_state_commitment = vec![0xbb; 32];
+        assert_eq!(
+            validate_receipt(&receipt),
+            Err(VerificationFailure::InvalidEvidence(
+                "pre_state_commitment_mismatch"
+            ))
+        );
+    }
+
+    #[test]
+    fn validate_receipt_preserves_post_state_commitment_mismatch_after_valid_pre_state() {
+        let mut receipt = minimal_receipt();
+        receipt.core_transition_evidence.post_state_commitment = vec![0x55; 32];
+        assert_eq!(
+            validate_receipt(&receipt),
+            Err(VerificationFailure::InvalidEvidence(
+                "post_state_commitment_mismatch"
+            ))
+        );
+    }
+
+    #[test]
+    fn validate_receipt_with_valid_pre_and_post_commitments_reaches_not_implemented() {
+        let receipt = minimal_receipt();
         assert!(matches!(
             validate_receipt(&receipt),
             Err(VerificationFailure::NotImplemented(_))

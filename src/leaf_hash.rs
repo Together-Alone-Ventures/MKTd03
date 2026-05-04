@@ -60,7 +60,7 @@ fn validate_deletion_state_material(deletion_state_material: &[u8]) -> Result<()
     Ok(())
 }
 
-fn compute_occupied_leaf(
+pub(crate) fn compute_occupied_leaf(
     subject_reference: &[u8],
     scope_reference: Option<&[u8]>,
     transition_material: &[u8; 32],
