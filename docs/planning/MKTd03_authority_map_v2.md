@@ -28,7 +28,7 @@ v1 described a pre-Phase-6 formal-interface-pre-freeze world. v2 describes the p
 | Receipt / verifier semantics | `docs/planning/ADR-03-tree-mode-cvdr-structure.md` + settled two-layer evidence close + Sessions 1–3 spec-tightening | settled (post-Session-3) |
 | Refreshed overall protocol narrative | `docs/spec/MKTd03_protocol_refresh_v1.md` | settled (authority-block housekeeping complete at `4ea134a`) |
 | Diagnostics/status policy | `docs/spec/MKTd03_diagnostics_status_note_v1.md` + settled status-surface close + companion-rules v2 §3 | settled (post-Session-3) |
-| Versioning and compatibility policy | `docs/spec/MKTd03_versioning_compatibility_note_v1.md` + settled compatibility close + companion-rules v2 §2 + Session 2 `interface_version` bump | settled (post-Session-3) |
+| Versioning and compatibility policy | `docs/spec/MKTd03_versioning_compatibility_note_v1.md` §9 + settled compatibility close + companion-rules v2 §2 + Session 2 `interface_version` bump | settled (post-Session-3) |
 | Security/privacy policy | `docs/spec/MKTd03_security_privacy_note_v1.md` + companion-rules v2 + Session 3 Change 3.3 strengthening of §6 | settled (post-Session-3) |
 | Published terminology policy | `docs/planning/ADR-02-tree-structure-choice.md` | settled |
 | Conceptual adapter contract | `docs/spec/MKTd03_adapter_contract_concept_v1.md` | reference-only; superseded by frozen adapter contract at `interfaces/mktd03_adapter_contract.did` |

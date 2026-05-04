@@ -53,6 +53,8 @@ No consumer may treat any one of these three fields as a semantic
 substitute for the others, and no consumer may infer
 `transition_derivation_version` from `protocol_version`,
 `receipt_version`, or `interface_version`.
+Receipt-version support policy is defined in
+`docs/spec/MKTd03_versioning_compatibility_note_v1.md` §9.
 
 ## 2. Compatibility interpretation
 

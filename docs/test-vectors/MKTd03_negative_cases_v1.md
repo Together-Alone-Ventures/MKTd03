@@ -120,6 +120,13 @@ Later fixture sets may refine payload detail, but must not silently merge distin
 **Applies to:** receipt artifacts under validation whose `protocol_version` is not supported by the current verifier.  
 **Fixture rule:** this family must remain distinct from the library-facing `unsupported_version` family (§2.1), which applies to library request/retrieval surfaces; from `wrong_commitment_relationship`; and from `malformed_certification_provenance`. This family applies only to `protocol_version`; receipt-version handling is not defined by this family.
 
+### 3.7 Unsupported receipt version in receipt validation
+
+**Surface:** verifier-input receipt validation
+**Primary outcome family:** `unsupported_receipt_version`
+**Applies to:** receipt artifacts under validation whose `receipt_version` is not supported by the current verifier.
+**Fixture rule:** this family must remain distinct from the library-facing `unsupported_version` family (§2.1), which applies to library request/retrieval surfaces; from `wrong_commitment_relationship`; and from `malformed_certification_provenance`. This family applies only to `receipt_version`; protocol-version handling is not defined by this family.
+
 ## 4. Library-facing negative cases
 
 ### 4.1 Blocked status: rebuild required
@@ -251,6 +258,14 @@ Fixtures must assign each case to the correct surface.
 Library-facing `unsupported_version` (§2.1) applies to library request/retrieval surfaces — `check_version_support`, `get_receipt`, and any other library-facing request whose declared version is not processable.
 
 Verifier-input `unsupported_protocol_version` (§3.6) applies to a receipt artifact already presented to verifier validation whose `protocol_version` is not supported by the current verifier.
+
+Fixtures must not collapse these two families.
+
+### 6.6 Library-facing unsupported_version vs verifier-input unsupported_receipt_version
+
+Library-facing `unsupported_version` (§2.1) applies to library request/retrieval surfaces — `check_version_support`, `get_receipt`, and any other library-facing request whose declared version is not processable.
+
+Verifier-input `unsupported_receipt_version` (§3.7) applies to a receipt artifact already presented to verifier validation whose `receipt_version` is not supported by the current verifier.
 
 Fixtures must not collapse these two families.
 

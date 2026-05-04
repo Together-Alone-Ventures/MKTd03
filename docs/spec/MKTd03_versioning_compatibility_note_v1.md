@@ -68,6 +68,25 @@ Version rejection must be explicit and diagnosable; it must not degrade into fal
 ### 8. dApp-agnostic rule still applies
 Versioning and compatibility rules must remain dApp-agnostic and must not assume TinyPress-specific lifecycle or payload conventions.
 
+### 9. Receipt-version policy
+`receipt_version` is the receipt artifact schema/support version.
+The current supported `receipt_version` value is `1.0.0`.
+Support for `receipt_version` is exact major/minor/patch equality only.
+No conditionally-compatible receipt versions are currently defined.
+
+`receipt_version` is distinct from:
+- `protocol_version`, which identifies the overall MKTd03 protocol compatibility line,
+- `interface_version`, which identifies the public library/interface surface version,
+- `transition_derivation_version`, which identifies the derivation version inside receipt transition evidence.
+
+Receipt validation policy does not consult `interface_version` when deciding whether a `receipt_version` is supported.
+`transition_derivation_version` policy is out of scope for this section.
+
+Where receipt validation performs version prechecks, the ordering is:
+- `protocol_version` first,
+- `receipt_version` second,
+- structural / proof / commitment gates after that.
+
 ## Explicit Non-Goals
 This note does not define:
 - final receipt field syntax,
