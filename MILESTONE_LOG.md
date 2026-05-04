@@ -868,3 +868,30 @@ Standing constraints surfaced:
 - S7-21B may implement the verifier `receipt_version` precheck only against the S7-21A policy anchor.
 - S7-21B must not reopen protocol_version, interface_version, or transition_derivation_version policy.
 - S7-21B must preserve protocol-version precheck before receipt-version precheck.
+
+## 2026-05-04 -- MILESTONE: S7-21B verifier receipt_version precheck landed
+
+Decisions made:
+- Verifier `receipt_version` precheck was implemented and pushed.
+- Exact-equality supported `receipt_version` remains `1.0.0` only.
+- Check order is `protocol_version` → `receipt_version` → structural/proof/commitment.
+- Failure family is `UnsupportedVersion("unsupported_receipt_version")`.
+- Added tests:
+  - `validate_receipt_rejects_unsupported_receipt_version`
+  - `validate_receipt_checks_protocol_version_before_receipt_version`
+  - `validate_receipt_checks_receipt_version_before_commitment_gates`
+- Gates passed:
+  - `cargo fmt --check`
+  - `cargo test --offline --lib` — 154 passed; 0 failed; 0 ignored
+  - `cargo build --offline --target wasm32-unknown-unknown`
+
+Irreversible actions taken:
+- Committed `8590f89471058e6440ac3dba7633f3a93d029aa6` — `verifier: reject unsupported receipt version`.
+
+Do not revisit:
+- Whether S7-21B should edit fixtures — settled no.
+- Whether S7-21B should edit docs/interfaces — settled no.
+- Whether receipt_version check consults interface_version — settled no.
+- Whether transition_derivation_version policy is part of S7-21B — settled no.
+- Whether receipt_version failure should use a new failure enum family — settled no; `UnsupportedVersion("unsupported_receipt_version")` is correct.
+- Whether receipt_version can run before protocol_version — settled no; protocol_version remains first.
