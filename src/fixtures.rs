@@ -1,4 +1,5 @@
 use crate::adapter::{AdapterBlockedReason, AdapterBlockedReasonCode, AdapterErrorCode};
+use crate::certification_provenance_check::certification_provenance_shape_is_consistent;
 use crate::library::{
     BlockedReason, CertificationProvenancePosture, CertificationProvenanceRoute, Compatibility,
     EvidenceReadiness, LifecycleState, OperationContext, SemanticVersion, VersionInfo,
@@ -478,7 +479,9 @@ fn parse_typed_case(
                 "positive receipt fixture must use primary_class receipt_returned",
             )?;
             require(
-                certification_shape_is_consistent(&expected.receipt.certification_provenance),
+                fixture_certification_provenance_shape_is_consistent(
+                    &expected.receipt.certification_provenance,
+                ),
                 path,
                 "positive receipt fixture must use a shape-consistent certification/provenance block",
             )?;
@@ -689,7 +692,7 @@ fn parse_typed_case(
                 ],
                 "verifier invalidity fixture must stay on the verifier-input shape only",
             )?;
-            let cert_consistent = certification_shape_is_consistent(
+            let cert_consistent = fixture_certification_provenance_shape_is_consistent(
                 &input
                     .receipt_artifact_under_validation
                     .certification_provenance,
@@ -997,31 +1000,16 @@ fn validate_adapter_target_method(
     )
 }
 
-fn certification_shape_is_consistent(block: &FixtureCertificationProvenanceBlock) -> bool {
-    match block.posture {
-        CertificationProvenancePosture::InlinePayload => {
-            block.route == CertificationProvenanceRoute::DirectInline
-                && block.certification_material.is_some()
-                && block.provenance_material.is_some()
-                && block.route_context_material.is_none()
-        }
-        CertificationProvenancePosture::RouteDependentPayload => match block.route {
-            CertificationProvenanceRoute::DirectInline => false,
-            CertificationProvenanceRoute::RouteContextRequired => {
-                block.route_context_material.is_some()
-                    && (block.certification_material.is_some()
-                        || block.provenance_material.is_some())
-            }
-            CertificationProvenanceRoute::RouteContextOnly => {
-                block.route_context_material.is_some()
-            }
-        },
-        CertificationProvenancePosture::NoPayloadForRoute => {
-            block.certification_material.is_none()
-                && block.provenance_material.is_none()
-                && block.route_context_material.is_none()
-        }
-    }
+fn fixture_certification_provenance_shape_is_consistent(
+    block: &FixtureCertificationProvenanceBlock,
+) -> bool {
+    certification_provenance_shape_is_consistent(
+        &block.posture,
+        &block.route,
+        block.certification_material.is_some(),
+        block.provenance_material.is_some(),
+        block.route_context_material.is_some(),
+    )
 }
 
 fn ensure_exact_keys(

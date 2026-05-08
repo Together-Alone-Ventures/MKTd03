@@ -1,4 +1,5 @@
 pub mod adapter;
+mod certification_provenance_check;
 mod core_transition_evidence_check;
 mod deletion_state_material_check;
 pub mod empty_subtree;

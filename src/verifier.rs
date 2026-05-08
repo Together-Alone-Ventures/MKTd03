@@ -1,3 +1,4 @@
+use crate::certification_provenance_check::certification_provenance_shape_is_consistent;
 use crate::core_transition_evidence_check::{
     validate_core_transition_evidence, CoreTransitionEvidenceError,
 };
@@ -5,7 +6,7 @@ use crate::empty_subtree::empty_subtree_root;
 use crate::fixtures::{FixtureReceipt, VerifierReceiptFixture};
 use crate::internal_node::hash_internal_node;
 use crate::leaf_hash::{compute_occupied_leaf, compute_tombstoned_leaf};
-use crate::library::{CertificationProvenancePosture, CertificationProvenanceRoute, Receipt};
+use crate::library::Receipt;
 use crate::proof_direction_check::validate_proof_directions;
 use crate::proof_envelope::{parse_proof_envelope, ProofEnvelope};
 use crate::proof_frame::{ProofDirection, ProofFrameSibling};
@@ -122,6 +123,27 @@ pub fn validate_receipt(receipt: &Receipt) -> Result<(), VerificationFailure> {
         ));
     }
 
+    if !certification_provenance_shape_is_consistent(
+        &receipt.certification_provenance.posture,
+        &receipt.certification_provenance.route,
+        receipt
+            .certification_provenance
+            .certification_material
+            .is_some(),
+        receipt
+            .certification_provenance
+            .provenance_material
+            .is_some(),
+        receipt
+            .certification_provenance
+            .route_context_material
+            .is_some(),
+    ) {
+        return Err(VerificationFailure::InvalidEvidence(
+            "malformed_certification_provenance",
+        ));
+    }
+
     // TODO: implement receipt validation semantics once proof verification logic is authorized.
     Err(VerificationFailure::NotImplemented(
         "receipt validation is not implemented in the first scaffold pass",
@@ -214,7 +236,22 @@ pub fn validate_fixture_receipt_semantics(
 pub fn validate_certification_provenance_shape(
     receipt: &FixtureReceipt,
 ) -> Result<(), VerificationFailure> {
-    if certification_shape_is_consistent(&receipt) {
+    if certification_provenance_shape_is_consistent(
+        &receipt.certification_provenance.posture,
+        &receipt.certification_provenance.route,
+        receipt
+            .certification_provenance
+            .certification_material
+            .is_some(),
+        receipt
+            .certification_provenance
+            .provenance_material
+            .is_some(),
+        receipt
+            .certification_provenance
+            .route_context_material
+            .is_some(),
+    ) {
         Ok(())
     } else {
         Err(VerificationFailure::InvalidEvidence(
@@ -260,41 +297,12 @@ pub fn validate_subject_scope_relationship(
     }
 }
 
-fn certification_shape_is_consistent(receipt: &FixtureReceipt) -> bool {
-    let block = &receipt.certification_provenance;
-
-    match block.posture {
-        CertificationProvenancePosture::InlinePayload => {
-            block.route == CertificationProvenanceRoute::DirectInline
-                && block.certification_material.is_some()
-                && block.provenance_material.is_some()
-                && block.route_context_material.is_none()
-        }
-        CertificationProvenancePosture::RouteDependentPayload => match block.route {
-            CertificationProvenanceRoute::DirectInline => false,
-            CertificationProvenanceRoute::RouteContextRequired => {
-                block.route_context_material.is_some()
-                    && (block.certification_material.is_some()
-                        || block.provenance_material.is_some())
-            }
-            CertificationProvenanceRoute::RouteContextOnly => {
-                block.route_context_material.is_some()
-            }
-        },
-        CertificationProvenancePosture::NoPayloadForRoute => {
-            block.certification_material.is_none()
-                && block.provenance_material.is_none()
-                && block.route_context_material.is_none()
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::library::{
-        CertificationProvenanceBlock, CoreTransitionEvidence, DeletionStateMaterial, Receipt,
-        SemanticVersion,
+        CertificationProvenanceBlock, CertificationProvenancePosture, CertificationProvenanceRoute,
+        CoreTransitionEvidence, DeletionStateMaterial, Receipt, SemanticVersion,
     };
     use crate::proof_envelope::{serialize_proof_envelope, ProofEnvelope};
     use crate::proof_frame::{ProofDirection, ProofFrame, ProofFrameSibling};
@@ -833,5 +841,87 @@ mod tests {
                 "unsupported_receipt_version"
             ))
         );
+    }
+
+    #[test]
+    fn validate_receipt_rejects_malformed_certification_provenance_shape() {
+        let mut receipt = minimal_receipt();
+        receipt.certification_provenance.posture = CertificationProvenancePosture::InlinePayload;
+        assert_eq!(
+            validate_receipt(&receipt),
+            Err(VerificationFailure::InvalidEvidence(
+                "malformed_certification_provenance"
+            ))
+        );
+    }
+
+    #[test]
+    fn validate_receipt_checks_protocol_version_before_malformed_certification_provenance() {
+        let mut receipt = minimal_receipt();
+        receipt.protocol_version = SemanticVersion {
+            major: 9,
+            minor: 0,
+            patch: 0,
+        };
+        receipt.certification_provenance.posture = CertificationProvenancePosture::InlinePayload;
+        assert_eq!(
+            validate_receipt(&receipt),
+            Err(VerificationFailure::UnsupportedVersion(
+                "unsupported_protocol_version"
+            ))
+        );
+    }
+
+    #[test]
+    fn validate_receipt_checks_receipt_version_before_malformed_certification_provenance() {
+        let mut receipt = minimal_receipt();
+        receipt.receipt_version = SemanticVersion {
+            major: 9,
+            minor: 0,
+            patch: 0,
+        };
+        receipt.certification_provenance.posture = CertificationProvenancePosture::InlinePayload;
+        assert_eq!(
+            validate_receipt(&receipt),
+            Err(VerificationFailure::UnsupportedVersion(
+                "unsupported_receipt_version"
+            ))
+        );
+    }
+
+    #[test]
+    fn validate_receipt_checks_evidence_gates_before_malformed_certification_provenance() {
+        let mut receipt = minimal_receipt();
+        receipt.core_transition_evidence.tree_proof = vec![0x01];
+        receipt.certification_provenance.posture = CertificationProvenancePosture::InlinePayload;
+        assert_eq!(
+            validate_receipt(&receipt),
+            Err(VerificationFailure::InvalidEvidence(
+                "tree_proof_envelope_invalid"
+            ))
+        );
+    }
+
+    #[test]
+    fn validate_receipt_checks_post_state_commitment_before_malformed_certification_provenance() {
+        let mut receipt = minimal_receipt();
+        receipt.core_transition_evidence.post_state_commitment = vec![0x55; 32];
+        receipt.certification_provenance.posture = CertificationProvenancePosture::InlinePayload;
+        assert_eq!(
+            validate_receipt(&receipt),
+            Err(VerificationFailure::InvalidEvidence(
+                "post_state_commitment_mismatch"
+            ))
+        );
+    }
+
+    #[test]
+    fn validate_receipt_with_shape_consistent_certification_provenance_still_reaches_not_implemented(
+    ) {
+        let receipt = minimal_receipt();
+        assert!(matches!(
+            validate_receipt(&receipt),
+            Err(VerificationFailure::NotImplemented(_))
+        ));
     }
 }
