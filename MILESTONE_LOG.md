@@ -895,3 +895,43 @@ Do not revisit:
 - Whether transition_derivation_version policy is part of S7-21B — settled no.
 - Whether receipt_version failure should use a new failure enum family — settled no; `UnsupportedVersion("unsupported_receipt_version")` is correct.
 - Whether receipt_version can run before protocol_version — settled no; protocol_version remains first.
+
+## 2026-05-08 -- MILESTONE: S7-22 certification-provenance shape gate landed in validate_receipt
+
+Decisions made:
+- S7-22 wired certification-provenance posture/shape validation into the real `validate_receipt(&Receipt)` path.
+- The check is shape-only:
+  - posture
+  - route
+  - certification_material presence
+  - provenance_material presence
+  - route_context_material presence
+- The shared predicate now lives in private helper module `src/certification_provenance_check.rs`.
+- The same predicate is used by:
+  - the real `validate_receipt(&Receipt)` path
+  - verifier fixture-family validation
+  - fixture parsing/sanity checks
+- Malformed certification/provenance shape returns:
+  `VerificationFailure::InvalidEvidence("malformed_certification_provenance")`
+- The check runs after the currently implemented receipt-evidence gates and before the final `NotImplemented(...)` scaffold.
+- Final `NotImplemented(...)` is preserved for otherwise-valid receipts; no `Ok(())` success path was introduced.
+- Six tests were added.
+- Gates passed:
+  - `cargo fmt --check`
+  - `cargo test --offline --lib` — 160 passed; 0 failed; 0 ignored
+  - `cargo build --offline --target wasm32-unknown-unknown`
+
+Irreversible actions taken:
+- Committed `8a02077` — `verifier: wire certification-provenance shape validation`.
+
+Do not revisit:
+- Whether S7-22 should inspect certification/provenance payload bytes — settled no.
+- Whether S7-22 should add cryptographic certificate validation — settled no.
+- Whether S7-22 should add provenance semantics — settled no.
+- Whether S7-22 should add new core-transition gates — settled no.
+- Whether S7-22 should introduce an `Ok(())` success path — settled no.
+- Whether S7-22 should change `.did`, docs, fixtures, interfaces, Cargo, protocol_version, receipt_version, interface_version, or transition_derivation_version policy — settled no.
+
+Standing constraints surfaced:
+- Certification-provenance fixture re-pointing or dual-driving on the real `Receipt` path remains an open candidate for a future bounded slice.
+- The receipt_version test-vector asymmetry carried from S7-21B remains an open candidate for a future bounded slice.
