@@ -74,6 +74,22 @@
       "status": "draft"
     },
     {
+      "filename": "verifier/negative/mktd03_verifier_negative_unsupported_protocol_version_01_v1.json",
+      "surface": "verifier",
+      "polarity": "negative",
+      "family": "unsupported_protocol_version",
+      "target_method": "receipt_validation",
+      "status": "draft"
+    },
+    {
+      "filename": "verifier/negative/mktd03_verifier_negative_unsupported_receipt_version_01_v1.json",
+      "surface": "verifier",
+      "polarity": "negative",
+      "family": "unsupported_receipt_version",
+      "target_method": "receipt_validation",
+      "status": "draft"
+    },
+    {
       "filename": "library/negative/mktd03_library_negative_unsupported_version_receipt_01_v1.json",
       "surface": "library",
       "polarity": "negative",

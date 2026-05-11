@@ -34,6 +34,22 @@ fn receipt_version_is_supported(receipt_version: &crate::library::SemanticVersio
     receipt_version.major == 1 && receipt_version.minor == 0 && receipt_version.patch == 0
 }
 
+fn fixture_protocol_version_is_supported(
+    fixture_protocol_version: &crate::library::SemanticVersion,
+) -> bool {
+    fixture_protocol_version.major == crate::PROTOCOL_VERSION.major
+        && fixture_protocol_version.minor == crate::PROTOCOL_VERSION.minor
+        && fixture_protocol_version.patch == crate::PROTOCOL_VERSION.patch
+}
+
+fn fixture_receipt_version_is_supported(
+    fixture_receipt_version: &crate::library::SemanticVersion,
+) -> bool {
+    fixture_receipt_version.major == 1
+        && fixture_receipt_version.minor == 0
+        && fixture_receipt_version.patch == 0
+}
+
 pub fn validate_receipt(receipt: &Receipt) -> Result<(), VerificationFailure> {
     if !receipt_protocol_version_is_supported(&receipt.protocol_version, &crate::PROTOCOL_VERSION) {
         return Err(VerificationFailure::UnsupportedVersion(
@@ -212,6 +228,14 @@ pub fn validate_fixture_receipt_semantics(
     fixture: &VerifierReceiptFixture,
 ) -> Result<(), VerificationFailure> {
     match fixture.expected.family.as_str() {
+        "unsupported_protocol_version" => {
+            validate_fixture_protocol_version_support(
+                &fixture.input.receipt_artifact_under_validation,
+            )
+        }
+        "unsupported_receipt_version" => validate_fixture_receipt_version_support(
+            &fixture.input.receipt_artifact_under_validation,
+        ),
         "malformed_certification_provenance" => {
             validate_certification_provenance_shape(&fixture.input.receipt_artifact_under_validation)
         }
@@ -230,6 +254,30 @@ pub fn validate_fixture_receipt_semantics(
         _ => Err(VerificationFailure::NotImplemented(
             "verifier fixture family is not implemented in the current slice",
         )),
+    }
+}
+
+fn validate_fixture_protocol_version_support(
+    receipt: &FixtureReceipt,
+) -> Result<(), VerificationFailure> {
+    if fixture_protocol_version_is_supported(&receipt.protocol_version) {
+        Ok(())
+    } else {
+        Err(VerificationFailure::UnsupportedVersion(
+            "unsupported_protocol_version",
+        ))
+    }
+}
+
+fn validate_fixture_receipt_version_support(
+    receipt: &FixtureReceipt,
+) -> Result<(), VerificationFailure> {
+    if fixture_receipt_version_is_supported(&receipt.receipt_version) {
+        Ok(())
+    } else {
+        Err(VerificationFailure::UnsupportedVersion(
+            "unsupported_receipt_version",
+        ))
     }
 }
 
@@ -300,6 +348,11 @@ pub fn validate_subject_scope_relationship(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::fixtures::{
+        FixtureCertificationProvenanceBlock, FixtureCoreTransitionEvidence,
+        FixtureDeletionStateMaterial, FixtureReceipt, VerifierExpectedOutcome,
+        VerifierInputSummary, VerifierReceiptFixture,
+    };
     use crate::library::{
         CertificationProvenanceBlock, CertificationProvenancePosture, CertificationProvenanceRoute,
         CoreTransitionEvidence, DeletionStateMaterial, Receipt, SemanticVersion,
@@ -467,6 +520,59 @@ mod tests {
                 certification_material: None,
                 provenance_material: None,
                 route_context_material: None,
+            },
+        }
+    }
+
+    fn minimal_fixture_receipt() -> FixtureReceipt {
+        FixtureReceipt {
+            protocol_version: SemanticVersion {
+                major: 1,
+                minor: 0,
+                patch: 0,
+            },
+            receipt_version: SemanticVersion {
+                major: 1,
+                minor: 0,
+                patch: 0,
+            },
+            core_transition_evidence: FixtureCoreTransitionEvidence {
+                subject_reference: "SUBJECT_REFERENCE_PLACEHOLDER".to_string(),
+                scope_reference: Some("SCOPE_REFERENCE_PLACEHOLDER".to_string()),
+                pre_state_commitment: "PRE_STATE_COMMITMENT_PLACEHOLDER".to_string(),
+                post_state_commitment: "POST_STATE_COMMITMENT_PLACEHOLDER".to_string(),
+                transition_material: "TRANSITION_MATERIAL_PLACEHOLDER".to_string(),
+                transition_derivation_version: Some(SemanticVersion {
+                    major: 1,
+                    minor: 0,
+                    patch: 0,
+                }),
+                tree_proof: "TREE_PROOF_PLACEHOLDER".to_string(),
+                deletion_state_material: FixtureDeletionStateMaterial::TombstonedPosition {
+                    tombstoned_position: "TOMBSTONED_POSITION_PLACEHOLDER".to_string(),
+                },
+            },
+            certification_provenance: FixtureCertificationProvenanceBlock {
+                posture: CertificationProvenancePosture::NoPayloadForRoute,
+                route: CertificationProvenanceRoute::DirectInline,
+                certification_material: None,
+                provenance_material: None,
+                route_context_material: None,
+            },
+        }
+    }
+
+    fn fixture_for_family(family: &str, receipt: FixtureReceipt) -> VerifierReceiptFixture {
+        VerifierReceiptFixture {
+            input: VerifierInputSummary {
+                receipt_artifact_under_validation: receipt,
+                semantic_context: "FIXTURE_SEMANTIC_CONTEXT_PLACEHOLDER".to_string(),
+            },
+            expected: VerifierExpectedOutcome {
+                primary_class: "unsupported_version".to_string(),
+                family: family.to_string(),
+                must_fail_loud: true,
+                validation_outcome: "reject_receipt_artifact".to_string(),
             },
         }
     }
@@ -773,6 +879,23 @@ mod tests {
     }
 
     #[test]
+    fn validate_fixture_receipt_semantics_rejects_unsupported_protocol_version() {
+        let mut receipt = minimal_fixture_receipt();
+        receipt.protocol_version = SemanticVersion {
+            major: 9,
+            minor: 0,
+            patch: 0,
+        };
+        let fixture = fixture_for_family("unsupported_protocol_version", receipt);
+        assert_eq!(
+            validate_fixture_receipt_semantics(&fixture),
+            Err(VerificationFailure::UnsupportedVersion(
+                "unsupported_protocol_version"
+            ))
+        );
+    }
+
+    #[test]
     fn validate_receipt_checks_protocol_version_before_commitment_gates() {
         let mut receipt = minimal_receipt();
         receipt.core_transition_evidence.post_state_commitment = vec![0x55; 32];
@@ -799,6 +922,23 @@ mod tests {
         };
         assert_eq!(
             validate_receipt(&receipt),
+            Err(VerificationFailure::UnsupportedVersion(
+                "unsupported_receipt_version"
+            ))
+        );
+    }
+
+    #[test]
+    fn validate_fixture_receipt_semantics_rejects_unsupported_receipt_version() {
+        let mut receipt = minimal_fixture_receipt();
+        receipt.receipt_version = SemanticVersion {
+            major: 9,
+            minor: 0,
+            patch: 0,
+        };
+        let fixture = fixture_for_family("unsupported_receipt_version", receipt);
+        assert_eq!(
+            validate_fixture_receipt_semantics(&fixture),
             Err(VerificationFailure::UnsupportedVersion(
                 "unsupported_receipt_version"
             ))

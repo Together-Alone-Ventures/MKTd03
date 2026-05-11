@@ -191,7 +191,14 @@ fn typed_fixture_parsing_enforces_current_invariants() {
             }
             TypedFixtureCase::VerifierNegativeReceipt(fixture) => {
                 saw_verifier = true;
-                assert_eq!(fixture.expected.primary_class, "invalid_evidence");
+                match fixture.expected.family.as_str() {
+                    "unsupported_protocol_version" | "unsupported_receipt_version" => {
+                        assert_eq!(fixture.expected.primary_class, "unsupported_version");
+                    }
+                    _ => {
+                        assert_eq!(fixture.expected.primary_class, "invalid_evidence");
+                    }
+                }
                 assert!(fixture.expected.must_fail_loud);
                 assert_eq!(
                     fixture.expected.validation_outcome,
@@ -267,6 +274,8 @@ fn verifier_fixture_semantics_are_executed_without_claiming_tree_proof_validatio
     let mut saw_malformed_certification = false;
     let mut saw_wrong_commitment = false;
     let mut saw_subject_scope_mismatch = false;
+    let mut saw_unsupported_protocol_version = false;
+    let mut saw_unsupported_receipt_version = false;
 
     for entry in &index.entries {
         if entry.surface != FixtureSurface::Verifier {
@@ -307,6 +316,18 @@ fn verifier_fixture_semantics_are_executed_without_claiming_tree_proof_validatio
             ("missing_transition_derivation_version", Err(VerificationFailure::Deferred(_))) => {
                 saw_deferred_missing_transition_derivation_version = true;
             }
+            (
+                "unsupported_protocol_version",
+                Err(VerificationFailure::UnsupportedVersion("unsupported_protocol_version")),
+            ) => {
+                saw_unsupported_protocol_version = true;
+            }
+            (
+                "unsupported_receipt_version",
+                Err(VerificationFailure::UnsupportedVersion("unsupported_receipt_version")),
+            ) => {
+                saw_unsupported_receipt_version = true;
+            }
             ("wrong_tree_proof", Err(VerificationFailure::Deferred(_))) => {
                 saw_deferred_wrong_tree_proof = true;
             }
@@ -318,6 +339,8 @@ fn verifier_fixture_semantics_are_executed_without_claiming_tree_proof_validatio
     assert!(saw_wrong_commitment);
     assert!(saw_subject_scope_mismatch);
     assert!(saw_deferred_missing_transition_derivation_version);
+    assert!(saw_unsupported_protocol_version);
+    assert!(saw_unsupported_receipt_version);
     assert!(saw_deferred_wrong_tree_proof);
 }
 

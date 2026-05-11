@@ -1,0 +1,75 @@
+{
+  "fixture_id": "mktd03_verifier_negative_unsupported_protocol_version_01_v1",
+  "fixture_schema_version": "1.0.0",
+  "surface": "verifier",
+  "polarity": "negative",
+  "family": "unsupported_protocol_version",
+  "case_id": "unsupported_protocol_version_01",
+  "title": "Verifier-side receipt validation rejects a receipt artifact whose protocol_version is unsupported",
+  "authority_refs": [
+    "interfaces/mktd03_library.did",
+    "interfaces/mktd03_library_interface_rules.md",
+    "docs/test-vectors/MKTd03_negative_cases_v1.md",
+    "RESTART_PACK.md"
+  ],
+  "target_method": "receipt_validation",
+  "protocol_version": {
+    "major": 1,
+    "minor": 0,
+    "patch": 0
+  },
+  "interface_version": {
+    "major": 2,
+    "minor": 0,
+    "patch": 0
+  },
+  "rules_version_ref": "interfaces/mktd03_library_interface_rules.md#v2",
+  "input_summary": {
+    "receipt_artifact_under_validation": {
+      "protocol_version": {
+        "major": 9,
+        "minor": 0,
+        "patch": 0
+      },
+      "receipt_version": {
+        "major": 1,
+        "minor": 0,
+        "patch": 0
+      },
+      "core_transition_evidence": {
+        "subject_reference": "SUBJECT_REFERENCE_PLACEHOLDER",
+        "scope_reference": "SCOPE_REFERENCE_PLACEHOLDER",
+        "pre_state_commitment": "PRE_STATE_COMMITMENT_PLACEHOLDER",
+        "post_state_commitment": "POST_STATE_COMMITMENT_PLACEHOLDER",
+        "transition_material": "TRANSITION_MATERIAL_PLACEHOLDER",
+        "transition_derivation_version": {
+          "major": 1,
+          "minor": 0,
+          "patch": 0
+        },
+        "tree_proof": "TREE_PROOF_PLACEHOLDER",
+        "deletion_state_material": {
+          "tombstoned_position": "TOMBSTONED_POSITION_PLACEHOLDER"
+        }
+      },
+      "certification_provenance": {
+        "posture": "no_payload_for_route",
+        "route": "direct_inline",
+        "certification_material": null,
+        "provenance_material": null,
+        "route_context_material": null
+      }
+    },
+    "semantic_context": "Receipt artifact has a supported receipt_version but an unsupported protocol_version, so verifier validation must reject it before any deeper evidence interpretation."
+  },
+  "expected_outcome": {
+    "primary_class": "unsupported_version",
+    "family": "unsupported_protocol_version",
+    "must_fail_loud": true,
+    "validation_outcome": "reject_receipt_artifact"
+  },
+  "notes": [
+    "This fixture mirrors the runtime verifier protocol-version precheck family.",
+    "The receipt remains otherwise structurally coherent so the primary failure stays on unsupported protocol_version."
+  ]
+}

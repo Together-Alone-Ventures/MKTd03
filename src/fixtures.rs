@@ -661,8 +661,9 @@ fn parse_typed_case(
             FixturePolarity::Negative,
             "missing_transition_derivation_version",
         )
-        | (FixtureSurface::Verifier, FixturePolarity::Negative, "receipt_subject_scope_mismatch") =>
-        {
+        | (FixtureSurface::Verifier, FixturePolarity::Negative, "receipt_subject_scope_mismatch")
+        | (FixtureSurface::Verifier, FixturePolarity::Negative, "unsupported_protocol_version")
+        | (FixtureSurface::Verifier, FixturePolarity::Negative, "unsupported_receipt_version") => {
             require(
                 envelope.target_method == "receipt_validation",
                 path,
@@ -671,9 +672,12 @@ fn parse_typed_case(
             let input = parse_input_summary::<VerifierInputSummary>(path, envelope)?;
             let expected = parse_expected_outcome::<VerifierExpectedOutcome>(path, envelope)?;
             require(
-                expected.primary_class == "invalid_evidence",
+                verifier_expected_primary_class_matches_family(
+                    expected.primary_class.as_str(),
+                    envelope.family.as_str(),
+                ),
                 path,
-                "verifier invalidity fixture must use primary_class invalid_evidence",
+                "verifier fixture must use the family-specific primary_class required by the current verifier fixture taxonomy",
             )?;
             require(
                 expected.family == envelope.family,
@@ -1037,6 +1041,20 @@ fn fixture_certification_provenance_shape_is_consistent(
         block.provenance_material.is_some(),
         block.route_context_material.is_some(),
     )
+}
+
+fn verifier_expected_primary_class_matches_family(primary_class: &str, family: &str) -> bool {
+    match family {
+        "unsupported_protocol_version" | "unsupported_receipt_version" => {
+            primary_class == "unsupported_version"
+        }
+        "wrong_tree_proof"
+        | "wrong_commitment_relationship"
+        | "malformed_certification_provenance"
+        | "missing_transition_derivation_version"
+        | "receipt_subject_scope_mismatch" => primary_class == "invalid_evidence",
+        _ => false,
+    }
 }
 
 fn ensure_exact_keys(
