@@ -976,3 +976,46 @@ Standing constraints surfaced:
 
 SESSION LESSON / carry-forward:
 - Pre-commit review must inspect the full unified diff and changed-file contents, not only a summary. This repeats the S7-12 standing constraint and should be promoted into the next TAV-Engineering-Standards Playbook/doctrine session.
+
+## 2026-05-13 -- MILESTONE: S7-23 verifier version fixture symmetry landed
+
+Decisions made:
+- S7-23 closed the verifier fixture/test-vector asymmetry between `unsupported_protocol_version` and `unsupported_receipt_version`.
+- Added machine-readable verifier-negative fixtures for both version-precheck families:
+  - `mktd03_verifier_negative_unsupported_protocol_version_01_v1.json`
+  - `mktd03_verifier_negative_unsupported_receipt_version_01_v1.json`
+- Added both fixtures to `docs/test-vectors/fixtures/index.json`.
+- Verifier fixture parser dispatch now accepts both families.
+- Both version families use:
+  - `primary_class: "unsupported_version"`
+  - `validation_outcome: "reject_receipt_artifact"`
+  - `must_fail_loud: true`
+- Existing evidence-invalidity verifier families remain constrained to:
+  - `primary_class: "invalid_evidence"`
+- Fixture runtime dispatch now returns:
+  - `VerificationFailure::UnsupportedVersion("unsupported_protocol_version")`
+  - `VerificationFailure::UnsupportedVersion("unsupported_receipt_version")`
+- Fixture-path validation reads directly from `FixtureReceipt`.
+- No real `Receipt` materialization / `validate_receipt(...)` shortcut was introduced.
+- No real `validate_receipt(&Receipt)` runtime semantics changed.
+- Two unit tests were added.
+- Integration fixture loop now observes both unsupported-version verifier families.
+- Gates passed:
+  - `cargo fmt --check`
+  - `cargo test --offline` — 186 total tests passed
+  - `cargo build --offline --target wasm32-unknown-unknown`
+
+Irreversible actions taken:
+- Committed `[S7-23_SHA]` — `test-vectors: add verifier unsupported receipt version fixtures`.
+
+Do not revisit:
+- Whether S7-23 should change real `validate_receipt(&Receipt)` semantics — settled no.
+- Whether S7-23 should materialize `FixtureReceipt` into real `Receipt` and call `validate_receipt(...)` — settled no.
+- Whether unsupported-version verifier fixtures should use `primary_class: "invalid_evidence"` — settled no; they use `unsupported_version`.
+- Whether S7-23 should edit `.did`, Cargo, interfaces, fixture manifest, or normative docs — settled no.
+- Whether S7-23 should reopen protocol_version, receipt_version, interface_version, or transition_derivation_version policy — settled no.
+
+Standing constraints surfaced:
+- Full offline test suite is now the slice-close gate: `cargo test --offline`, not `cargo test --offline --lib`.
+- Pre-commit review requires full unified diff and changed-file contents, not summaries.
+- Future candidate: consider shared helper consolidation for version-support predicates if duplication becomes material.
