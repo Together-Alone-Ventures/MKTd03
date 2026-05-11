@@ -134,7 +134,7 @@ pub struct FixtureCoreTransitionEvidence {
     pub pre_state_commitment: String,
     pub post_state_commitment: String,
     pub transition_material: String,
-    pub transition_derivation_version: SemanticVersion,
+    pub transition_derivation_version: Option<SemanticVersion>,
     pub tree_proof: String,
     pub deletion_state_material: FixtureDeletionStateMaterial,
 }
@@ -485,6 +485,15 @@ fn parse_typed_case(
                 path,
                 "positive receipt fixture must use a shape-consistent certification/provenance block",
             )?;
+            require(
+                expected
+                    .receipt
+                    .core_transition_evidence
+                    .transition_derivation_version
+                    .is_some(),
+                path,
+                "positive receipt fixture must include transition_derivation_version",
+            )?;
             ensure_exact_keys(
                 path,
                 &envelope.expected_outcome,
@@ -697,6 +706,11 @@ fn parse_typed_case(
                     .receipt_artifact_under_validation
                     .certification_provenance,
             );
+            let has_transition_derivation_version = input
+                .receipt_artifact_under_validation
+                .core_transition_evidence
+                .transition_derivation_version
+                .is_some();
             if envelope.family == "malformed_certification_provenance" {
                 require(
                     !cert_consistent,
@@ -708,6 +722,19 @@ fn parse_typed_case(
                     cert_consistent,
                     path,
                     "non-malformed verifier fixtures must use a shape-consistent certification/provenance block",
+                )?;
+            }
+            if envelope.family == "missing_transition_derivation_version" {
+                require(
+                    !has_transition_derivation_version,
+                    path,
+                    "missing_transition_derivation_version fixture must intentionally omit transition_derivation_version",
+                )?;
+            } else {
+                require(
+                    has_transition_derivation_version,
+                    path,
+                    "verifier fixtures other than missing_transition_derivation_version must include transition_derivation_version",
                 )?;
             }
             Ok(TypedFixtureCase::VerifierNegativeReceipt(

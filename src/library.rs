@@ -504,7 +504,8 @@ fn materialize_receipt(fixture_receipt: &FixtureReceipt) -> Receipt {
             transition_derivation_version: fixture_receipt
                 .core_transition_evidence
                 .transition_derivation_version
-                .clone(),
+                .clone()
+                .expect("fixture materialization requires transition_derivation_version"),
             tree_proof: fixture_receipt
                 .core_transition_evidence
                 .tree_proof

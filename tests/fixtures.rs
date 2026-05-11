@@ -263,6 +263,7 @@ fn verifier_fixture_semantics_are_executed_without_claiming_tree_proof_validatio
     let index = load_fixture_index(index_path).expect("fixture index should parse");
 
     let mut saw_deferred_wrong_tree_proof = false;
+    let mut saw_deferred_missing_transition_derivation_version = false;
     let mut saw_malformed_certification = false;
     let mut saw_wrong_commitment = false;
     let mut saw_subject_scope_mismatch = false;
@@ -303,6 +304,9 @@ fn verifier_fixture_semantics_are_executed_without_claiming_tree_proof_validatio
             ) => {
                 saw_subject_scope_mismatch = true;
             }
+            ("missing_transition_derivation_version", Err(VerificationFailure::Deferred(_))) => {
+                saw_deferred_missing_transition_derivation_version = true;
+            }
             ("wrong_tree_proof", Err(VerificationFailure::Deferred(_))) => {
                 saw_deferred_wrong_tree_proof = true;
             }
@@ -313,6 +317,7 @@ fn verifier_fixture_semantics_are_executed_without_claiming_tree_proof_validatio
     assert!(saw_malformed_certification);
     assert!(saw_wrong_commitment);
     assert!(saw_subject_scope_mismatch);
+    assert!(saw_deferred_missing_transition_derivation_version);
     assert!(saw_deferred_wrong_tree_proof);
 }
 
