@@ -1194,3 +1194,94 @@ Standing constraints surfaced:
   - full unified diff review rule;
   - packet-slice discipline;
   - zero-implementation outcome normalization.
+
+## 2026-05-13 -- MILESTONE: S7-27 verifier coverage audit closed with no implementation-ready test batch
+
+Decisions made:
+- S7-27 opened as a bounded packet-slice to audit coverage gaps for already-pinned verifier gates.
+- The packet used the two-phase packet model:
+  - Phase 1: audit and classify coverage candidates only;
+  - Phase 2: implement only if G/C approved an independently-authorized, non-blocked, not-already-covered test group.
+- S7-27 closed after Phase 1 as a zero-implementation coverage-audit packet.
+- No Phase 2 implementation group exists under current authority and S7-27 boundaries.
+- Codex made no source, test, fixture, interface, Cargo, normative-doc, or continuity changes.
+- `git status --short --branch` was clean before continuity edits.
+- The zero-implementation outcome is an accepted successful packet-slice outcome, not a failed slice.
+
+Classification result:
+- Already sufficiently covered:
+  - real runtime `protocol_version` precheck rejection and ordering;
+  - real runtime `receipt_version` precheck rejection and ordering;
+  - real runtime certification-provenance shape gate failure and ordering;
+  - fixture integration loop coverage for currently materialized verifier families.
+- Existing-test-only / proposed-test-as-pinning:
+  - direct fixture-dispatch unit tests for `malformed_certification_provenance`;
+  - direct fixture-dispatch unit tests for `wrong_commitment_relationship`;
+  - direct fixture-dispatch unit tests for `receipt_subject_scope_mismatch`;
+  - direct `Deferred(...)` dispatch tests for `missing_transition_derivation_version`;
+  - direct `Deferred(...)` dispatch tests for `wrong_tree_proof`.
+- Fixture/materialization-blocked:
+  - real-path dual-drive tests from existing verifier-negative fixtures into `validate_receipt(&Receipt)` where placeholder-string evidence fails earlier structural gates.
+- Explicitly out of scope:
+  - `transition_derivation_version` runtime policy;
+  - broader `wrong_tree_proof` semantics;
+  - cryptographic certification/provenance validation;
+  - provenance payload semantics;
+  - trust-root validation;
+  - transition-material semantic validation.
+
+S7-27 audit-trail confirmations:
+- Variant-vs-exact-string distinction:
+  - For fixture-dispatch `InvalidEvidence(...)` candidates, a variant-only test would be more defensible than an exact-reason-string test.
+  - However, both remain existing-test-only / proposed-test-as-pinning under current authority.
+  - G/C chose not to escalate either variant-only or exact-string fixture-dispatch tests into Phase 2.
+- Pinning-source granularity:
+  - S7-27 distinguished independent authority from existing-test-only pinning.
+  - Future audit doctrine should further distinguish normative-spec pinning from committed-authority-record pinning.
+  - MILESTONE_LOG and RESTART_PACK record decisions, but they are not the same as ADR/spec/interface-rule authority.
+- Negative-path dispatch coverage:
+  - S7-27 audited known verifier fixture-family dispatch coverage.
+  - It did not open maintenance or fuzz-style coverage for unrecognized/malformed dispatch inputs.
+  - If needed, unrecognized-dispatch negative coverage should be separately scoped and authority-checked rather than folded into S7-27.
+- Existing-test maintenance:
+  - S7-27 did not fix, rewrite, deduplicate, or reframe existing tests.
+  - Any future stale-test or over-pinning cleanup requires a separately scoped maintenance slice.
+
+Strategic conclusion:
+- S7-26 and S7-27 are two consecutive zero-implementation packet closes.
+- This is not a failure of the packet-slice model; it is the model surfacing that the verifier implementation surface is saturated under current authority.
+- The next substantive move should not be another verifier implementation or verifier coverage audit packet.
+- More verifier implementation now requires one of the upstream doors identified in S7-26:
+  1. ADR/spec authority for `transition_derivation_version` runtime treatment;
+  2. an approved fixture/materialization strategy for real-path parity of downstream verifier negatives;
+  3. explicit re-gating of broader tree-proof semantics beyond the current non-cryptographic slice.
+- A fourth sensible non-verifier path is a bounded TAV-Engineering-Standards Playbook promotion session for accumulated process doctrine.
+
+Irreversible actions taken:
+- No source/test/fixture changes.
+- No commit from Codex.
+- Continuity-only close to be committed after full-suite gates.
+
+Do not revisit:
+- Whether S7-27 should escalate existing-test-only fixture-dispatch candidates into Phase 2 — settled no.
+- Whether S7-27 should pin exact fixture-dispatch reason strings — settled no.
+- Whether S7-27 should add variant-only `Deferred(...)` dispatch tests — settled no.
+- Whether S7-27 should perform fixture/materialization real-path parity work — settled no.
+- Whether S7-27 should open `transition_derivation_version`, broader `wrong_tree_proof`, certification/provenance crypto, trust-root, or transition-material semantics — settled no.
+- Whether S7-27 should clean up existing tests as maintenance work — settled no.
+
+Standing constraints surfaced:
+- Existing tests may describe behaviour without independently authorizing it.
+- Coverage packets must distinguish:
+  - normative/spec/interface authority;
+  - committed continuity records;
+  - existing-test-only behaviour;
+  - proposed-test-as-pinning.
+- Tests that pin exact reason strings require stronger authority than tests that pin only the `VerificationFailure` variant.
+- The verifier implementation surface is currently blocked upstream; do not continue running verifier packets without opening one of the identified doors.
+- The Playbook promotion queue now includes:
+  - full-suite gate rule;
+  - full unified diff review rule;
+  - packet-slice discipline;
+  - zero-implementation outcome normalization;
+  - normative-spec vs committed-authority-record pinning distinction.

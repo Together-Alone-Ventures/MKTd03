@@ -1,7 +1,7 @@
 DATE: 2026-05-13
 
 CURRENT GOAL:
-S7-26 is closed as a zero-implementation verifier gap audit packet. Next bounded session should start with continuity-close review, then choose one of the forward pathways before attempting more verifier implementation.
+S7-27 is closed as a zero-implementation verifier coverage audit packet. Next bounded session should start with continuity-close review, then choose an upstream door deliberately. Do not run another verifier implementation/coverage packet until authority, fixture strategy, or tree-proof scope is opened.
 
 IMPORTANT SCOPE RULE:
 This file is for MKTd03 protocol work only.
@@ -100,6 +100,43 @@ PACKET-SLICE DISCIPLINE NOW IN FORCE:
 - Zero-implementation packet closes are valid when no implementation-ready group exists.
 - Commits remain per substantive change plus a separate continuity-close commit.
 
+
+S7-27 CLOSE:
+- S7-27 audited coverage gaps for already-pinned verifier gates.
+- Phase 1 found no implementation-ready test batch.
+- Phase 2 did not open.
+- No source, test, fixture, interface, Cargo, normative-doc, or continuity changes were made by Codex.
+- Zero-implementation outcome is a successful packet close, not a failed slice.
+- Already sufficiently covered:
+  - real runtime `protocol_version` precheck rejection and ordering;
+  - real runtime `receipt_version` precheck rejection and ordering;
+  - real runtime certification-provenance shape gate failure and ordering;
+  - fixture integration loop coverage for currently materialized verifier families.
+- Existing-test-only / proposed-test-as-pinning candidates were not escalated:
+  - direct fixture-dispatch unit tests for `malformed_certification_provenance`;
+  - direct fixture-dispatch unit tests for `wrong_commitment_relationship`;
+  - direct fixture-dispatch unit tests for `receipt_subject_scope_mismatch`;
+  - direct `Deferred(...)` dispatch tests for `missing_transition_derivation_version`;
+  - direct `Deferred(...)` dispatch tests for `wrong_tree_proof`.
+- Fixture/materialization real-path parity remains blocked by S7-24.
+- S7-27 did not perform test maintenance, dispatch fuzzing, or unrecognized-input negative coverage.
+
+S7-27 AUDIT LESSONS:
+- Variant-only fixture-dispatch tests are less contract-hardening than exact-reason-string tests, but both remain non-auto-eligible without independent authority or explicit G/C escalation.
+- Future audits should distinguish normative-spec pinning from committed-authority-record pinning. MILESTONE_LOG and RESTART_PACK record decisions, but they are not equivalent to ADR/spec/interface-rule authority.
+- Existing tests may describe current behaviour without independently authorizing more tests that harden it.
+- Tests pinning exact reason strings require stronger authority than tests pinning only the `VerificationFailure` variant.
+
+STRATEGIC STATE AFTER S7-27:
+- S7-26 and S7-27 are consecutive zero-implementation packet closes.
+- This means the verifier implementation surface is saturated under current authority.
+- Do not start another verifier implementation/coverage packet by default.
+- Next substantive work should deliberately open one of:
+  1. `transition_derivation_version` ADR/spec authority;
+  2. fixture/materialization strategy for downstream real-path parity;
+  3. broader tree-proof semantics re-gating;
+  4. TAV-Engineering-Standards Playbook promotion for accumulated process doctrine.
+
 BOUNDARIES STILL IN FORCE:
 - No `.did` changes.
 - No Cargo changes.
@@ -115,11 +152,13 @@ OPEN CANDIDATES / CARRY-FORWARD:
 4. Future runtime treatment of `transition_derivation_version` requires a policy sequence before implementation: ADR/spec amendment pinning rejection principle, error taxonomy/reason string, and ordering; explicit reversal of current non-inspection tests; then implementation.
 5. The two current non-inspection tests for `transition_derivation_version` are committed negative authority and must not be removed as incidental cleanup.
 6. Broader `wrong_tree_proof` semantics remain explicitly out of scope until tree-proof validation is deliberately re-gated.
-7. A future packet may audit test coverage for already-pinned verifier gates; S7-26 audited semantic implementation readiness, not coverage completeness.
-8. The three-part authority-pinning requirement should be considered for TAV-Engineering-Standards Playbook promotion: rejection principle, error taxonomy/reason string, and ordering position must be pinned before runtime semantics are added for typed evidence fields.
-9. Packet-slice discipline and zero-implementation outcome normalization should be promoted to TAV-Engineering-Standards Playbook.
-10. Possible shared helper consolidation for version-support predicates if duplication becomes material.
-11. Promote full-suite gate rule and full-diff pre-commit review rule to TAV-Engineering-Standards Playbook.
+7. The verifier implementation/coverage surface is now saturated under current authority; do not run another verifier packet unless one upstream door is opened first.
+8. Future coverage audits should distinguish normative-spec authority, committed-authority-record pinning, existing-test-only behaviour, and proposed-test-as-pinning.
+9. Tests pinning exact reason strings require stronger authority than tests pinning only `VerificationFailure` variants.
+10. The three-part authority-pinning requirement should be considered for TAV-Engineering-Standards Playbook promotion: rejection principle, error taxonomy/reason string, and ordering position must be pinned before runtime semantics are added for typed evidence fields.
+11. Packet-slice discipline and zero-implementation outcome normalization should be promoted to TAV-Engineering-Standards Playbook.
+12. Possible shared helper consolidation for version-support predicates if duplication becomes material.
+13. Promote full-suite gate rule and full-diff pre-commit review rule to TAV-Engineering-Standards Playbook.
 
 NEXT BOUNDED SESSION:
-Continuity-close review first. Then choose the next path deliberately: transition-derivation policy authority, fixture/materialization strategy, broader tree-proof re-gating, already-pinned gate coverage audit, or Playbook promotion. Do not reopen S7-24, S7-25, or S7-26 reactively.
+Continuity-close review first. Then choose an upstream door deliberately: transition-derivation policy authority, fixture/materialization strategy, broader tree-proof re-gating, or Playbook promotion. Do not run another verifier implementation/coverage packet until one door is opened. Do not reopen S7-24, S7-25, S7-26, or S7-27 reactively.
