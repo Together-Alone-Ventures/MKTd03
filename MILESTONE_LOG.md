@@ -1361,3 +1361,47 @@ Standing constraints carried forward:
   - The S7-24 downstream verifier-negative real-path parity blocker remains open.
   - Any future verifier slice that adds a downstream gate must preserve the already-pinned order:
     protocol_version → receipt_version → transition_derivation_version → structural gates → commitment gates → certification-provenance shape gate → final scaffold / later success path when authorized.
+
+## 2026-05-13 -- MILESTONE: S7-30 missing-TDV classification close
+
+Decisions made:
+  - S7-30 was a read-only authority/classification packet for `missing_transition_derivation_version`.
+  - No implementation was opened.
+  - No spec, ADR, interface, `.did`, fixture, fixture-index, fixture-manifest, Cargo, source, or test changes were made.
+  - The audit confirmed that missing `transition_derivation_version` is a required-field absence, not an unsupported-value case.
+  - `interfaces/mktd03_library.did` declares `CoreTransitionEvidence.transition_derivation_version : SemanticVersion` as a required non-`opt` field.
+  - `src/library.rs` declares runtime `CoreTransitionEvidence.transition_derivation_version: SemanticVersion` as a non-`Option` field.
+  - Therefore a missing TDV is not representable at the typed `Receipt` boundary consumed by `validate_receipt(&Receipt)`.
+  - Candid/API intake structurally rejects missing required fields before typed receipt validation. This is a present-tense structural property, not a future implementation requirement.
+  - Fixture JSON can represent missing TDV only because `src/fixtures.rs` models fixture-layer `transition_derivation_version` as `Option<SemanticVersion>` for negative-fixture classification.
+  - The missing-TDV fixture represents absence by omitted key, not by `null`, zero-value, or unsupported-version sentinel.
+  - Fixture-layer handling structurally accommodates the omission and then punts semantic handling: `src/verifier.rs` dispatches `missing_transition_derivation_version` to `VerificationFailure::Deferred(...)`.
+  - That dispatch is not semantic validation and must not be read as runtime verifier support.
+  - S7-30 makes no change to S7-29. `docs/spec/MKTd03_versioning_compatibility_note_v1.md` §9.1 remains the sole authority for unsupported-TDV runtime handling.
+  - S7-30 does not add, authorize, or imply a missing-TDV gate in the verifier ordering chain.
+  - S7-30 does not resolve S7-24. It sharpens the dependency: any future concrete missing-TDV implementation at custom intake, fixture-to-runtime materialization, or related paths depends on a separately scoped fixture/materialization or intake-authority strategy.
+
+Irreversible actions taken:
+  - No source/test/fixture/interface/spec changes.
+  - S7-30 closes as continuity-only classification.
+
+Validation:
+  - `cargo fmt --check` passed.
+  - `cargo test --offline` passed: 164 unit tests and 24 fixture tests.
+  - `cargo build --offline --target wasm32-unknown-unknown` passed.
+
+Do not revisit:
+  - Whether `validate_receipt(&Receipt)` should have a missing-TDV check — settled no; structurally impossible because `Receipt.core_transition_evidence.transition_derivation_version` is non-Option in `src/library.rs` and non-`opt` in `interfaces/mktd03_library.did`.
+  - Whether the missing-TDV verifier-negative family dispatch should be promoted from `VerificationFailure::Deferred(...)` to `InvalidEvidence(...)` or another concrete variant — settled no; the family remains `Deferred(...)` pending a separately scoped fixture/materialization or intake-authority strategy.
+  - Whether missing-TDV semantics should modify §9.1 wording or extend S7-29's runtime rejection — settled no; missing-TDV is required-field absence, distinct from unsupported-value, and §9.1 remains the sole authority for unsupported-TDV runtime behavior.
+  - Whether a §9.2 or any new spec section is required to record this classification — settled no; existing typed-interface posture and fixture-layer `Option` + `Deferred(...)` posture together provide sufficient structural authority. Continuity recording is the appropriate location.
+  - Whether the verifier ordering chain should add a missing-TDV gate — settled no; the ordering chain at the TDV position handles unsupported-TDV only, and absence of a missing-TDV check is structurally correct given the typed-Receipt invariant.
+  - Whether the fixture-layer `Option<SemanticVersion>` typing in `src/fixtures.rs` should be tightened to match runtime non-Option typing — settled no; the `Option` typing is purposeful for the missing-TDV negative-fixture family and must not be changed without coordinated fixture/materialization strategy work.
+  - Whether the absence of `mktd03_s2_edit_plan.md` at repo root blocks classification — settled no; committed artifacts are sufficient ground truth.
+
+Standing constraints carried forward:
+  - Missing-TDV implementation remains authority-deferred.
+  - Any future work on missing-TDV behavior — whether Candid intake, custom Rust intake, fixture-to-runtime materialization, or elsewhere — must first resolve the S7-24 fixture/materialization blocker or receive a separately scoped intake-authority strategy.
+  - The fixture-layer optional TDV field is load-bearing for the current missing-TDV verifier-negative family; do not tighten it casually.
+  - Candid/API missing-required-field rejection is structural and pre-typed-validation; no Candid-level implementation work is implied by S7-30.
+  - S7-29 unsupported-TDV runtime behavior, tests, helper, and ordering remain untouched.

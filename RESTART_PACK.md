@@ -241,3 +241,47 @@ Still open after S7-29:
 Next candidate slice:
   - Do not automatically continue verifier implementation.
   - Next step should be a bounded selection review after continuity push, using current `MILESTONE_LOG.md`, `RESTART_PACK.md`, and git history.
+
+---
+
+## S7-30 CLOSE — missing-TDV classification
+
+Status:
+  - S7-30 closes as a zero-implementation classification packet.
+  - No code, test, fixture, interface, `.did`, spec, ADR, or Cargo changes were made.
+  - Continuity close in progress.
+
+Classification:
+  - Missing `transition_derivation_version` is a required-field absence, not an unsupported-value case.
+  - It is not representable at the typed runtime `Receipt` boundary because:
+    - `interfaces/mktd03_library.did` declares `transition_derivation_version : SemanticVersion` as required/non-`opt`;
+    - `src/library.rs` declares runtime `CoreTransitionEvidence.transition_derivation_version: SemanticVersion` as non-`Option`.
+  - Therefore `validate_receipt(&Receipt)` cannot and should not grow a missing-TDV check.
+  - Candid/API intake structurally rejects missing required fields before typed receipt validation.
+  - Fixture JSON represents missing TDV by omitted key only because the fixture-layer type in `src/fixtures.rs` uses `Option<SemanticVersion>` for negative-fixture classification.
+  - The missing-TDV fixture path is accommodated structurally, then punted semantically via `VerificationFailure::Deferred(...)`.
+  - The fixture dispatch arm is not semantic validation.
+
+S7-29 protection:
+  - `docs/spec/MKTd03_versioning_compatibility_note_v1.md` §9.1 remains unchanged and remains the sole authority for unsupported-TDV runtime handling.
+  - S7-30 does not extend the verifier ordering chain.
+  - No missing-TDV runtime gate is authorized.
+  - S7-29 tests/helper/precheck position remain untouched.
+
+S7-24 relationship:
+  - S7-30 does not resolve the S7-24 fixture/materialization blocker.
+  - It sharpens the dependency: any future concrete missing-TDV implementation at custom intake or fixture-to-runtime materialization depends on a separately scoped fixture/materialization or intake-authority strategy.
+  - Do not treat missing-TDV as an independent implementation candidate until that dependency is resolved or explicitly re-gated.
+
+Still open after S7-30:
+  - S7-24 downstream verifier-negative real-path parity / fixture-materialization strategy.
+  - Missing-TDV concrete implementation only after S7-24-related strategy or separate intake authority.
+  - Broader tree-proof semantics.
+  - Certification/provenance crypto.
+  - Success-path behavior.
+  - TAV-Engineering-Standards Playbook promotion for accumulated process doctrine.
+
+Next bounded session:
+  - Start with continuity-close review.
+  - Then choose the next bounded slice after G/C review.
+  - Do not automatically continue verifier implementation.
