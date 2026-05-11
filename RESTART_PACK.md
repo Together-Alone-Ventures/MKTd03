@@ -1,7 +1,7 @@
 DATE: 2026-05-13
 
 CURRENT GOAL:
-S7-27 is closed as a zero-implementation verifier coverage audit packet. Next bounded session should start with continuity-close review, then choose an upstream door deliberately. Do not run another verifier implementation/coverage packet until authority, fixture strategy, or tree-proof scope is opened.
+S7-28 is closed as the transition-derivation-version policy authority packet. Next bounded session should start with continuity-close review, then decide whether to open the follow-on runtime implementation slice for unsupported `transition_derivation_version`, or another upstream-door slice, after G/C review.
 
 IMPORTANT SCOPE RULE:
 This file is for MKTd03 protocol work only.
@@ -127,6 +127,29 @@ S7-27 AUDIT LESSONS:
 - Existing tests may describe current behaviour without independently authorizing more tests that harden it.
 - Tests pinning exact reason strings require stronger authority than tests pinning only the `VerificationFailure` variant.
 
+S7-28 CLOSE:
+- S7-28 landed the authority/spec policy required for later runtime handling of unsupported `Receipt.core_transition_evidence.transition_derivation_version`.
+- The supported `transition_derivation_version` set is now pinned to exactly `1.0.0`.
+- A real `validate_receipt(&Receipt)` implementation must reject any other value with:
+  - `VerificationFailure::UnsupportedVersion("unsupported_transition_derivation_version")`
+- The ordering is now pinned as:
+  - `protocol_version`
+  - `receipt_version`
+  - `transition_derivation_version`
+  - core-transition evidence structural gates
+  - commitment gates
+  - certification-provenance shape gate
+  - final `NotImplemented(...)` scaffold
+- This is a version-support failure, not malformed evidence, even though the field is nested under `core_transition_evidence`.
+- `interfaces/mktd03_library_interface_rules.md` §1.4 remains the cross-reference that makes the field independently meaningful; S7-28 pins the runtime consequence of that independence.
+- S7-28 does not resolve concrete runtime semantics for `missing_transition_derivation_version`.
+- The current non-inspection tests remain unchanged for now, but are now scheduled for reversal in the later implementation slice that uses this authority.
+- No source, test, fixture, interface, `.did`, or Cargo changes were made.
+- Gates passed:
+  - `cargo fmt --check`
+  - `cargo test --offline`
+  - `cargo build --offline --target wasm32-unknown-unknown`
+
 STRATEGIC STATE AFTER S7-27:
 - S7-26 and S7-27 are consecutive zero-implementation packet closes.
 - This means the verifier implementation surface is saturated under current authority.
@@ -136,6 +159,15 @@ STRATEGIC STATE AFTER S7-27:
   2. fixture/materialization strategy for downstream real-path parity;
   3. broader tree-proof semantics re-gating;
   4. TAV-Engineering-Standards Playbook promotion for accumulated process doctrine.
+
+STRATEGIC STATE AFTER S7-28:
+- The first upstream door from S7-26/S7-27 is now open: ADR/spec authority for unsupported `transition_derivation_version` runtime handling has been pinned.
+- The verifier implementation surface is no longer fully saturated; one narrow follow-on runtime slice is now authorized in principle, but has not yet been opened in code.
+- The next substantive slice may implement the unsupported `transition_derivation_version` precheck, reverse the two current non-inspection tests, and add focused taxonomy/ordering coverage under the newly pinned authority.
+- The other upstream doors remain separate:
+  1. fixture/materialization strategy for downstream real-path parity;
+  2. broader tree-proof semantics re-gating;
+  3. TAV-Engineering-Standards Playbook promotion for accumulated process doctrine.
 
 BOUNDARIES STILL IN FORCE:
 - No `.did` changes.
@@ -149,16 +181,15 @@ OPEN CANDIDATES / CARRY-FORWARD:
 1. S7-22 certification-provenance runtime gate still lacks real-path fixture coverage. S7-24 proved the current fixture cannot reach that gate because placeholder-derived core-transition evidence fails earlier.
 2. Future real-path parity for downstream-gate verifier negatives needs a separately scoped design, likely involving either structurally valid negative fixtures or an explicitly approved fixture/materialization strategy.
 3. Placeholder-string semantics in `materialize_receipt(...)` are a structural impediment to downstream-gate real-path parity whenever earlier evidence-length gates run first.
-4. Future runtime treatment of `transition_derivation_version` requires a policy sequence before implementation: ADR/spec amendment pinning rejection principle, error taxonomy/reason string, and ordering; explicit reversal of current non-inspection tests; then implementation.
-5. The two current non-inspection tests for `transition_derivation_version` are committed negative authority and must not be removed as incidental cleanup.
+4. Follow-on runtime slice: implement the now-pinned unsupported `transition_derivation_version` precheck in `validate_receipt(&Receipt)`, reverse the two current non-inspection tests, and add focused ordering/taxonomy coverage under S7-28 authority.
+5. The two current non-inspection tests for `transition_derivation_version` remain committed negative authority until the follow-on runtime implementation slice deliberately reverses them; they must not be removed as incidental cleanup before then.
 6. Broader `wrong_tree_proof` semantics remain explicitly out of scope until tree-proof validation is deliberately re-gated.
-7. The verifier implementation/coverage surface is now saturated under current authority; do not run another verifier packet unless one upstream door is opened first.
-8. Future coverage audits should distinguish normative-spec authority, committed-authority-record pinning, existing-test-only behaviour, and proposed-test-as-pinning.
-9. Tests pinning exact reason strings require stronger authority than tests pinning only `VerificationFailure` variants.
-10. The three-part authority-pinning requirement should be considered for TAV-Engineering-Standards Playbook promotion: rejection principle, error taxonomy/reason string, and ordering position must be pinned before runtime semantics are added for typed evidence fields.
-11. Packet-slice discipline and zero-implementation outcome normalization should be promoted to TAV-Engineering-Standards Playbook.
-12. Possible shared helper consolidation for version-support predicates if duplication becomes material.
-13. Promote full-suite gate rule and full-diff pre-commit review rule to TAV-Engineering-Standards Playbook.
+7. Future coverage audits should distinguish normative-spec authority, committed-authority-record pinning, existing-test-only behaviour, and proposed-test-as-pinning.
+8. Tests pinning exact reason strings require stronger authority than tests pinning only `VerificationFailure` variants.
+9. The three-part authority-pinning requirement should be considered for TAV-Engineering-Standards Playbook promotion: rejection principle, error taxonomy/reason string, and ordering position must be pinned before runtime semantics are added for typed evidence fields.
+10. Packet-slice discipline and zero-implementation outcome normalization should be promoted to TAV-Engineering-Standards Playbook.
+11. Possible shared helper consolidation for version-support predicates if duplication becomes material.
+12. Promote full-suite gate rule and full-diff pre-commit review rule to TAV-Engineering-Standards Playbook.
 
 NEXT BOUNDED SESSION:
-Continuity-close review first. Then choose an upstream door deliberately: transition-derivation policy authority, fixture/materialization strategy, broader tree-proof re-gating, or Playbook promotion. Do not run another verifier implementation/coverage packet until one door is opened. Do not reopen S7-24, S7-25, S7-26, or S7-27 reactively.
+Continuity-close review first. Then either open the follow-on runtime implementation slice for unsupported `transition_derivation_version` under S7-28 authority, or choose another upstream-door slice after G/C review. Do not treat S7-28 itself as runtime implementation. Do not reopen S7-24, S7-25, S7-26, or S7-27 reactively.

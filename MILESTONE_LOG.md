@@ -1285,3 +1285,44 @@ Standing constraints surfaced:
   - packet-slice discipline;
   - zero-implementation outcome normalization;
   - normative-spec vs committed-authority-record pinning distinction.
+
+## 2026-05-13 -- MILESTONE: S7-28 transition-derivation-version runtime policy authority landed
+
+Decisions made:
+- S7-28 is an authority/spec packet, not a verifier implementation slice.
+- The current supported `transition_derivation_version` for the baseline is exactly `1.0.0`.
+- A real `validate_receipt(&Receipt)` implementation must reject any `transition_derivation_version` other than `1.0.0`.
+- Unsupported transition derivation version maps to:
+  - `VerificationFailure::UnsupportedVersion("unsupported_transition_derivation_version")`
+- Rejection is a version-support failure, not malformed evidence.
+- The runtime ordering is now pinned as:
+  - `protocol_version`
+  - `receipt_version`
+  - `transition_derivation_version`
+  - core-transition evidence structural gates
+  - commitment gates
+  - certification-provenance shape gate
+  - final `NotImplemented(...)` scaffold
+- `interfaces/mktd03_library_interface_rules.md` §1.4 remains the cross-reference establishing that `transition_derivation_version` is independently meaningful and must not be inferred from other version fields; S7-28 pins the runtime consequence of that independence.
+- S7-28 pins unsupported-value runtime handling only.
+- S7-28 does not resolve concrete runtime semantics for the `missing_transition_derivation_version` verifier fixture family.
+- The current non-inspection tests in `src/verifier.rs` remain unchanged in S7-28, but are now explicitly scheduled to be reversed in a later implementation slice after this authority lands.
+- No source, test, fixture, interface, `.did`, or Cargo changes were made.
+- Gates passed:
+  - `cargo fmt --check`
+  - `cargo test --offline`
+  - `cargo build --offline --target wasm32-unknown-unknown`
+
+Irreversible actions taken:
+- Committed `02d8b9b` — `docs: pin transition derivation version verifier policy`
+
+Do not revisit:
+- Whether unsupported transition derivation version should map to `InvalidEvidence(...)` — settled no.
+- Whether `transition_derivation_version` runtime handling may be inferred by analogy from other version checks — settled no.
+- Whether S7-28 resolves concrete runtime semantics for `missing_transition_derivation_version` — settled no.
+- Whether S7-28 reopens transition-material semantics, broader tree-proof semantics, certification/provenance cryptography, trust-root validation, or success-path introduction — settled no.
+- Whether S7-28 should change runtime code or reverse the current non-inspection tests immediately — settled no.
+
+Standing constraints surfaced:
+- The three-part authority requirement for future typed-evidence runtime semantics is now exemplified by S7-28: supported set, exact failure taxonomy, and ordering position must be pinned before implementation.
+- Spec/authority packets may deliberately reverse prior committed negative-authority posture only by explicit additive policy, not by implementation-first drift.
