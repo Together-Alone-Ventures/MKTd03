@@ -1019,3 +1019,45 @@ Standing constraints surfaced:
 - Full offline test suite is now the slice-close gate: `cargo test --offline`, not `cargo test --offline --lib`.
 - Pre-commit review requires full unified diff and changed-file contents, not summaries.
 - Future candidate: consider shared helper consolidation for version-support predicates if duplication becomes material.
+
+## 2026-05-13 -- MILESTONE: S7-24 certification-provenance real-path parity feasibility blocker recorded
+
+Decisions made:
+- S7-24 opened as a bounded test/harness parity slice for the existing `malformed_certification_provenance` verifier-negative fixture.
+- Approved closure criteria allowed either:
+  - dual-driving the existing fixture through real `Receipt` materialization and `validate_receipt(&Receipt)`, or
+  - proving a precise feasibility blocker with no forced workaround.
+- S7-24 closed on criterion B: feasibility blocker proven.
+- Codex made no source, test, fixture, interface, Cargo, or normative-doc changes.
+- The existing malformed certification-provenance fixture parses and materializes into a real `Receipt`.
+- The certification-provenance malformation itself survives materialization.
+- However, the real `validate_receipt(&Receipt)` path rejects the materialized receipt before reaching the S7-22 certification-provenance shape gate.
+- Exact blocker:
+  - `materialize_receipt(...)` converts placeholder fixture strings into byte vectors via `.as_bytes().to_vec()`.
+  - The fixture uses placeholder strings for core-transition evidence fields including `pre_state_commitment`, `post_state_commitment`, `transition_material`, and `tree_proof`.
+  - The real verifier runs earlier core-transition evidence gates before the certification-provenance shape gate.
+  - The direct experiment returned `VerificationFailure::InvalidEvidence("post_state_commitment_unexpected_length")`.
+- Achieving dual-drive under the current fixture would require an out-of-scope change:
+  - changing fixture JSON so core-transition evidence is structurally valid for the real path,
+  - adding a sibling fixture plus index/manifest changes,
+  - adding a special harness/materialization substitution path, or
+  - reordering/short-circuiting real verifier gates.
+- All such routes are outside S7-24 boundaries.
+
+Irreversible actions taken:
+- No source/test/fixture changes.
+- No commit from Codex.
+- Continuity-only close to be committed after full-suite gates.
+
+Do not revisit:
+- Whether S7-24 should change the existing malformed certification-provenance fixture JSON — settled no.
+- Whether S7-24 should add a sibling fixture with real-path-valid core-transition evidence — settled no.
+- Whether S7-24 should introduce a harness substitution/normalization path — settled no.
+- Whether S7-24 should reorder `validate_receipt(&Receipt)` gates — settled no.
+- Whether S7-24 should add certification cryptographic validation, provenance byte validation, trust-root validation, route semantics, or payload inspection — settled no.
+- Whether S7-24 should introduce an `Ok(())` success path — settled no.
+
+Standing constraints surfaced:
+- The S7-22 certification-provenance runtime gate currently has no real-path fixture coverage as a consequence of this blocker. The gate exists in code, and the fixture exists, but the two cannot be linked through the real path without a future change that crosses S7-24 boundaries.
+- Placeholder-string semantics in `materialize_receipt(...)` create evidence byte vectors whose lengths are incidental to placeholder text. This is a structural impediment to real-path parity for verifier-negative fixtures whose target gate sits downstream of evidence-length checks.
+- Future real-path parity for downstream-gate verifier negatives needs its own bounded slice design. Do not reopen this reactively inside S7-24.

@@ -1,7 +1,7 @@
 DATE: 2026-05-13
 
 CURRENT GOAL:
-S7-23 is closed. Next bounded session should start with continuity-close review, then select the next verifier/receipt-validation slice after G/C review. The next substantive slice is not opened yet.
+S7-24 is closed on feasibility blocker. Next bounded session should start with continuity-close review, then select the next verifier/receipt-validation slice after G/C review. The next substantive slice is not opened yet.
 
 IMPORTANT SCOPE RULE:
 This file is for MKTd03 protocol work only.
@@ -23,6 +23,27 @@ S7-23 CLOSE:
   - `cargo test --offline` — 186 total tests passed
   - `cargo build --offline --target wasm32-unknown-unknown`
 
+
+S7-24 CLOSE:
+- S7-24 attempted certification-provenance fixture real-path parity for the existing `malformed_certification_provenance` verifier-negative fixture.
+- Closure criterion B was met: feasibility blocker proven.
+- No source, test, fixture, interface, Cargo, or normative-doc changes were made by Codex.
+- The fixture parses and materializes into a real `Receipt`.
+- The certification-provenance malformation survives materialization.
+- The real `validate_receipt(&Receipt)` path rejects earlier on core-transition evidence shape/length before reaching the certification-provenance shape gate.
+- Direct observed error:
+  - `VerificationFailure::InvalidEvidence("post_state_commitment_unexpected_length")`
+- Exact mechanism:
+  - `materialize_receipt(...)` converts placeholder fixture strings into raw byte vectors via `.as_bytes().to_vec()`.
+  - Placeholder strings in `pre_state_commitment`, `post_state_commitment`, `transition_material`, and `tree_proof` produce byte vectors with incidental lengths.
+  - Earlier evidence gates run before S7-22 certification-provenance shape validation.
+- Out-of-scope routes rejected:
+  - changing existing fixture JSON,
+  - adding a sibling fixture plus index/manifest changes,
+  - adding harness substitution/normalization,
+  - reordering or short-circuiting real verifier gates.
+- S7-24 is information-producing only; no code change was appropriate.
+
 BOUNDARIES STILL IN FORCE:
 - No `.did` changes.
 - No Cargo changes.
@@ -32,9 +53,11 @@ BOUNDARIES STILL IN FORCE:
 - No policy reopening for protocol_version, receipt_version, interface_version, or transition_derivation_version.
 
 OPEN CANDIDATES / CARRY-FORWARD:
-1. cert-provenance fixture re-pointing or dual-driving on real Receipt path.
-2. Possible shared helper consolidation for version-support predicates if duplication becomes material.
-3. Promote full-suite gate rule and full-diff pre-commit review rule to TAV-Engineering-Standards Playbook.
+1. S7-22 certification-provenance runtime gate still lacks real-path fixture coverage. S7-24 proved the current fixture cannot reach that gate because placeholder-derived core-transition evidence fails earlier.
+2. Future real-path parity for downstream-gate verifier negatives needs a separately scoped design, likely involving either structurally valid negative fixtures or an explicitly approved fixture/materialization strategy.
+3. Placeholder-string semantics in `materialize_receipt(...)` are a structural impediment to downstream-gate real-path parity whenever earlier evidence-length gates run first.
+4. Possible shared helper consolidation for version-support predicates if duplication becomes material.
+5. Promote full-suite gate rule and full-diff pre-commit review rule to TAV-Engineering-Standards Playbook.
 
 NEXT BOUNDED SESSION:
-Continuity-close review first, then select the next verifier/receipt-validation slice only after G/C review. The next substantive slice is not opened yet.
+Continuity-close review first, then select the next verifier/receipt-validation slice only after G/C review. Do not reopen S7-24 reactively. The next substantive slice is not opened yet.
