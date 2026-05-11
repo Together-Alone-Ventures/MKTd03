@@ -935,3 +935,44 @@ Do not revisit:
 Standing constraints surfaced:
 - Certification-provenance fixture re-pointing or dual-driving on the real `Receipt` path remains an open candidate for a future bounded slice.
 - The receipt_version test-vector asymmetry carried from S7-21B remains an open candidate for a future bounded slice.
+
+## 2026-05-11 -- MILESTONE: S7-23a missing transition_derivation_version fixture parsing repaired
+
+Decisions made:
+- S7-23a repaired the pre-existing verifier fixture integration failure rooted in the `missing_transition_derivation_version` fixture family.
+- `FixtureCoreTransitionEvidence.transition_derivation_version` now parses as `Option<SemanticVersion>`.
+- The typed fixture parser now parses verifier fixtures first, then enforces family-specific presence/absence rules for `transition_derivation_version`.
+- Verifier fixture parsing now requires:
+  - `transition_derivation_version.is_none()` for `missing_transition_derivation_version`
+  - `transition_derivation_version.is_some()` for every other verifier fixture family
+- Positive library receipt fixtures now require `transition_derivation_version.is_some()`.
+- The fixture-to-runtime materialization path in `materialize_receipt(...)` now fails loudly if `transition_derivation_version` is missing.
+- The `materialize_receipt(...)` fail-loud branch is unreachable from valid fixture loads because typed fixture parsing now enforces `transition_derivation_version` presence for positive receipt fixtures. The `.expect(...)` guard remains as defensive documentation against future parser drift or manually constructed invalid `TypedFixtureDocument` values.
+- `missing_transition_derivation_version` remains a verifier-input fixture family only; no new runtime verifier semantics or new `transition_derivation_version` policy were introduced.
+- The previously red fixture integration target is now green.
+- Gates passed:
+  - `cargo fmt --check`
+  - `cargo test --offline --lib` — 160 passed; 0 failed; 0 ignored
+  - `cargo test --offline --test fixtures` — 24 passed; 0 failed; 0 ignored
+  - `cargo build --offline --target wasm32-unknown-unknown`
+
+Irreversible actions taken:
+- Committed `91e3817` — `fixtures: allow missing transition derivation version fixture`.
+
+Do not revisit:
+- Whether S7-23a should use custom deserialization for the missing-field family — settled no.
+- Whether S7-23a should use per-family typed input loaders — settled no.
+- Whether S7-23a should change real `validate_receipt(&Receipt)` semantics — settled no.
+- Whether S7-23a should reopen `transition_derivation_version` policy — settled no.
+- Whether S7-23a should touch `.did`, Cargo, interfaces, normative docs, or the fixture manifest — settled no.
+- Whether S7-23a should restore S7-23 WIP before the prerequisite repair was closed — settled no.
+
+Standing constraints surfaced:
+- From now on, every slice must run:
+  - `cargo fmt --check`
+  - `cargo test --offline`
+  - `cargo build --offline --target wasm32-unknown-unknown`
+- The prior `cargo test --offline --lib`-only pattern masked integration-test regressions. Slice-specific narrower tests may still be run for diagnosis, but the slice-close gate is the full offline test suite.
+
+SESSION LESSON / carry-forward:
+- Pre-commit review must inspect the full unified diff and changed-file contents, not only a summary. This repeats the S7-12 standing constraint and should be promoted into the next TAV-Engineering-Standards Playbook/doctrine session.
