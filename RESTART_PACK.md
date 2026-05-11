@@ -1,7 +1,7 @@
 DATE: 2026-05-13
 
 CURRENT GOAL:
-S7-28 is closed as the transition-derivation-version policy authority packet. Next bounded session should start with continuity-close review, then decide whether to open the follow-on runtime implementation slice for unsupported `transition_derivation_version`, or another upstream-door slice, after G/C review.
+S7-29 is complete locally pending continuity commit/push. S7-28 authority for unsupported `transition_derivation_version` runtime handling has been consumed by S7-29. Next bounded session should start with continuity-close review, then choose the next bounded slice after G/C review; do not automatically continue verifier implementation.
 
 IMPORTANT SCOPE RULE:
 This file is for MKTd03 protocol work only.
@@ -160,14 +160,15 @@ STRATEGIC STATE AFTER S7-27:
   3. broader tree-proof semantics re-gating;
   4. TAV-Engineering-Standards Playbook promotion for accumulated process doctrine.
 
-STRATEGIC STATE AFTER S7-28:
-- The first upstream door from S7-26/S7-27 is now open: ADR/spec authority for unsupported `transition_derivation_version` runtime handling has been pinned.
-- The verifier implementation surface is no longer fully saturated; one narrow follow-on runtime slice is now authorized in principle, but has not yet been opened in code.
-- The next substantive slice may implement the unsupported `transition_derivation_version` precheck, reverse the two current non-inspection tests, and add focused taxonomy/ordering coverage under the newly pinned authority.
-- The other upstream doors remain separate:
-  1. fixture/materialization strategy for downstream real-path parity;
-  2. broader tree-proof semantics re-gating;
-  3. TAV-Engineering-Standards Playbook promotion for accumulated process doctrine.
+STRATEGIC STATE AFTER S7-29:
+- The S7-28 unsupported-TDV authority door has now been consumed by S7-29.
+- Runtime `validate_receipt(&Receipt)` rejects unsupported `transition_derivation_version` values as `UnsupportedVersion("unsupported_transition_derivation_version")`.
+- The two former TDV non-inspection tests were deliberately removed/replaced in S7-29 and no longer stand as committed negative authority.
+- Do not automatically continue verifier implementation. The remaining upstream doors are separate:
+  1. missing-TDV runtime semantics, requiring separate authority;
+  2. fixture/materialization strategy for downstream real-path parity;
+  3. broader tree-proof semantics re-gating;
+  4. TAV-Engineering-Standards Playbook promotion for accumulated process doctrine.
 
 BOUNDARIES STILL IN FORCE:
 - No `.did` changes.
@@ -181,8 +182,8 @@ OPEN CANDIDATES / CARRY-FORWARD:
 1. S7-22 certification-provenance runtime gate still lacks real-path fixture coverage. S7-24 proved the current fixture cannot reach that gate because placeholder-derived core-transition evidence fails earlier.
 2. Future real-path parity for downstream-gate verifier negatives needs a separately scoped design, likely involving either structurally valid negative fixtures or an explicitly approved fixture/materialization strategy.
 3. Placeholder-string semantics in `materialize_receipt(...)` are a structural impediment to downstream-gate real-path parity whenever earlier evidence-length gates run first.
-4. Follow-on runtime slice: implement the now-pinned unsupported `transition_derivation_version` precheck in `validate_receipt(&Receipt)`, reverse the two current non-inspection tests, and add focused ordering/taxonomy coverage under S7-28 authority.
-5. The two current non-inspection tests for `transition_derivation_version` remain committed negative authority until the follow-on runtime implementation slice deliberately reverses them; they must not be removed as incidental cleanup before then.
+4. Missing-TDV runtime semantics remain unresolved and require separate authority; do not conflate missing-TDV with unsupported-TDV.
+5. The former `transition_derivation_version` non-inspection tests were deliberately removed/replaced in S7-29; do not restore them.
 6. Broader `wrong_tree_proof` semantics remain explicitly out of scope until tree-proof validation is deliberately re-gated.
 7. Future coverage audits should distinguish normative-spec authority, committed-authority-record pinning, existing-test-only behaviour, and proposed-test-as-pinning.
 8. Tests pinning exact reason strings require stronger authority than tests pinning only `VerificationFailure` variants.
@@ -192,4 +193,51 @@ OPEN CANDIDATES / CARRY-FORWARD:
 12. Promote full-suite gate rule and full-diff pre-commit review rule to TAV-Engineering-Standards Playbook.
 
 NEXT BOUNDED SESSION:
-Continuity-close review first. Then either open the follow-on runtime implementation slice for unsupported `transition_derivation_version` under S7-28 authority, or choose another upstream-door slice after G/C review. Do not treat S7-28 itself as runtime implementation. Do not reopen S7-24, S7-25, S7-26, or S7-27 reactively.
+Continuity-close review first. Then choose the next bounded slice after G/C review. Do not automatically continue verifier implementation. Do not reopen S7-24, S7-25, S7-26, S7-27, S7-28, or S7-29 reactively.
+
+---
+
+## S7-29 CLOSE — transition-derivation runtime rejection
+
+Status:
+  - S7-29 complete locally at substantive commit `e8b3374`.
+  - Continuity close in progress.
+  - Branch should be one substantive commit ahead of `origin/main` until the continuity commit and push complete.
+
+Substantive commit:
+  - `e8b3374` — `verifier: reject unsupported transition derivation version`
+
+What changed:
+  - `src/verifier.rs` now has a runtime TDV support precheck in `validate_receipt(&Receipt)`.
+  - Supported TDV is exactly `SemanticVersion { major: 1, minor: 0, patch: 0 }`.
+  - Unsupported TDV rejects as `VerificationFailure::UnsupportedVersion("unsupported_transition_derivation_version")`.
+  - The TDV gate is ordered after receipt_version and before core-transition evidence structural validation.
+  - The prior non-inspection tests were deliberately removed/replaced.
+  - New tests cover rejection, ordering above and below the TDV gate, and supported-`1.0.0` passage to the existing final `NotImplemented(...)` scaffold.
+
+Validation before substantive commit:
+  - `cargo fmt --check` passed.
+  - `cargo test --offline` passed: 164 unit tests and 24 fixture tests.
+  - `cargo build --offline --target wasm32-unknown-unknown` passed.
+
+Boundaries preserved:
+  - No docs/spec/ADR/interface/.did changes.
+  - No fixture, fixture-manifest, or index changes.
+  - No changes to `validate_fixture_receipt_semantics` dispatch arms.
+  - `missing_transition_derivation_version` remains deferred/authority-blocked.
+  - No transition_material semantic validation.
+  - No broader tree-proof semantics.
+  - No certification crypto.
+  - No receipt-success path.
+  - Final `NotImplemented(...)` scaffold preserved.
+
+Still open after S7-29:
+  - Missing-TDV runtime semantics require separate authority.
+  - S7-24 downstream verifier-negative real-path parity remains blocked by fixture/materialization strategy.
+  - Broader tree-proof semantics remain separately gated.
+  - Certification/provenance crypto remains out of scope.
+  - Success-path behavior remains unauthorised.
+
+Next candidate slice:
+  - Do not automatically continue verifier implementation.
+  - Next step should be a bounded selection review after continuity push, using current `MILESTONE_LOG.md`, `RESTART_PACK.md`, and git history.

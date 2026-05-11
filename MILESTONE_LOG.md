@@ -1326,3 +1326,38 @@ Do not revisit:
 Standing constraints surfaced:
 - The three-part authority requirement for future typed-evidence runtime semantics is now exemplified by S7-28: supported set, exact failure taxonomy, and ordering position must be pinned before implementation.
 - Spec/authority packets may deliberately reverse prior committed negative-authority posture only by explicit additive policy, not by implementation-first drift.
+
+## 2026-05-13 -- MILESTONE: S7-29 transition-derivation runtime rejection landed
+
+Decisions made:
+  - S7-29 implemented the S7-28-pinned runtime verifier policy for `Receipt.core_transition_evidence.transition_derivation_version`.
+  - Runtime `validate_receipt(&Receipt)` now rejects any transition_derivation_version other than exact `1.0.0`.
+  - Rejection maps exactly to `VerificationFailure::UnsupportedVersion("unsupported_transition_derivation_version")`.
+  - The TDV precheck is ordered after `protocol_version` and `receipt_version`, and before core-transition evidence structural gates.
+  - The two prior non-inspection tests were removed/replaced deliberately, not casually deleted:
+    - `receipt_validation_does_not_inspect_transition_derivation_version`
+    - `receipt_validation_does_not_inspect_transition_derivation_version_after_post_state_check`
+  - New focused tests cover unsupported TDV rejection, receipt-version-before-TDV ordering, TDV-before-evidence-gates ordering, and supported `1.0.0` passage to the existing final `NotImplemented(...)` scaffold.
+  - The supported-`1.0.0` test explicitly does not assert `Ok(())`; it confirms the verifier does not reject as unsupported TDV and still reaches `Err(VerificationFailure::NotImplemented(_))`.
+  - S7-29 did not alter fixture dispatch, fixture schemas, interfaces, docs/spec/ADR content, commitment gates, certification-provenance gates, transition-material semantics, broader tree-proof semantics, or success-path behavior.
+
+Irreversible actions taken:
+  - Committed `e8b3374` — `verifier: reject unsupported transition derivation version`
+
+Validation:
+  - `cargo fmt --check` passed.
+  - `cargo test --offline` passed: 164 unit tests and 24 fixture tests.
+  - `cargo build --offline --target wasm32-unknown-unknown` passed.
+
+Do not revisit:
+  - Whether unsupported TDV is inspected by the real runtime validator — settled yes.
+  - Whether unsupported TDV maps to `InvalidEvidence` — settled no; it maps to `UnsupportedVersion("unsupported_transition_derivation_version")`.
+  - Whether supported TDV `1.0.0` implies receipt validation success — settled no; the final `NotImplemented(...)` scaffold remains.
+  - Whether S7-29 resolves missing-TDV runtime semantics — settled no; `missing_transition_derivation_version` remains separate and authority-blocked/deferred.
+  - Whether S7-29 resolves the S7-24 fixture/materialization blocker — settled no.
+
+Standing constraints carried forward:
+  - Missing-TDV runtime behavior remains separate from unsupported-TDV runtime behavior.
+  - The S7-24 downstream verifier-negative real-path parity blocker remains open.
+  - Any future verifier slice that adds a downstream gate must preserve the already-pinned order:
+    protocol_version → receipt_version → transition_derivation_version → structural gates → commitment gates → certification-provenance shape gate → final scaffold / later success path when authorized.
