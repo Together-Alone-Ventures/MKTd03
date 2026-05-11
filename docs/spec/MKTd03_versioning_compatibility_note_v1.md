@@ -80,12 +80,49 @@ No conditionally-compatible receipt versions are currently defined.
 - `transition_derivation_version`, which identifies the derivation version inside receipt transition evidence.
 
 Receipt validation policy does not consult `interface_version` when deciding whether a `receipt_version` is supported.
-`transition_derivation_version` policy is out of scope for this section.
+`transition_derivation_version` support policy is defined separately in §9.1.
 
 Where receipt validation performs version prechecks, the ordering is:
 - `protocol_version` first,
 - `receipt_version` second,
+- `transition_derivation_version` third,
 - structural / proof / commitment gates after that.
+
+### 9.1 Transition-derivation-version policy
+`transition_derivation_version` is independently meaningful and must not
+be inferred from `protocol_version`, `receipt_version`, or
+`interface_version`, as already stated in
+`interfaces/mktd03_library_interface_rules.md` §1.4.
+
+The current supported `transition_derivation_version` value is exactly
+`1.0.0`.
+Support for `transition_derivation_version` is exact
+major/minor/patch equality only.
+No conditionally-compatible transition-derivation versions are
+currently defined.
+
+A real `validate_receipt(&Receipt)` implementation must reject any
+`transition_derivation_version` other than `1.0.0`.
+That rejection maps to
+`VerificationFailure::UnsupportedVersion("unsupported_transition_derivation_version")`.
+
+This is a version-support failure, not malformed evidence.
+Version-support failures map to `UnsupportedVersion` regardless of the
+fact that `transition_derivation_version` is nested inside
+`Receipt.core_transition_evidence`.
+
+Where receipt validation performs version prechecks, the ordering is:
+- `protocol_version` first,
+- `receipt_version` second,
+- `transition_derivation_version` third,
+- core-transition evidence structural gates after that,
+- commitment gates after that,
+- certification-provenance shape gates after that,
+- the final `NotImplemented(...)` scaffold after that.
+
+This section pins unsupported-value runtime handling only.
+It does not define concrete runtime semantics for a missing
+`transition_derivation_version` field.
 
 ## Explicit Non-Goals
 This note does not define:
