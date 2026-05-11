@@ -1,7 +1,7 @@
 DATE: 2026-05-13
 
 CURRENT GOAL:
-S7-25 is closed on authority blocker. Next bounded session should start with continuity-close review, then select the next verifier/receipt-validation slice after G/C review. The next substantive slice is not opened yet.
+S7-26 is closed as a zero-implementation verifier gap audit packet. Next bounded session should start with continuity-close review, then choose one of the forward pathways before attempting more verifier implementation.
 
 IMPORTANT SCOPE RULE:
 This file is for MKTd03 protocol work only.
@@ -66,6 +66,40 @@ S7-25 CLOSE:
 - Close-time ADR/policy sweep covered `docs/planning` and `docs/adr` for transition-derivation-version terms to guard against overlooked ADR-level authority.
 - S7-25 is information-producing only; no implementation was appropriate.
 
+
+S7-26 CLOSE:
+- S7-26 was the first larger bounded packet-slice for verifier receipt-validation work.
+- Phase 1 audited and classified remaining verifier/receipt-validation gaps.
+- Phase 2 did not open because there was no implementation-ready group under current committed authority and slice boundaries.
+- No source, test, fixture, interface, Cargo, normative-doc, or continuity changes were made by Codex.
+- Zero-implementation outcome is a successful packet close, not a failed slice.
+- Classification:
+  - authority-blocked: `transition_derivation_version` runtime handling and `missing_transition_derivation_version` concrete runtime semantics;
+  - fixture/materialization-blocked: downstream verifier-negative real-path parity under current placeholder evidence materialization;
+  - out of scope: broader tree-proof semantics, certification/provenance cryptography, transition-material semantics, success path, and precheck refactors;
+  - later carry-forward: helper consolidation and Playbook/doctrine promotion.
+- Close-time sweeps confirmed:
+  - `Deferred(...)` surfaces in `src/verifier.rs` remain carry-forward / out-of-scope, not implementation-ready;
+  - current `transition_derivation_version` non-inspection tests remain committed negative authority;
+  - downstream fixture parity remains blocked by placeholder-string materialization unless a future fixture/materialization strategy is approved.
+- S7-26 did not perform a comprehensive test-coverage audit for already-pinned gates; that remains a candidate future packet.
+
+S7-26 FORWARD PATHWAYS:
+- More verifier implementation now requires one of three doors to be opened first:
+  1. ADR/spec authority for `transition_derivation_version` runtime treatment;
+  2. an approved fixture/materialization strategy for real-path parity of downstream verifier negatives;
+  3. explicit re-gating of broader tree-proof semantics beyond the current non-cryptographic slice.
+- Do not start another verifier implementation packet until one of these doors is deliberately opened.
+
+PACKET-SLICE DISCIPLINE NOW IN FORCE:
+- Bigger slices are allowed only when candidates share the same committed authority citation, error taxonomy, ordering zone, local code area, and no-interface/no-doc boundary.
+- Packet slices use an internal two-phase structure:
+  - audit/classify with citations;
+  - G/C checkpoint;
+  - implementation only for the approved subset.
+- Zero-implementation packet closes are valid when no implementation-ready group exists.
+- Commits remain per substantive change plus a separate continuity-close commit.
+
 BOUNDARIES STILL IN FORCE:
 - No `.did` changes.
 - No Cargo changes.
@@ -80,9 +114,12 @@ OPEN CANDIDATES / CARRY-FORWARD:
 3. Placeholder-string semantics in `materialize_receipt(...)` are a structural impediment to downstream-gate real-path parity whenever earlier evidence-length gates run first.
 4. Future runtime treatment of `transition_derivation_version` requires a policy sequence before implementation: ADR/spec amendment pinning rejection principle, error taxonomy/reason string, and ordering; explicit reversal of current non-inspection tests; then implementation.
 5. The two current non-inspection tests for `transition_derivation_version` are committed negative authority and must not be removed as incidental cleanup.
-6. The three-part authority-pinning requirement should be considered for TAV-Engineering-Standards Playbook promotion: rejection principle, error taxonomy/reason string, and ordering position must be pinned before runtime semantics are added for typed evidence fields.
-7. Possible shared helper consolidation for version-support predicates if duplication becomes material.
-8. Promote full-suite gate rule and full-diff pre-commit review rule to TAV-Engineering-Standards Playbook.
+6. Broader `wrong_tree_proof` semantics remain explicitly out of scope until tree-proof validation is deliberately re-gated.
+7. A future packet may audit test coverage for already-pinned verifier gates; S7-26 audited semantic implementation readiness, not coverage completeness.
+8. The three-part authority-pinning requirement should be considered for TAV-Engineering-Standards Playbook promotion: rejection principle, error taxonomy/reason string, and ordering position must be pinned before runtime semantics are added for typed evidence fields.
+9. Packet-slice discipline and zero-implementation outcome normalization should be promoted to TAV-Engineering-Standards Playbook.
+10. Possible shared helper consolidation for version-support predicates if duplication becomes material.
+11. Promote full-suite gate rule and full-diff pre-commit review rule to TAV-Engineering-Standards Playbook.
 
 NEXT BOUNDED SESSION:
-Continuity-close review first, then select the next verifier/receipt-validation slice only after G/C review. Do not reopen S7-24 or S7-25 reactively. The next substantive slice is not opened yet.
+Continuity-close review first. Then choose the next path deliberately: transition-derivation policy authority, fixture/materialization strategy, broader tree-proof re-gating, already-pinned gate coverage audit, or Playbook promotion. Do not reopen S7-24, S7-25, or S7-26 reactively.

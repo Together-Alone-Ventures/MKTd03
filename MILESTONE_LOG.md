@@ -1117,3 +1117,80 @@ Standing constraints surfaced:
 - The three-part authority-pinning requirement is now a reusable methodology finding: any new runtime semantics for a typed evidence field must pin rejection principle, error taxonomy/reason string, and ordering before implementation.
 - The S7-25 authority inventory is a useful baseline for future verifier-semantics authority audits.
 - This methodology finding should be considered for TAV-Engineering-Standards Playbook promotion alongside the full-suite gate and full-diff pre-commit review rules.
+
+## 2026-05-13 -- MILESTONE: S7-26 verifier gap audit closed with no implementation-ready batch
+
+Decisions made:
+- S7-26 opened as the first larger bounded packet-slice for verifier receipt-validation work.
+- The packet used a two-phase structure:
+  - Phase 1: audit and classify only;
+  - Phase 2: implement only if G/C approved an implementation-ready group.
+- S7-26 closed after Phase 1 as a zero-implementation audit packet.
+- No implementation-ready verifier/receipt-validation group exists under current committed authority and S7-26 boundaries.
+- Codex made no source, test, fixture, interface, Cargo, normative-doc, or continuity changes.
+- `git status --short --branch` was clean before continuity edits.
+- The zero-implementation outcome is an accepted successful packet-slice outcome, not a failed slice.
+
+Classification result:
+- Authority-blocked:
+  - unsupported `core_transition_evidence.transition_derivation_version` runtime handling;
+  - moving `missing_transition_derivation_version` from `Deferred(...)` to concrete runtime semantics.
+- Fixture/materialization-blocked:
+  - real-path fixture parity for `malformed_certification_provenance`;
+  - real-path parity for downstream verifier-negative fixtures using placeholder evidence, including `wrong_commitment_relationship` and `receipt_subject_scope_mismatch`.
+- Explicitly out of scope:
+  - broader `wrong_tree_proof` semantics beyond the current non-cryptographic slice;
+  - certification/provenance cryptographic validation, trust-root validation, route semantics;
+  - transition-material semantic validation;
+  - `Ok(())` success path;
+  - refactoring existing `protocol_version` / `receipt_version` prechecks.
+- Later carry-forward:
+  - shared helper consolidation if duplication grows;
+  - Playbook/doctrine promotion of full-suite gate, full-diff review, packet-slice discipline, and zero-implementation normalization.
+
+S7-26 audit-trail confirmations:
+- Downstream-fixture scope:
+  - S7-26 treated `wrong_commitment_relationship` and `receipt_subject_scope_mismatch` as concrete downstream examples of the S7-24 placeholder-materialization blocker.
+  - The broader class is: verifier-negative fixtures whose intended target gate sits downstream of evidence-length/shape gates while their core-transition evidence is still represented by placeholder strings.
+  - Future fixture/materialization strategy work must enumerate the full fixture set before implementation; S7-26 did not redesign fixtures.
+- `Deferred(...)` sweep:
+  - Close-time sweep of `src/verifier.rs` checked the current `Deferred(...)` surfaces for verifier receipt-validation carry-forward.
+  - `wrong_tree_proof` remains explicitly deferred because broader tree-proof validation is beyond the current non-cryptographic verifier slice.
+  - `missing_transition_derivation_version` remains authority-blocked rather than implementation-ready.
+- S7-25 negative-authority cross-reference:
+  - `receipt_validation_does_not_inspect_transition_derivation_version`
+  - `receipt_validation_does_not_inspect_transition_derivation_version_after_post_state_check`
+  - These tests remain committed negative authority and prevent incidental implementation of transition-derivation-version runtime semantics.
+- Test-coverage audit:
+  - S7-26 audited verifier semantic gaps, not comprehensive test-coverage gaps for already-pinned gates.
+  - A future packet may separately audit test coverage for already-pinned existing gates.
+
+Forward-pathway triage:
+- The next substantive verifier packet requires one of three doors to be opened first:
+  1. new ADR/spec authority for `transition_derivation_version` runtime treatment;
+  2. a separately approved fixture/materialization strategy for real-path parity of downstream verifier negatives;
+  3. explicit re-gating of broader tree-proof semantics beyond the current non-cryptographic slice.
+- Each door is policy/spec/strategy work before implementation, not a verifier-implementation shortcut.
+
+Irreversible actions taken:
+- No source/test/fixture changes.
+- No commit from Codex.
+- Continuity-only close to be committed after full-suite gates.
+
+Do not revisit:
+- Whether S7-26 should force an implementation batch despite no implementation-ready group — settled no.
+- Whether Codex should infer authority by structural analogy across verifier gaps — settled no.
+- Whether downstream fixture real-path parity should be reopened without a fixture/materialization strategy — settled no.
+- Whether transition-derivation-version runtime semantics should be implemented without ADR/spec authority and test-layer reversal — settled no.
+- Whether broader tree-proof semantics, certification cryptography, transition-material semantics, or success-path introduction belong in S7-26 — settled no.
+
+Standing constraints surfaced:
+- The bounded packet-slice model is adopted for verifier work where candidates share the same committed authority citation, error taxonomy, ordering zone, local code area, and no-interface/no-doc boundary.
+- Packet slices must preserve an internal two-phase flow: audit/classify first, checkpoint, then implement only the approved subset.
+- Zero-implementation packet outcomes are valid successful closes when no implementation-ready group exists.
+- Commits remain per substantive change plus a separate continuity close; packet-slices do not imply one monolithic implementation commit.
+- The Playbook promotion queue now includes:
+  - full-suite gate rule;
+  - full unified diff review rule;
+  - packet-slice discipline;
+  - zero-implementation outcome normalization.
