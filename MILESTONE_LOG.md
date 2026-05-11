@@ -1061,3 +1061,59 @@ Standing constraints surfaced:
 - The S7-22 certification-provenance runtime gate currently has no real-path fixture coverage as a consequence of this blocker. The gate exists in code, and the fixture exists, but the two cannot be linked through the real path without a future change that crosses S7-24 boundaries.
 - Placeholder-string semantics in `materialize_receipt(...)` create evidence byte vectors whose lengths are incidental to placeholder text. This is a structural impediment to real-path parity for verifier-negative fixtures whose target gate sits downstream of evidence-length checks.
 - Future real-path parity for downstream-gate verifier negatives needs its own bounded slice design. Do not reopen this reactively inside S7-24.
+
+## 2026-05-13 -- MILESTONE: S7-25 transition_derivation_version runtime precheck authority blocker recorded
+
+Decisions made:
+- S7-25 opened as an authority-gated verifier/receipt-validation slice for possible real runtime treatment of `Receipt.core_transition_evidence.transition_derivation_version`.
+- Approved closure criteria allowed implementation only if committed authority explicitly pinned all three required decisions:
+  - the runtime rejection principle for unsupported `transition_derivation_version`,
+  - the exact `VerificationFailure` variant and reason string,
+  - the gate ordering position relative to protocol version, receipt version, core-transition evidence gates, commitment gates, and certification-provenance gates.
+- S7-25 closed on criterion B: authority blocker proven.
+- Codex made no source, test, fixture, interface, Cargo, normative-doc, or continuity changes.
+- Authority inspected:
+  - `docs/spec/MKTd03_versioning_compatibility_note_v1.md`
+  - `interfaces/mktd03_library_interface_rules.md`
+  - `interfaces/mktd03_library.did`
+  - `docs/planning/ADR-03-tree-mode-cvdr-structure.md`
+  - `docs/test-vectors/MKTd03_negative_cases_v1.md`
+  - `MILESTONE_LOG.md`
+  - `RESTART_PACK.md`
+  - runtime verifier tests in `src/verifier.rs`
+- Close-time ADR/policy sweep was also run over `docs/planning` and `docs/adr` for transition-derivation-version terms to confirm no overlooked ADR-level authority silently pins the missing decisions.
+- What is pinned:
+  - `transition_derivation_version : SemanticVersion` exists and is required in the frozen interface.
+  - Companion rules state it must not be inferred from other version fields.
+  - The missing-field verifier fixture family `missing_transition_derivation_version` exists.
+  - S7-23a continuity explicitly states that no new runtime verifier semantics or new `transition_derivation_version` policy were introduced.
+- What is not pinned:
+  - no committed authority states that unsupported `transition_derivation_version` must be rejected by real `validate_receipt(&Receipt)`;
+  - no committed authority chooses between `UnsupportedVersion("unsupported_transition_derivation_version")` and `InvalidEvidence("unsupported_transition_derivation_version")`;
+  - no committed authority states where such a gate would run in the verifier ordering.
+- Existing runtime tests provide committed negative authority:
+  - `receipt_validation_does_not_inspect_transition_derivation_version`
+  - `receipt_validation_does_not_inspect_transition_derivation_version_after_post_state_check`
+- These tests mean the current runtime contract explicitly preserves non-inspection of `transition_derivation_version`.
+
+Irreversible actions taken:
+- No source/test/fixture changes.
+- No commit from Codex.
+- Continuity-only close to be committed after full-suite gates.
+
+Do not revisit:
+- Whether S7-25 should infer transition-derivation-version runtime semantics by analogy to `protocol_version` or `receipt_version` — settled no.
+- Whether S7-25 should choose the error class for unsupported `transition_derivation_version` — settled no.
+- Whether S7-25 should decide verifier gate ordering for `transition_derivation_version` — settled no.
+- Whether S7-25 should modify or remove the current non-inspection tests — settled no.
+- Whether S7-25 should change `.did`, interfaces, Cargo, fixtures, fixture index, fixture manifest, or normative docs — settled no.
+- Whether S7-25 should introduce an `Ok(())` success path — settled no.
+
+Standing constraints surfaced:
+- A future runtime treatment of `transition_derivation_version` requires a separately scoped policy sequence before implementation:
+  1. ADR or spec amendment pinning rejection principle, error-class taxonomy/reason string, and ordering position;
+  2. explicit test-layer reversal of the current non-inspection tests;
+  3. implementation slice.
+- The three-part authority-pinning requirement is now a reusable methodology finding: any new runtime semantics for a typed evidence field must pin rejection principle, error taxonomy/reason string, and ordering before implementation.
+- The S7-25 authority inventory is a useful baseline for future verifier-semantics authority audits.
+- This methodology finding should be considered for TAV-Engineering-Standards Playbook promotion alongside the full-suite gate and full-diff pre-commit review rules.
