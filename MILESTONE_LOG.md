@@ -1006,7 +1006,7 @@ Decisions made:
   - `cargo build --offline --target wasm32-unknown-unknown`
 
 Irreversible actions taken:
-- Committed `[S7-23_SHA]` — `test-vectors: add verifier unsupported receipt version fixtures`.
+- Committed `289952557b79bedd6e171552b82324c4958f59be` — `test-vectors: add verifier unsupported receipt version fixtures`.
 
 Do not revisit:
 - Whether S7-23 should change real `validate_receipt(&Receipt)` semantics — settled no.
