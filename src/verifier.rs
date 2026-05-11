@@ -34,6 +34,14 @@ fn receipt_version_is_supported(receipt_version: &crate::library::SemanticVersio
     receipt_version.major == 1 && receipt_version.minor == 0 && receipt_version.patch == 0
 }
 
+fn transition_derivation_version_is_supported(
+    transition_derivation_version: &crate::library::SemanticVersion,
+) -> bool {
+    transition_derivation_version.major == 1
+        && transition_derivation_version.minor == 0
+        && transition_derivation_version.patch == 0
+}
+
 fn fixture_protocol_version_is_supported(
     fixture_protocol_version: &crate::library::SemanticVersion,
 ) -> bool {
@@ -60,6 +68,17 @@ pub fn validate_receipt(receipt: &Receipt) -> Result<(), VerificationFailure> {
     if !receipt_version_is_supported(&receipt.receipt_version) {
         return Err(VerificationFailure::UnsupportedVersion(
             "unsupported_receipt_version",
+        ));
+    }
+
+    // Authority: docs/spec/MKTd03_versioning_compatibility_note_v1.md §9.1
+    if !transition_derivation_version_is_supported(
+        &receipt
+            .core_transition_evidence
+            .transition_derivation_version,
+    ) {
+        return Err(VerificationFailure::UnsupportedVersion(
+            "unsupported_transition_derivation_version",
         ));
     }
 
@@ -636,17 +655,85 @@ mod tests {
     }
 
     #[test]
-    fn receipt_validation_does_not_inspect_transition_derivation_version() {
+    fn validate_receipt_rejects_unsupported_transition_derivation_version() {
         let mut receipt = minimal_receipt();
         receipt
             .core_transition_evidence
             .transition_derivation_version = SemanticVersion {
-            major: 99,
-            minor: 99,
-            patch: 99,
+            major: 9,
+            minor: 0,
+            patch: 0,
         };
-        assert!(matches!(
+        assert_eq!(
             validate_receipt(&receipt),
+            Err(VerificationFailure::UnsupportedVersion(
+                "unsupported_transition_derivation_version"
+            ))
+        );
+    }
+
+    #[test]
+    fn validate_receipt_checks_receipt_version_before_transition_derivation_version() {
+        let mut receipt = minimal_receipt();
+        receipt.receipt_version = SemanticVersion {
+            major: 9,
+            minor: 0,
+            patch: 0,
+        };
+        receipt
+            .core_transition_evidence
+            .transition_derivation_version = SemanticVersion {
+            major: 9,
+            minor: 0,
+            patch: 0,
+        };
+        assert_eq!(
+            validate_receipt(&receipt),
+            Err(VerificationFailure::UnsupportedVersion(
+                "unsupported_receipt_version"
+            ))
+        );
+    }
+
+    #[test]
+    fn validate_receipt_checks_transition_derivation_version_before_evidence_gates() {
+        let mut receipt = minimal_receipt();
+        receipt
+            .core_transition_evidence
+            .transition_derivation_version = SemanticVersion {
+            major: 9,
+            minor: 0,
+            patch: 0,
+        };
+        receipt.core_transition_evidence.tree_proof = vec![0x01];
+        assert_eq!(
+            validate_receipt(&receipt),
+            Err(VerificationFailure::UnsupportedVersion(
+                "unsupported_transition_derivation_version"
+            ))
+        );
+    }
+
+    #[test]
+    fn validate_receipt_with_supported_transition_derivation_version_reaches_later_gates() {
+        let mut receipt = minimal_receipt();
+        receipt
+            .core_transition_evidence
+            .transition_derivation_version = SemanticVersion {
+            major: 1,
+            minor: 0,
+            patch: 0,
+        };
+        let result = validate_receipt(&receipt);
+
+        assert!(!matches!(
+            result,
+            Err(VerificationFailure::UnsupportedVersion(
+                "unsupported_transition_derivation_version"
+            ))
+        ));
+        assert!(matches!(
+            result,
             Err(VerificationFailure::NotImplemented(_))
         ));
     }
@@ -783,22 +870,6 @@ mod tests {
             &[0xff; 32],
             &receipt.core_transition_evidence.tree_proof,
         );
-        assert!(matches!(
-            validate_receipt(&receipt),
-            Err(VerificationFailure::NotImplemented(_))
-        ));
-    }
-
-    #[test]
-    fn receipt_validation_does_not_inspect_transition_derivation_version_after_post_state_check() {
-        let mut receipt = minimal_receipt();
-        receipt
-            .core_transition_evidence
-            .transition_derivation_version = SemanticVersion {
-            major: 99,
-            minor: 99,
-            patch: 99,
-        };
         assert!(matches!(
             validate_receipt(&receipt),
             Err(VerificationFailure::NotImplemented(_))
