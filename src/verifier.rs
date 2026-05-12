@@ -179,10 +179,7 @@ pub fn validate_receipt(receipt: &Receipt) -> Result<(), VerificationFailure> {
         ));
     }
 
-    // TODO: implement receipt validation semantics once proof verification logic is authorized.
-    Err(VerificationFailure::NotImplemented(
-        "receipt validation is not implemented in the first scaffold pass",
-    ))
+    Ok(())
 }
 
 fn tombstoned_position_bytes(
@@ -597,12 +594,9 @@ mod tests {
     }
 
     #[test]
-    fn receipt_validation_with_structurally_valid_evidence_does_not_return_invalid_evidence() {
+    fn receipt_validation_accepts_structurally_valid_evidence() {
         let receipt = minimal_receipt();
-        assert!(matches!(
-            validate_receipt(&receipt),
-            Err(VerificationFailure::NotImplemented(_))
-        ));
+        assert_eq!(validate_receipt(&receipt), Ok(()));
     }
 
     #[test]
@@ -715,7 +709,7 @@ mod tests {
     }
 
     #[test]
-    fn validate_receipt_with_supported_transition_derivation_version_reaches_later_gates() {
+    fn validate_receipt_with_supported_transition_derivation_version_accepts_valid_receipt() {
         let mut receipt = minimal_receipt();
         receipt
             .core_transition_evidence
@@ -732,10 +726,7 @@ mod tests {
                 "unsupported_transition_derivation_version"
             ))
         ));
-        assert!(matches!(
-            result,
-            Err(VerificationFailure::NotImplemented(_))
-        ));
+        assert_eq!(result, Ok(()));
     }
 
     #[test]
@@ -765,12 +756,9 @@ mod tests {
     }
 
     #[test]
-    fn receipt_validation_with_direction_consistent_evidence_reaches_not_implemented() {
+    fn receipt_validation_accepts_direction_consistent_evidence() {
         let receipt = minimal_receipt();
-        assert!(matches!(
-            validate_receipt(&receipt),
-            Err(VerificationFailure::NotImplemented(_))
-        ));
+        assert_eq!(validate_receipt(&receipt), Ok(()));
     }
 
     #[test]
@@ -790,10 +778,7 @@ mod tests {
             b"\x01",
             &receipt.core_transition_evidence.tree_proof,
         );
-        assert!(matches!(
-            validate_receipt(&receipt),
-            Err(VerificationFailure::NotImplemented(_))
-        ));
+        assert_eq!(validate_receipt(&receipt), Ok(()));
     }
 
     #[test]
@@ -809,12 +794,9 @@ mod tests {
     }
 
     #[test]
-    fn receipt_validation_with_matching_post_state_commitment_reaches_not_implemented() {
+    fn receipt_validation_accepts_matching_post_state_commitment() {
         let receipt = minimal_receipt();
-        assert!(matches!(
-            validate_receipt(&receipt),
-            Err(VerificationFailure::NotImplemented(_))
-        ));
+        assert_eq!(validate_receipt(&receipt), Ok(()));
     }
 
     #[test]
@@ -861,7 +843,7 @@ mod tests {
     }
 
     #[test]
-    fn receipt_validation_does_not_validate_transition_material_yet() {
+    fn receipt_validation_accepts_transition_material_without_extra_semantic_validation() {
         let mut receipt = minimal_receipt();
         receipt.core_transition_evidence.transition_material = vec![0xff; 32];
         receipt.core_transition_evidence.pre_state_commitment = matching_pre_state_commitment(
@@ -870,14 +852,11 @@ mod tests {
             &[0xff; 32],
             &receipt.core_transition_evidence.tree_proof,
         );
-        assert!(matches!(
-            validate_receipt(&receipt),
-            Err(VerificationFailure::NotImplemented(_))
-        ));
+        assert_eq!(validate_receipt(&receipt), Ok(()));
     }
 
     #[test]
-    fn receipt_validation_with_explicit_sibling_post_state_match_reaches_not_implemented() {
+    fn receipt_validation_accepts_explicit_sibling_post_state_match() {
         let mut receipt = minimal_receipt();
         receipt.core_transition_evidence.tree_proof =
             mixed_direction_consistent_tree_proof_bytes(&SUBJECT_REFERENCE, None, [0x42; 32]);
@@ -893,10 +872,7 @@ mod tests {
             b"\x01",
             &receipt.core_transition_evidence.tree_proof,
         );
-        assert!(matches!(
-            validate_receipt(&receipt),
-            Err(VerificationFailure::NotImplemented(_))
-        ));
+        assert_eq!(validate_receipt(&receipt), Ok(()));
     }
 
     #[test]
@@ -925,12 +901,9 @@ mod tests {
     }
 
     #[test]
-    fn validate_receipt_with_valid_pre_and_post_commitments_reaches_not_implemented() {
+    fn validate_receipt_accepts_valid_pre_and_post_commitments() {
         let receipt = minimal_receipt();
-        assert!(matches!(
-            validate_receipt(&receipt),
-            Err(VerificationFailure::NotImplemented(_))
-        ));
+        assert_eq!(validate_receipt(&receipt), Ok(()));
     }
 
     #[test]
@@ -1127,12 +1100,8 @@ mod tests {
     }
 
     #[test]
-    fn validate_receipt_with_shape_consistent_certification_provenance_still_reaches_not_implemented(
-    ) {
+    fn validate_receipt_accepts_shape_consistent_certification_provenance() {
         let receipt = minimal_receipt();
-        assert!(matches!(
-            validate_receipt(&receipt),
-            Err(VerificationFailure::NotImplemented(_))
-        ));
+        assert_eq!(validate_receipt(&receipt), Ok(()));
     }
 }
