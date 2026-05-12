@@ -285,3 +285,66 @@ Next bounded session:
   - Start with continuity-close review.
   - Then choose the next bounded slice after G/C review.
   - Do not automatically continue verifier implementation.
+
+---
+
+## S7-31 CLOSE — fixture/materialization strategy audit
+
+Status:
+  - S7-31 closes as a zero-implementation fixture/materialization strategy audit.
+  - No code, tests, fixtures, fixture schema, fixture index/manifest, interfaces, `.did`, specs, ADRs, or Cargo files changed.
+  - Continuity close recorded in `MILESTONE_LOG.md` and this restart pack.
+
+Core finding:
+  - Current verifier-negative JSON fixtures are taxonomy/intake fixtures, not runtime-ready verifier fixtures.
+  - The current fixture corpus uses placeholder-string material in evidence-bearing fields.
+  - Placeholder material is not systematically valid for the real typed `validate_receipt(&Receipt)` path.
+  - The systemic blocker is not limited to S7-24's `malformed_certification_provenance` case.
+  - The positive library receipt fixture is a retrieval-surface fixture, not evidence of verifier-real-path readiness.
+
+Fixture-surface distinction:
+  - Fixture-level semantic dispatch and typed runtime verifier validation are distinct parallel surfaces.
+  - `validate_fixture_receipt_semantics(...)` dispatch does not imply real-path parity through `validate_receipt(&Receipt)`.
+  - Fixture-level semantic dispatch currently exists for:
+    - `malformed_certification_provenance`
+    - `wrong_commitment_relationship`
+    - `receipt_subject_scope_mismatch`
+  - Fixture-level deferral currently remains for:
+    - `wrong_tree_proof`
+    - `missing_transition_derivation_version`
+
+Strategy posture:
+  - Strategy A remains the current posture: taxonomy/intake fixtures only.
+  - Strategy I is the recommended candidate for a future test-helper authority packet: test-only materialization/helpers for runtime gate coverage.
+  - Strategy I is not authorized by S7-31.
+  - Strategy B, C, D, and G remain deferred future candidates:
+    - B: separate runtime-ready verifier-negative fixture profile
+    - C: deterministic byte-material fixture decoding
+    - D: raw-artifact intake validation layer
+    - G: layered fixtures with separate views
+  - Any selection among B/C/D/G requires a separately scoped authority packet.
+
+S7-24 relationship:
+  - S7-24 blocker remains active.
+  - S7-31 maps the fixture/materialization strategy landscape but does not resolve S7-24.
+  - Any future verifier-negative real-path parity, missing-TDV implementation, or wrong-tree-proof promotion remains downstream of future authority work.
+
+Candidate follow-ups:
+  - Confirm whether a verifier-positive fixture file is intentionally absent:
+    - `docs/test-vectors/fixtures/verifier/positive/mktd03_verifier_positive_receipt_inline_certification_01_v1.json`
+  - Future test-helper authority packet for Strategy I, if runtime-gate coverage is prioritized.
+  - Future fixture-schema/materialization authority packet for Strategy B or G, if fixture-level real-path parity becomes necessary.
+  - Future ADR/spec/interface authority packet for Strategy D, if raw-artifact intake validation becomes necessary.
+
+Next bounded session:
+  - Playbook promotion should be next.
+  - Candidate topics include:
+    - full-suite gate rule
+    - full unified diff review rule
+    - packet-slice discipline
+    - authority/spec slice rhythm
+    - normative-spec vs committed-authority-record distinction
+    - cross-path classification synthesis
+    - read-only audit discipline
+    - strategy-vs-authority distinction
+    - per-family inspection / heuristic-blocker audit pattern

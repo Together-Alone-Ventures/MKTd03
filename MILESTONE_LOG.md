@@ -1405,3 +1405,100 @@ Standing constraints carried forward:
   - The fixture-layer optional TDV field is load-bearing for the current missing-TDV verifier-negative family; do not tighten it casually.
   - Candid/API missing-required-field rejection is structural and pre-typed-validation; no Candid-level implementation work is implied by S7-30.
   - S7-29 unsupported-TDV runtime behavior, tests, helper, and ordering remain untouched.
+
+## 2026-05-13 -- MILESTONE: S7-31 fixture/materialization strategy audit close
+
+Decisions made:
+  - S7-31 was a read-only fixture/materialization strategy audit for downstream verifier-negative real-path parity.
+  - No implementation was opened.
+  - No source, test, fixture, fixture-index, fixture-manifest, schema, interface, `.did`, spec, ADR, or Cargo changes were made.
+  - S7-31 produces a recommendation/classification only; it does not authorize a fixture rewrite, test-helper implementation, intake layer, or runtime verifier change.
+  - The audit inspected all five current verifier-negative fixture families:
+    - `malformed_certification_provenance`
+    - `wrong_commitment_relationship`
+    - `receipt_subject_scope_mismatch`
+    - `wrong_tree_proof`
+    - `missing_transition_derivation_version`
+  - The audit also inspected the positive library receipt fixture:
+    - `docs/test-vectors/fixtures/library/positive/mktd03_library_positive_receipt_inline_certification_01_v1.json`
+  - No verifier-positive fixture file was found at:
+    - `docs/test-vectors/fixtures/verifier/positive/mktd03_verifier_positive_receipt_inline_certification_01_v1.json`
+  - That absence is only a candidate for later read-only confirmation; it is not addressed in S7-31.
+
+Systemic fixture finding:
+  - All inspected verifier-negative receipt fixtures use placeholder-string material in evidence-bearing fields.
+  - The positive library receipt fixture uses the same placeholder-string pattern.
+  - Placeholder byte lengths are not systematically runtime-valid for `validate_receipt(&Receipt)`.
+  - The extraction found the same upstream heuristic blocker across the corpus: `subject_reference` placeholder materializes to 29 bytes, while the current real validator expects 32 bytes.
+  - Other placeholder lengths are also not runtime-ready, including 33-byte or 46-byte post-state commitment placeholders, 31-byte transition material placeholders, and short tree-proof placeholders.
+  - The audit script's first-blocker result is heuristic extraction, not a Rust verifier result; G/C interpretation governs.
+  - The load-bearing conclusion is descriptive: current fixture JSON is taxonomy/intake-shaped, not runtime-ready verifier material.
+
+Fixture-surface classification:
+  - Current verifier-negative JSON fixtures remain taxonomy/intake fixtures, not runtime-ready verifier fixtures.
+  - Sub-case A1: fixture-level semantic dispatch exists for:
+    - `malformed_certification_provenance`
+    - `wrong_commitment_relationship`
+    - `receipt_subject_scope_mismatch`
+  - These families currently participate in `validate_fixture_receipt_semantics(...)` and can return specific `InvalidEvidence(family_name)` results on the fixture-level surface.
+  - Sub-case A2: fixture-level deferral remains for:
+    - `wrong_tree_proof`
+    - `missing_transition_derivation_version`
+  - These families dispatch to `VerificationFailure::Deferred(...)`.
+  - Fixture-level semantic dispatch and typed runtime `validate_receipt(&Receipt)` are architecturally distinct parallel surfaces.
+  - A fixture family having fixture-level semantic dispatch does not imply real-path runtime parity.
+
+Positive fixture finding:
+  - The positive library receipt fixture is a retrieval-surface fixture for `get_receipt`.
+  - It is not evidence of verifier-real-path readiness.
+  - Its current correctness is contingent on its retrieval/reference-runtime surface use, not on passing `validate_receipt(&Receipt)`.
+  - If driven directly through the real verifier path, its placeholder material would face the same upstream shape/length problems as the verifier-negative fixtures.
+
+Strategy classification:
+
+| Strategy class | S7-31 classification | Compatibility | Authority needed before implementation |
+|---|---|---|---|
+| A — taxonomy/intake fixtures only | Current posture; recommended to preserve now | Compatible with I now; compatible with B/G later | No new authority needed to preserve current posture |
+| B — separate runtime-ready verifier-negative fixture profile | Plausible future strategy only | Compatible after A; alternative to G/C depending design | Fixture-schema/manifest/index authority packet; possibly ADR if semantics broaden |
+| C — deterministic byte-material fixture decoding | Too broad for current authority | Could replace B/G but high migration risk | Fixture-schema packet, fixture migration, likely ADR/spec authority |
+| D — raw-artifact intake validation layer | New architecture; not selected | Separate from A/I; could coexist later | ADR/spec/interface authority |
+| E — unit-test-only downstream parity | Conceptually acceptable | Overlaps with I | Test-helper authority packet if formalized |
+| F — zero-change / defer strategy choice | S7-31 close posture | Compatible with all future packets | None |
+| G — layered fixtures with separate views | Plausible future strategy only | Compatible after A; alternative to B/C | Fixture-schema/manifest/parser authority packet |
+| I — test-only materialization helpers | Recommended candidate for future test-helper authority work | Compatible with A; no fixture rewrite required | Separate test-helper authority packet; no fixture schema change by itself |
+
+Recommended posture:
+  - Preserve Strategy A as the current fixture posture.
+  - Treat Strategy I as the recommended candidate for any future test-helper authority packet.
+  - Do not treat Strategy I as authorized by S7-31.
+  - List B, C, D, and G as deferred strategy candidates requiring separate authority.
+  - Do not select any one future fixture/materialization strategy as universally correct in S7-31.
+
+Irreversible actions taken:
+  - No source/test/fixture/interface/spec changes.
+  - S7-31 closes as continuity-only classification.
+
+Validation:
+  - `cargo fmt --check` passed.
+  - `cargo test --offline` passed: 164 unit tests and 24 fixture tests.
+  - `cargo build --offline --target wasm32-unknown-unknown` passed.
+
+Do not revisit:
+  - Whether current verifier-negative JSON fixtures should be rewritten to provide runtime real-path parity within S7-31 — settled no; they remain taxonomy/intake fixtures.
+  - Whether the positive library fixture provides evidence of verifier-real-path readiness — settled no; it is a retrieval-surface fixture and exhibits the same placeholder-byte issue.
+  - Whether any of strategy classes B, C, D, or G should be selected as a universal future direction within S7-31 — settled no; class selection is path-dependent and requires a separate authority packet.
+  - Whether S7-31 authorizes test-helper, fixture-schema, fixture-materialization, intake-validation, or verifier implementation work — settled no; S7-31 produces a recommendation, not authority.
+  - Whether Strategy I is authorized by S7-31 — settled no; Strategy I is only the recommended candidate for a future test-helper authority packet.
+  - Whether fixture-level `validate_fixture_receipt_semantics(...)` dispatch and typed runtime `validate_receipt(&Receipt)` are equivalent verifier surfaces — settled no; they are distinct parallel surfaces.
+  - Whether incidental observations from read-only extraction should be fixed inside S7-31 — settled no; such observations are logged as separate candidates.
+  - Whether the heuristic first-blocker reporting from the audit script constitutes implementation authority — settled no; it is descriptive extraction only.
+
+Standing constraints carried forward:
+  - S7-24 fixture/materialization blocker remains active.
+  - S7-31 maps the strategy landscape but does not resolve S7-24.
+  - Any future verifier-negative real-path parity, missing-TDV implementation, or wrong-tree-proof semantic promotion remains downstream of a future authority packet.
+  - Missing-TDV implementation remains S7-24-blocked or intake-authority-blocked as recorded in S7-30.
+  - `wrong_tree_proof` fixture-level semantic dispatch remains `Deferred(...)`.
+  - Promotion of `wrong_tree_proof` requires either tree-proof semantic authority or a selected runtime-ready fixture/materialization strategy.
+  - The possible missing verifier-positive fixture file should be separately confirmed before any action.
+  - The next slice after S7-31 should be Playbook promotion, not another verifier probing packet.
