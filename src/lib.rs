@@ -13,6 +13,7 @@ pub mod orchestration;
 mod proof_direction_check;
 pub mod proof_envelope;
 pub mod proof_frame;
+pub mod provenance;
 pub mod record_position;
 mod scope_encoding;
 pub mod state_commitment;
