@@ -1502,3 +1502,49 @@ Standing constraints carried forward:
   - Promotion of `wrong_tree_proof` requires either tree-proof semantic authority or a selected runtime-ready fixture/materialization strategy.
   - The possible missing verifier-positive fixture file should be separately confirmed before any action.
   - The next slice after S7-31 should be Playbook promotion, not another verifier probing packet.
+
+## 2026-05-13 -- MILESTONE: S7-33 verifier success path landed
+
+Decisions made:
+  - S7-33 implemented the real `validate_receipt(&Receipt)` success path.
+  - Front-loaded inspection confirmed the existing verifier already performed the proof walk:
+    - occupied/tombstoned leaf hash derivation;
+    - proof-envelope parsing;
+    - proof-direction validation;
+    - internal-node hash walking;
+    - canonical-empty sibling substitution via `empty_subtree_root(frame_index)`;
+    - recomputed pre/post root comparison through `pre_state_commitment` and `post_state_commitment`.
+  - Therefore S7-33 was scaffold removal plus narrow valid-receipt test updates, not new cryptography.
+  - `validate_receipt(&Receipt)` now returns `Ok(())` after all currently pinned runtime gates pass.
+  - Valid typed-receipt tests were updated from `NotImplemented(...)` expectations to `Ok(())`.
+  - Negative tests, ordering tests, fixture-dispatch tests, and `Deferred(...)` fixture families were preserved.
+  - `wrong_tree_proof` and `missing_transition_derivation_version` remain `Deferred(...)` on the fixture-dispatch surface.
+  - No fixture, interface, `.did`, dfx, deploy, receipt-issuance, BLS/certified-data, or module-hash provenance work was done.
+
+RST framing:
+  - S7-33 lands structural + proof-walk validation success.
+  - `Ok(())` means the receipt's gate chain passes: protocol/receipt/TDV versions, structural gates, proof-envelope walk to pre/post commitments, and certification-provenance shape.
+  - `Ok(())` does not yet mean the receipt carries canister-level provenance.
+  - Full MKTd02-parity RST still requires S7-35: BLS/certified-data certificate handling and module-hash binding into the receipt/provenance path.
+  - `transition_material` derivation is still not semantically checked; the field is accepted as 32-byte material. That gap remains a carry-forward item.
+
+Irreversible actions taken:
+  - Substantive commit pending/recorded separately: `verifier: return ok for valid receipts`.
+
+Validation:
+  - `cargo fmt --check` passed.
+  - `cargo test --offline` passed: 164 unit tests and 24 fixture tests.
+  - `cargo build --offline --target wasm32-unknown-unknown` passed.
+
+Do not revisit:
+  - Whether the existing proof walk is real enough to support `Ok(())` after all pinned gates pass — settled yes.
+  - Whether S7-33 authorizes receipt issuance — settled no; S7-34 owns issuance.
+  - Whether S7-33 authorizes BLS/certified-data/module-hash provenance — settled no; S7-35 owns provenance/RST parity.
+  - Whether fixture-level `wrong_tree_proof` or `missing_transition_derivation_version` should leave `Deferred(...)` in S7-33 — settled no.
+  - Whether `transition_material` derivation is semantically verified in S7-33 — settled no; carry forward.
+
+Standing constraints carried forward:
+  - S7-34 should implement receipt issuance that produces receipts accepted by the now-live `validate_receipt(&Receipt)` success path.
+  - S7-34 issuance must deterministically construct proof envelopes and commitments that actually walk to the stored pre/post commitments.
+  - S7-35 remains required for MKTd02-parity RST: BLS/certified-data and module-hash provenance.
+  - S7-36 remains the deploy/canister-shape slice, including missing `dfx.json` and phantom `.did` method alignment.
