@@ -6,6 +6,7 @@ pub mod empty_subtree;
 pub mod fixtures;
 pub mod hashing;
 pub mod internal_node;
+pub mod issuance;
 pub mod leaf_hash;
 pub mod library;
 pub mod orchestration;
