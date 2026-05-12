@@ -2,18 +2,19 @@ use crate::fixtures::{
     load_all_typed_fixtures_from_index, FixtureDeletionStateMaterial, FixtureReceipt,
     FixtureStatusSurface, GenericInputSummary, TypedFixtureCase, TypedFixtureDocument,
 };
+use candid::CandidType;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::path::Path;
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(CandidType, Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct SemanticVersion {
     pub major: u32,
     pub minor: u32,
     pub patch: u32,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(CandidType, Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Compatibility {
     Compatible,
@@ -21,14 +22,14 @@ pub enum Compatibility {
     Unsupported,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(CandidType, Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct BuildIdentity {
     pub build_version: SemanticVersion,
     pub build_label: Option<String>,
     pub module_hash: Option<Vec<u8>>,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(CandidType, Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum BlockedCode {
     RebuildRequired,
@@ -40,13 +41,13 @@ pub enum BlockedCode {
     UnknownBlockedState,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(CandidType, Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct BlockedReason {
     pub code: BlockedCode,
     pub description: String,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(CandidType, Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum LifecycleState {
     Uninitialised,
@@ -56,7 +57,7 @@ pub enum LifecycleState {
     Failed,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(CandidType, Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum OperationContext {
     None,
@@ -66,7 +67,7 @@ pub enum OperationContext {
     ReadinessCheck,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(CandidType, Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct StatusSurface {
     pub protocol_version: SemanticVersion,
     pub status_schema_version: SemanticVersion,
@@ -79,22 +80,25 @@ pub struct StatusSurface {
     pub operation_context: Option<OperationContext>,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
-#[serde(rename_all = "snake_case")]
+#[derive(CandidType, Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub enum EvidenceReadiness {
+    #[serde(rename = "evidence_ready")]
     EvidenceReady,
+    #[serde(rename = "rebuild_required")]
     RebuildRequired,
+    #[serde(rename = "not_evidence_ready")]
     NotEvidenceReady,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
-#[serde(rename_all = "snake_case")]
+#[derive(CandidType, Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub enum DeletionStateMaterial {
+    #[serde(rename = "tombstoned_position")]
     TombstonedPosition(Vec<u8>),
+    #[serde(rename = "empty_position")]
     EmptyPosition(Vec<u8>),
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(CandidType, Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct CoreTransitionEvidence {
     pub subject_reference: Vec<u8>,
     pub scope_reference: Option<Vec<u8>>,
@@ -106,23 +110,27 @@ pub struct CoreTransitionEvidence {
     pub deletion_state_material: DeletionStateMaterial,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
-#[serde(rename_all = "snake_case")]
+#[derive(CandidType, Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub enum CertificationProvenancePosture {
+    #[serde(rename = "inline_payload")]
     InlinePayload,
+    #[serde(rename = "route_dependent_payload")]
     RouteDependentPayload,
+    #[serde(rename = "no_payload_for_route")]
     NoPayloadForRoute,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
-#[serde(rename_all = "snake_case")]
+#[derive(CandidType, Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub enum CertificationProvenanceRoute {
+    #[serde(rename = "direct_inline")]
     DirectInline,
+    #[serde(rename = "route_context_required")]
     RouteContextRequired,
+    #[serde(rename = "route_context_only")]
     RouteContextOnly,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(CandidType, Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct CertificationProvenanceBlock {
     pub posture: CertificationProvenancePosture,
     pub route: CertificationProvenanceRoute,
@@ -131,7 +139,7 @@ pub struct CertificationProvenanceBlock {
     pub route_context_material: Option<Vec<u8>>,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(CandidType, Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct Receipt {
     pub protocol_version: SemanticVersion,
     pub receipt_version: SemanticVersion,
@@ -139,30 +147,35 @@ pub struct Receipt {
     pub certification_provenance: CertificationProvenanceBlock,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
-#[serde(rename_all = "snake_case")]
+#[derive(CandidType, Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub enum ReceiptError {
+    #[serde(rename = "not_found")]
     NotFound,
+    #[serde(rename = "not_yet_issued")]
     NotYetIssued,
+    #[serde(rename = "invalid_subject_reference")]
     InvalidSubjectReference,
+    #[serde(rename = "unsupported_version")]
     UnsupportedVersion,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
-#[serde(tag = "result_variant", rename_all = "snake_case")]
+#[derive(CandidType, Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(tag = "result_variant")]
 pub enum ReceiptResult {
+    #[serde(rename = "ok")]
     Ok { receipt: Receipt },
+    #[serde(rename = "err")]
     Err { error_code: ReceiptError },
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(CandidType, Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct VersionInfo {
     pub protocol_version: SemanticVersion,
     pub interface_version: SemanticVersion,
     pub compatibility: Compatibility,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(CandidType, Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(tag = "result_variant", rename_all = "snake_case")]
 pub enum VersionCheckResult {
     Supported { version_info: VersionInfo },

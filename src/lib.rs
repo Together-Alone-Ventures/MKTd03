@@ -168,6 +168,26 @@ pub enum VersionCheckResult {
     UnsupportedVersion(VersionInfo),
 }
 
+#[derive(CandidType, Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub enum ReceiptError {
+    #[serde(rename = "not_found")]
+    NotFound,
+    #[serde(rename = "not_yet_issued")]
+    NotYetIssued,
+    #[serde(rename = "invalid_subject_reference")]
+    InvalidSubjectReference,
+    #[serde(rename = "unsupported_version")]
+    UnsupportedVersion,
+}
+
+#[derive(CandidType, Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub enum ReceiptResult {
+    #[serde(rename = "ok")]
+    Ok(library::Receipt),
+    #[serde(rename = "err")]
+    Err(ReceiptError),
+}
+
 #[derive(Clone, Debug, Eq, PartialEq)]
 struct StoredLifecycleState(u8);
 
@@ -452,6 +472,31 @@ fn build_version_info(compatibility: Compatibility) -> VersionInfo {
     }
 }
 
+fn build_evidence_readiness() -> Result<library::EvidenceReadiness, StatusSurfaceError> {
+    with_storage(|storage| {
+        let lifecycle_state = read_lifecycle_state(storage)?;
+        let _ = read_module_hash(storage)?;
+
+        match lifecycle_state {
+            LifecycleState::Ready => Ok(library::EvidenceReadiness::EvidenceReady),
+            LifecycleState::Uninitialised | LifecycleState::Initialising => {
+                Ok(library::EvidenceReadiness::NotEvidenceReady)
+            }
+            LifecycleState::Rebuilding | LifecycleState::Failed => {
+                Ok(library::EvidenceReadiness::RebuildRequired)
+            }
+        }
+    })
+}
+
+fn build_public_version_info() -> Result<VersionInfo, StatusSurfaceError> {
+    with_storage(|storage| {
+        let _ = read_lifecycle_state(storage)?;
+        let _ = read_module_hash(storage)?;
+        Ok(build_version_info(Compatibility::Compatible))
+    })
+}
+
 fn check_protocol_version_support(
     input: SemanticVersion,
 ) -> Result<VersionCheckResult, StatusSurfaceError> {
@@ -492,13 +537,40 @@ fn post_upgrade(module_hash: Vec<u8>) {
 #[query]
 #[candid_method(query, rename = "get_tree_mode_status")]
 fn get_tree_mode_status() -> StatusSurface {
+    connect_runtime_storage();
     trap_on_error(build_status_surface())
 }
 
 #[query]
 #[candid_method(query, rename = "check_version_support")]
 fn check_version_support(input: SemanticVersion) -> VersionCheckResult {
+    connect_runtime_storage();
     trap_on_error(check_protocol_version_support(input))
+}
+
+#[query]
+#[candid_method(query, rename = "get_evidence_readiness")]
+fn get_evidence_readiness() -> library::EvidenceReadiness {
+    connect_runtime_storage();
+    trap_on_error(build_evidence_readiness())
+}
+
+#[query]
+#[candid_method(query, rename = "get_version_info")]
+fn get_version_info() -> VersionInfo {
+    connect_runtime_storage();
+    trap_on_error(build_public_version_info())
+}
+
+#[query]
+#[candid_method(query, rename = "get_receipt")]
+fn get_receipt(subject_reference: Vec<u8>) -> ReceiptResult {
+    connect_runtime_storage();
+    if subject_reference.is_empty() {
+        return ReceiptResult::Err(ReceiptError::InvalidSubjectReference);
+    }
+
+    ReceiptResult::Err(ReceiptError::NotFound)
 }
 
 ic_cdk::export_candid!();
@@ -684,7 +756,7 @@ mod tests {
     }
 
     #[test]
-    fn generated_did_subset_has_zero_divergence_for_exposed_s7_1_surface() {
+    fn generated_did_subset_has_zero_divergence_for_current_public_surface() {
         let generated = __export_service();
         let authoritative = fs::read_to_string(repo_root().join("interfaces/mktd03_library.did"))
             .expect("authoritative did file");
@@ -698,6 +770,15 @@ mod tests {
             "BlockedCode",
             "BlockedReason",
             "StatusSurface",
+            "EvidenceReadiness",
+            "DeletionStateMaterial",
+            "CoreTransitionEvidence",
+            "CertificationProvenancePosture",
+            "CertificationProvenanceRoute",
+            "CertificationProvenanceBlock",
+            "Receipt",
+            "ReceiptError",
+            "ReceiptResult",
             "VersionInfo",
             "VersionCheckResult",
         ] {
@@ -724,6 +805,30 @@ mod tests {
                 "check_version_support"
             )),
             "generated .did diverged for check_version_support",
+        );
+
+        assert_eq!(
+            normalize_definition(&extract_service_method(
+                &generated,
+                "get_evidence_readiness"
+            )),
+            normalize_definition(&extract_service_method(
+                &authoritative,
+                "get_evidence_readiness"
+            )),
+            "generated .did diverged for get_evidence_readiness",
+        );
+
+        assert_eq!(
+            normalize_definition(&extract_service_method(&generated, "get_version_info")),
+            normalize_definition(&extract_service_method(&authoritative, "get_version_info")),
+            "generated .did diverged for get_version_info",
+        );
+
+        assert_eq!(
+            normalize_definition(&extract_service_method(&generated, "get_receipt")),
+            normalize_definition(&extract_service_method(&authoritative, "get_receipt")),
+            "generated .did diverged for get_receipt",
         );
     }
 
@@ -773,6 +878,18 @@ mod tests {
         assert_eq!(
             error.message(),
             "S7-2 conditionally_compatible policy not yet defined"
+        );
+    }
+
+    #[test]
+    fn get_receipt_distinguishes_invalid_subject_from_not_found() {
+        assert_eq!(
+            get_receipt(vec![]),
+            ReceiptResult::Err(ReceiptError::InvalidSubjectReference)
+        );
+        assert_eq!(
+            get_receipt(vec![0x42; 32]),
+            ReceiptResult::Err(ReceiptError::NotFound)
         );
     }
 }

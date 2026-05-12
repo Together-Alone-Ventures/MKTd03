@@ -1,0 +1,10 @@
+{
+  "canisters": {
+    "mktd03": {
+      "type": "rust",
+      "package": "mktd03",
+      "candid": "interfaces/mktd03_library.did"
+    }
+  },
+  "version": 1
+}

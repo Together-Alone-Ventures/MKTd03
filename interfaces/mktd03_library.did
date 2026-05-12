@@ -136,7 +136,7 @@ type VersionCheckResult = variant {
   unsupported_version : VersionInfo;
 };
 
-service : {
+service : (vec nat8) -> {
   // Status / diagnostics
   get_tree_mode_status : () -> (StatusSurface) query;
   get_evidence_readiness : () -> (EvidenceReadiness) query;
