@@ -1548,3 +1548,30 @@ Standing constraints carried forward:
   - S7-34 issuance must deterministically construct proof envelopes and commitments that actually walk to the stored pre/post commitments.
   - S7-35 remains required for MKTd02-parity RST: BLS/certified-data and module-hash provenance.
   - S7-36 remains the deploy/canister-shape slice, including missing `dfx.json` and phantom `.did` method alignment.
+
+## 2026-05-13 -- MILESTONE: S7-34 unprovenanced receipt issuance landed
+
+Decisions made:
+  - S7-34 added a Rust-only receipt issuance surface.
+  - New module: `src/issuance.rs`.
+  - `src/lib.rs` now exposes `pub mod issuance`.
+  - The issuance state is a sparse map from record-position key to committed leaf hash: `BTreeMap<[u8; 32], [u8; 32]>`.
+  - `issue_unprovenanced_receipt(...)` generates proof envelopes from current sparse-tree state, builds pre/post commitments, constructs a `Receipt`, self-validates with `validate_receipt(&receipt)`, and only then mutates tree state to the tombstoned leaf.
+  - Duplicate issuance for the same target fails loud with `TargetAlreadyCommitted`.
+  - No verifier, fixture, `.did`, dfx/deploy, public canister method, BLS/certified-data, or module-hash provenance work was done.
+
+RST framing:
+  - S7-34 produces receipts that are structurally/proof-walk valid under the S7-33 verifier.
+  - The helper is deliberately named `issue_unprovenanced_receipt`.
+  - These receipts are not yet MKTd02-parity CVDRs because they do not carry canister-level provenance.
+  - S7-35 remains required for BLS/certified-data certificate handling and module-hash binding.
+
+Validation:
+  - `cargo fmt --check` passed.
+  - `cargo test --offline` passed: 169 unit tests and 24 fixture tests.
+  - `cargo build --offline --target wasm32-unknown-unknown` passed.
+
+Carry-forward:
+  - Add a future nested-explicit-sibling proof-generation test covering multiple prior committed leaves at different sibling levels.
+  - S7-35 should add BLS/certified-data + module-hash provenance using MKTd02 reuse patterns.
+  - S7-36 remains dfx/local deploy + public method alignment, including the known missing `dfx.json` and phantom `.did` method risk.

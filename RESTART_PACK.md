@@ -376,3 +376,26 @@ Next slice:
   - Issued receipts must validate through the new `Ok(())` success path.
   - S7-35 remains BLS/certified-data + module-hash provenance.
   - S7-36 remains dfx/local deploy + public method alignment.
+
+---
+
+## S7-34 CLOSE — unprovenanced sparse-tree receipt issuance
+
+Status:
+  - S7-34 substantive commit: `issuance: add unprovenanced sparse-tree receipts`.
+  - Rust-only issuance surface added in `src/issuance.rs`.
+  - No verifier, fixture, interface, `.did`, dfx/deploy, public canister method, BLS/certified-data, or module-hash provenance changes.
+
+What changed:
+  - `SparseIssuanceTree` tracks committed leaf hashes by record-position key.
+  - `issue_unprovenanced_receipt(...)` generates proof envelopes, computes pre/post commitments, constructs a receipt, self-validates it, and then records the tombstoned leaf.
+  - Issued receipts validate through `validate_receipt(&receipt) == Ok(())`.
+
+RST caveat:
+  - S7-34 receipts are unprovenanced.
+  - They are not yet MKTd02-parity CVDRs.
+  - S7-35 must add BLS/certified-data and module-hash provenance.
+
+Next slice:
+  - S7-35: BLS/certified-data + module-hash provenance, using MKTd02 reuse patterns where appropriate.
+  - Carry-forward test candidate: nested explicit sibling proof generation with multiple prior committed leaves.
