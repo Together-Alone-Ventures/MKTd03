@@ -399,3 +399,28 @@ RST caveat:
 Next slice:
   - S7-35: BLS/certified-data + module-hash provenance, using MKTd02 reuse patterns where appropriate.
   - Carry-forward test candidate: nested explicit sibling proof generation with multiple prior committed leaves.
+
+---
+
+## S7-35 CLOSE — module-hash certified receipt helpers
+
+Status:
+  - S7-35 substantive commit: `provenance: add module-hash certified receipt helpers`.
+  - Pure-Rust issuer-side provenance helpers added in `src/provenance.rs`.
+  - No dfx, public canister method, `.did`, fixture, verifier-side BLS authentication, or TinyPressZD changes.
+
+What changed:
+  - `compute_tree_certified_preimage(...)`
+  - `compute_tree_certified_commitment(...)`
+  - `build_provenanced_certification_provenance_block(...)`
+  - `issue_provenanced_receipt(...)`
+  - Existing `TAG_CERTIFIED_COMMITMENT` reused.
+
+RST caveat:
+  - S7-35 composes provenanced receipt structures off-replica.
+  - It does not generate live certificates.
+  - It does not authenticate BLS certificates.
+  - S7-36 must add dfx/local deployment, public canister methods, and A→B→C certified-data orchestration.
+
+Next slice:
+  - S7-36: `dfx.json`, canister public method alignment, A→B→C flow, and local deploy smoke.

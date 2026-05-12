@@ -1575,3 +1575,40 @@ Carry-forward:
   - Add a future nested-explicit-sibling proof-generation test covering multiple prior committed leaves at different sibling levels.
   - S7-35 should add BLS/certified-data + module-hash provenance using MKTd02 reuse patterns.
   - S7-36 remains dfx/local deploy + public method alignment, including the known missing `dfx.json` and phantom `.did` method risk.
+
+## 2026-05-13 -- MILESTONE: S7-35 module-hash certified receipt helpers landed
+
+Decisions made:
+  - S7-35 added pure-Rust issuer-side provenance helpers for module-hash-bound certified receipt structures.
+  - New module: `src/provenance.rs`.
+  - `src/lib.rs` now exposes `pub mod provenance`.
+  - Existing `TAG_CERTIFIED_COMMITMENT = b"MKTD03_CERTIFIED_COMMITMENT_V1"` was reused; no tag changes were needed.
+  - S7-35 did not add `dfx.json`, public canister methods, `.did` changes, fixtures, or verifier-side BLS authentication.
+  - S7-35 did not call `ic_cdk::api::set_certified_data` or `ic_cdk::api::data_certificate`; live replica orchestration remains S7-36.
+
+What landed:
+  - `compute_tree_certified_preimage(...)` binds substantive Tree-mode receipt material plus module hash.
+  - `compute_tree_certified_commitment(...)` computes the tagged certified commitment.
+  - `build_provenanced_certification_provenance_block(...)` embeds certificate bytes and module hash into `CertificationProvenanceBlock`.
+  - `issue_provenanced_receipt(...)` wraps the S7-34 unprovenanced issuance helper with a provenanced certification block.
+  - Provenanced issued receipts validate through `validate_receipt(&receipt) == Ok(())`.
+
+RST framing:
+  - S7-35 lands issuer-side machinery for ICP-certified module-hash-bound provenance.
+  - S7-35 is off-replica and issuer-side only.
+  - `issue_provenanced_receipt(...)` trusts caller-supplied certificate bytes; in the intended S7-36 A→B→C canister flow, those bytes come from `ic_cdk::api::data_certificate`.
+  - S7-35 does not demonstrate live certificate generation.
+  - S7-35 does not authenticate embedded BLS certificates against the IC root key.
+  - After S7-35, MKTd03 can compose MKTd02-parity provenanced receipt structures.
+  - After S7-36, MKTd03 should issue them through deployed canister methods.
+  - Verifier-side BLS authentication of embedded certificate material remains post-handoff work unless explicitly pulled forward.
+
+Validation:
+  - `cargo fmt --check` passed.
+  - `cargo test --offline` passed: 175 unit tests and 24 fixture tests.
+  - `cargo build --offline --target wasm32-unknown-unknown` passed.
+
+Carry-forward:
+  - S7-36 owns `dfx.json`, public canister methods, A→B→C orchestration, and local deploy smoke.
+  - Formal certified-commitment preimage documentation in `docs/spec/MKTd03_commitment_and_preimage_spec_v1.md` is a future light-touch candidate, not an S7-35 blocker.
+  - `src/provenance.rs` is currently public; if later exposure proves too broad, tighten to `pub(crate)` or narrower API after S7-36/handoff review.
