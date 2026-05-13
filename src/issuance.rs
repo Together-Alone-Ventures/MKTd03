@@ -57,6 +57,27 @@ impl SparseIssuanceTree {
         self.committed_leaves.get(position).copied()
     }
 
+    pub fn committed_leaves(&self) -> &BTreeMap<Position, LeafHash> {
+        &self.committed_leaves
+    }
+
+    pub fn from_committed_leaves(committed_leaves: BTreeMap<Position, LeafHash>) -> Self {
+        Self { committed_leaves }
+    }
+
+    pub fn insert_committed_leaf(
+        &mut self,
+        position: Position,
+        leaf_hash: LeafHash,
+    ) -> Result<(), IssuanceError> {
+        if self.committed_leaves.contains_key(&position) {
+            return Err(IssuanceError::TargetAlreadyCommitted);
+        }
+
+        self.committed_leaves.insert(position, leaf_hash);
+        Ok(())
+    }
+
     pub fn issue_unprovenanced_receipt(
         &mut self,
         inputs: IssuanceInputs<'_>,

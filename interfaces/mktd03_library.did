@@ -125,6 +125,58 @@ type ReceiptResult = variant {
   err : ReceiptError;
 };
 
+type BeginTreeReceiptIssuanceRequest = record {
+  subject_reference : vec nat8;
+  scope_reference : opt vec nat8;
+  transition_material : vec nat8;
+  deletion_state_material : vec nat8;
+};
+
+type PendingReceiptInfo = record {
+  pending_id : vec nat8;
+  certified_commitment : vec nat8;
+};
+
+type IssuanceApiError = variant {
+  invalid_subject_reference;
+  invalid_scope_reference;
+  invalid_transition_material;
+  invalid_deletion_state_material;
+  pending_issuance_in_progress;
+  no_pending_issuance;
+  pending_id_mismatch;
+  certificate_unavailable;
+  issuance_failed;
+  validation_failed;
+  storage_unavailable;
+};
+
+type BeginTreeReceiptIssuanceResult = variant {
+  ok : PendingReceiptInfo;
+  err : IssuanceApiError;
+};
+
+type PendingCertificateMaterial = record {
+  pending_id : vec nat8;
+  certified_commitment : vec nat8;
+  certificate_material : vec nat8;
+};
+
+type PendingCertificateMaterialResult = variant {
+  ok : PendingCertificateMaterial;
+  err : IssuanceApiError;
+};
+
+type FinalizeTreeReceiptRequest = record {
+  pending_id : vec nat8;
+  certificate_material : vec nat8;
+};
+
+type FinalizeTreeReceiptResult = variant {
+  ok : Receipt;
+  err : IssuanceApiError;
+};
+
 type VersionInfo = record {
   protocol_version : SemanticVersion;
   interface_version : SemanticVersion;
@@ -145,4 +197,7 @@ service : (vec nat8) -> {
 
   // Receipt / verifier-facing surface
   get_receipt : (vec nat8) -> (ReceiptResult) query;
+  begin_tree_receipt_issuance : (BeginTreeReceiptIssuanceRequest) -> (BeginTreeReceiptIssuanceResult);
+  get_pending_certificate_material : (vec nat8) -> (PendingCertificateMaterialResult) query;
+  finalize_tree_receipt : (FinalizeTreeReceiptRequest) -> (FinalizeTreeReceiptResult);
 }

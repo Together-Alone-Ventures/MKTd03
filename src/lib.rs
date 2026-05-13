@@ -21,14 +21,15 @@ pub mod tags;
 pub mod transition_material;
 pub mod verifier;
 
-use candid::{candid_method, CandidType, Deserialize};
-use ic_cdk::{init, post_upgrade, query};
+use candid::{candid_method, decode_one, encode_one, CandidType, Deserialize};
+use ic_cdk::{init, post_upgrade, query, update};
 use ic_stable_structures::memory_manager::{MemoryId, MemoryManager, VirtualMemory};
 use ic_stable_structures::storable::Bound;
 use ic_stable_structures::{Cell as StableCell, DefaultMemoryImpl, Memory, Storable};
 use serde::Serialize;
 use std::borrow::Cow;
 use std::cell::RefCell;
+use std::collections::BTreeMap;
 use std::fmt;
 
 const PROTOCOL_VERSION: SemanticVersion = SemanticVersion {
@@ -54,7 +55,13 @@ const BUILD_VERSION: SemanticVersion = SemanticVersion {
 const BUILD_LABEL: &str = env!("CARGO_PKG_VERSION");
 const LIFECYCLE_STATE_MEMORY_ID: MemoryId = MemoryId::new(0);
 const MODULE_HASH_MEMORY_ID: MemoryId = MemoryId::new(1);
+const ISSUANCE_TREE_MEMORY_ID: MemoryId = MemoryId::new(2);
+const PENDING_ISSUANCE_MEMORY_ID: MemoryId = MemoryId::new(3);
+const ISSUED_RECEIPTS_MEMORY_ID: MemoryId = MemoryId::new(4);
 const MODULE_HASH_LENGTH: usize = 32;
+const TREE_STATE_MAX_BYTES: u32 = 1_048_576;
+const PENDING_ISSUANCE_MAX_BYTES: u32 = 262_144;
+const ISSUED_RECEIPTS_MAX_BYTES: u32 = 4_194_304;
 
 type RuntimeMemory = VirtualMemory<DefaultMemoryImpl>;
 
@@ -188,6 +195,83 @@ pub enum ReceiptResult {
     Err(ReceiptError),
 }
 
+#[derive(CandidType, Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct BeginTreeReceiptIssuanceRequest {
+    pub subject_reference: Vec<u8>,
+    pub scope_reference: Option<Vec<u8>>,
+    pub transition_material: Vec<u8>,
+    pub deletion_state_material: Vec<u8>,
+}
+
+#[derive(CandidType, Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct PendingReceiptInfo {
+    pub pending_id: Vec<u8>,
+    pub certified_commitment: Vec<u8>,
+}
+
+#[derive(CandidType, Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub enum IssuanceApiError {
+    #[serde(rename = "invalid_subject_reference")]
+    InvalidSubjectReference,
+    #[serde(rename = "invalid_scope_reference")]
+    InvalidScopeReference,
+    #[serde(rename = "invalid_transition_material")]
+    InvalidTransitionMaterial,
+    #[serde(rename = "invalid_deletion_state_material")]
+    InvalidDeletionStateMaterial,
+    #[serde(rename = "pending_issuance_in_progress")]
+    PendingIssuanceInProgress,
+    #[serde(rename = "no_pending_issuance")]
+    NoPendingIssuance,
+    #[serde(rename = "pending_id_mismatch")]
+    PendingIdMismatch,
+    #[serde(rename = "certificate_unavailable")]
+    CertificateUnavailable,
+    #[serde(rename = "issuance_failed")]
+    IssuanceFailed,
+    #[serde(rename = "validation_failed")]
+    ValidationFailed,
+    #[serde(rename = "storage_unavailable")]
+    StorageUnavailable,
+}
+
+#[derive(CandidType, Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub enum BeginTreeReceiptIssuanceResult {
+    #[serde(rename = "ok")]
+    Ok(PendingReceiptInfo),
+    #[serde(rename = "err")]
+    Err(IssuanceApiError),
+}
+
+#[derive(CandidType, Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct PendingCertificateMaterial {
+    pub pending_id: Vec<u8>,
+    pub certified_commitment: Vec<u8>,
+    pub certificate_material: Vec<u8>,
+}
+
+#[derive(CandidType, Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub enum PendingCertificateMaterialResult {
+    #[serde(rename = "ok")]
+    Ok(PendingCertificateMaterial),
+    #[serde(rename = "err")]
+    Err(IssuanceApiError),
+}
+
+#[derive(CandidType, Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct FinalizeTreeReceiptRequest {
+    pub pending_id: Vec<u8>,
+    pub certificate_material: Vec<u8>,
+}
+
+#[derive(CandidType, Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub enum FinalizeTreeReceiptResult {
+    #[serde(rename = "ok")]
+    Ok(library::Receipt),
+    #[serde(rename = "err")]
+    Err(IssuanceApiError),
+}
+
 #[derive(Clone, Debug, Eq, PartialEq)]
 struct StoredLifecycleState(u8);
 
@@ -244,9 +328,105 @@ impl Storable for StoredModuleHash {
     };
 }
 
+#[derive(CandidType, Clone, Debug, Default, Deserialize, Eq, PartialEq)]
+struct PersistedLeafEntry {
+    position: Vec<u8>,
+    leaf_hash: Vec<u8>,
+}
+
+#[derive(CandidType, Clone, Debug, Default, Deserialize, Eq, PartialEq)]
+struct PersistedIssuanceTree {
+    committed_leaves: Vec<PersistedLeafEntry>,
+}
+
+#[derive(CandidType, Clone, Debug, Deserialize, Eq, PartialEq)]
+struct PersistedReceiptEntry {
+    subject_reference: Vec<u8>,
+    receipt: library::Receipt,
+}
+
+#[derive(CandidType, Clone, Debug, Default, Deserialize, Eq, PartialEq)]
+struct PersistedIssuedReceipts {
+    receipts: Vec<PersistedReceiptEntry>,
+}
+
+#[derive(CandidType, Clone, Debug, Deserialize, Eq, PartialEq)]
+struct PersistedPendingIssuance {
+    pending_id: Vec<u8>,
+    certified_commitment: Vec<u8>,
+    receipt: library::Receipt,
+    target_position: Vec<u8>,
+    post_state_leaf: Vec<u8>,
+}
+
+#[derive(CandidType, Clone, Debug, Default, Deserialize, Eq, PartialEq)]
+struct PersistedPendingIssuanceState {
+    pending: Option<PersistedPendingIssuance>,
+}
+
+impl Storable for PersistedIssuanceTree {
+    fn to_bytes(&self) -> Cow<'_, [u8]> {
+        Cow::Owned(encode_one(self).expect("persisted issuance tree should encode"))
+    }
+
+    fn into_bytes(self) -> Vec<u8> {
+        encode_one(self).expect("persisted issuance tree should encode")
+    }
+
+    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+        decode_one(bytes.as_ref()).expect("persisted issuance tree should decode")
+    }
+
+    const BOUND: Bound = Bound::Bounded {
+        max_size: TREE_STATE_MAX_BYTES,
+        is_fixed_size: false,
+    };
+}
+
+impl Storable for PersistedPendingIssuanceState {
+    fn to_bytes(&self) -> Cow<'_, [u8]> {
+        Cow::Owned(encode_one(self).expect("persisted pending issuance should encode"))
+    }
+
+    fn into_bytes(self) -> Vec<u8> {
+        encode_one(self).expect("persisted pending issuance should encode")
+    }
+
+    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+        decode_one(bytes.as_ref()).expect("persisted pending issuance should decode")
+    }
+
+    const BOUND: Bound = Bound::Bounded {
+        max_size: PENDING_ISSUANCE_MAX_BYTES,
+        is_fixed_size: false,
+    };
+}
+
+impl Storable for PersistedIssuedReceipts {
+    fn to_bytes(&self) -> Cow<'_, [u8]> {
+        Cow::Owned(encode_one(self).expect("persisted receipts should encode"))
+    }
+
+    fn into_bytes(self) -> Vec<u8> {
+        encode_one(self).expect("persisted receipts should encode")
+    }
+
+    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+        decode_one(bytes.as_ref()).expect("persisted receipts should decode")
+    }
+
+    const BOUND: Bound = Bound::Bounded {
+        max_size: ISSUED_RECEIPTS_MAX_BYTES,
+        is_fixed_size: false,
+    };
+}
+
 struct StableStorage<M: Memory> {
     lifecycle_state: StableCell<StoredLifecycleState, M>,
     module_hash: StableCell<StoredModuleHash, M>,
+    issuance_tree: StableCell<PersistedIssuanceTree, M>,
+    pending_issuance: StableCell<PersistedPendingIssuanceState, M>,
+    issued_receipts: StableCell<PersistedIssuedReceipts, M>,
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -350,11 +530,37 @@ fn with_storage_mut<R>(
     })
 }
 
+fn with_storage_api<R>(
+    f: impl FnOnce(&StableStorage<RuntimeMemory>) -> Result<R, IssuanceApiError>,
+) -> Result<R, IssuanceApiError> {
+    STABLE_STORAGE.with(|storage| {
+        let borrowed = storage.borrow();
+        let connected = borrowed
+            .as_ref()
+            .ok_or(IssuanceApiError::StorageUnavailable)?;
+        f(connected)
+    })
+}
+
+fn with_storage_api_mut<R>(
+    f: impl FnOnce(&mut StableStorage<RuntimeMemory>) -> Result<R, IssuanceApiError>,
+) -> Result<R, IssuanceApiError> {
+    STABLE_STORAGE.with(|storage| {
+        let mut borrowed = storage.borrow_mut();
+        let connected = borrowed
+            .as_mut()
+            .ok_or(IssuanceApiError::StorageUnavailable)?;
+        f(connected)
+    })
+}
+
 fn connect_runtime_storage() {
     MEMORY_MANAGER.with(|memory_manager| {
         STABLE_STORAGE.with(|storage| {
-            let manager = memory_manager.borrow();
-            *storage.borrow_mut() = Some(open_storage(&manager));
+            if storage.borrow().is_none() {
+                let manager = memory_manager.borrow();
+                *storage.borrow_mut() = Some(open_storage(&manager));
+            }
         });
     });
 }
@@ -368,6 +574,18 @@ fn open_storage<M: Memory>(memory_manager: &MemoryManager<M>) -> StableStorage<V
         module_hash: StableCell::init(
             memory_manager.get(MODULE_HASH_MEMORY_ID),
             StoredModuleHash::default(),
+        ),
+        issuance_tree: StableCell::init(
+            memory_manager.get(ISSUANCE_TREE_MEMORY_ID),
+            PersistedIssuanceTree::default(),
+        ),
+        pending_issuance: StableCell::init(
+            memory_manager.get(PENDING_ISSUANCE_MEMORY_ID),
+            PersistedPendingIssuanceState::default(),
+        ),
+        issued_receipts: StableCell::init(
+            memory_manager.get(ISSUED_RECEIPTS_MEMORY_ID),
+            PersistedIssuedReceipts::default(),
         ),
     }
 }
@@ -497,6 +715,328 @@ fn build_public_version_info() -> Result<VersionInfo, StatusSurfaceError> {
     })
 }
 
+fn no_payload_certification_provenance() -> library::CertificationProvenanceBlock {
+    library::CertificationProvenanceBlock {
+        posture: library::CertificationProvenancePosture::NoPayloadForRoute,
+        route: library::CertificationProvenanceRoute::DirectInline,
+        certification_material: None,
+        provenance_material: None,
+        route_context_material: None,
+    }
+}
+
+fn compute_pending_id(certified_commitment: &[u8; 32]) -> [u8; 32] {
+    hashing::hash_with_tag(
+        tags::TAG_RECEIPT_ID,
+        &[b"PENDING_RECEIPT_V1", certified_commitment],
+    )
+}
+
+fn map_issuance_error(error: issuance::IssuanceError) -> IssuanceApiError {
+    match error {
+        issuance::IssuanceError::InvalidSubjectReference => {
+            IssuanceApiError::InvalidSubjectReference
+        }
+        issuance::IssuanceError::InvalidScopeReference => IssuanceApiError::InvalidScopeReference,
+        issuance::IssuanceError::InvalidDeletionStateMaterial(_) => {
+            IssuanceApiError::InvalidDeletionStateMaterial
+        }
+        issuance::IssuanceError::TargetAlreadyCommitted => IssuanceApiError::IssuanceFailed,
+        issuance::IssuanceError::ProofGenerationFailed(_) => IssuanceApiError::IssuanceFailed,
+        issuance::IssuanceError::ValidationFailed(_) => IssuanceApiError::ValidationFailed,
+    }
+}
+
+fn module_hash_array_from_storage<M: Memory>(
+    storage: &StableStorage<M>,
+) -> Result<[u8; 32], IssuanceApiError> {
+    let module_hash =
+        read_module_hash(storage).map_err(|_| IssuanceApiError::StorageUnavailable)?;
+    module_hash
+        .try_into()
+        .map_err(|_| IssuanceApiError::StorageUnavailable)
+}
+
+fn load_issuance_tree<M: Memory>(
+    storage: &StableStorage<M>,
+) -> Result<issuance::SparseIssuanceTree, IssuanceApiError> {
+    let mut committed_leaves = BTreeMap::new();
+    for entry in &storage.issuance_tree.get().committed_leaves {
+        let position: [u8; 32] = entry
+            .position
+            .as_slice()
+            .try_into()
+            .map_err(|_| IssuanceApiError::StorageUnavailable)?;
+        let leaf_hash: [u8; 32] = entry
+            .leaf_hash
+            .as_slice()
+            .try_into()
+            .map_err(|_| IssuanceApiError::StorageUnavailable)?;
+        committed_leaves.insert(position, leaf_hash);
+    }
+
+    Ok(issuance::SparseIssuanceTree::from_committed_leaves(
+        committed_leaves,
+    ))
+}
+
+fn persist_issuance_tree<M: Memory>(
+    storage: &mut StableStorage<M>,
+    tree: &issuance::SparseIssuanceTree,
+) -> Result<(), IssuanceApiError> {
+    let committed_leaves = tree
+        .committed_leaves()
+        .iter()
+        .map(|(position, leaf_hash)| PersistedLeafEntry {
+            position: position.to_vec(),
+            leaf_hash: leaf_hash.to_vec(),
+        })
+        .collect();
+    let _ = storage
+        .issuance_tree
+        .set(PersistedIssuanceTree { committed_leaves });
+    Ok(())
+}
+
+fn load_pending_issuance<M: Memory>(
+    storage: &StableStorage<M>,
+) -> Result<PersistedPendingIssuance, IssuanceApiError> {
+    storage
+        .pending_issuance
+        .get()
+        .pending
+        .clone()
+        .ok_or(IssuanceApiError::NoPendingIssuance)
+}
+
+fn persist_pending_issuance<M: Memory>(
+    storage: &mut StableStorage<M>,
+    pending: PersistedPendingIssuance,
+) -> Result<(), IssuanceApiError> {
+    let _ = storage.pending_issuance.set(PersistedPendingIssuanceState {
+        pending: Some(pending),
+    });
+    Ok(())
+}
+
+fn clear_pending_issuance<M: Memory>(
+    storage: &mut StableStorage<M>,
+) -> Result<(), IssuanceApiError> {
+    let _ = storage
+        .pending_issuance
+        .set(PersistedPendingIssuanceState { pending: None });
+    Ok(())
+}
+
+fn persist_issued_receipt<M: Memory>(
+    storage: &mut StableStorage<M>,
+    receipt: library::Receipt,
+) -> Result<(), IssuanceApiError> {
+    let mut state = storage.issued_receipts.get().clone();
+    let subject_reference = receipt.core_transition_evidence.subject_reference.clone();
+    state
+        .receipts
+        .retain(|entry| entry.subject_reference != subject_reference);
+    state.receipts.push(PersistedReceiptEntry {
+        subject_reference,
+        receipt,
+    });
+    let _ = storage.issued_receipts.set(state);
+    Ok(())
+}
+
+fn lookup_issued_receipt<M: Memory>(
+    storage: &StableStorage<M>,
+    subject_reference: &[u8],
+) -> Option<library::Receipt> {
+    storage
+        .issued_receipts
+        .get()
+        .receipts
+        .iter()
+        .find(|entry| entry.subject_reference == subject_reference)
+        .map(|entry| entry.receipt.clone())
+}
+
+fn pending_matches_subject<M: Memory>(
+    storage: &StableStorage<M>,
+    subject_reference: &[u8],
+) -> bool {
+    storage
+        .pending_issuance
+        .get()
+        .pending
+        .as_ref()
+        .map(|pending| {
+            pending.receipt.core_transition_evidence.subject_reference == subject_reference
+        })
+        .unwrap_or(false)
+}
+
+fn begin_tree_receipt_issuance_impl(
+    request: BeginTreeReceiptIssuanceRequest,
+) -> Result<PendingReceiptInfo, IssuanceApiError> {
+    let transition_material: [u8; 32] = request
+        .transition_material
+        .as_slice()
+        .try_into()
+        .map_err(|_| IssuanceApiError::InvalidTransitionMaterial)?;
+
+    with_storage_api_mut(|storage| {
+        if storage.pending_issuance.get().pending.is_some() {
+            return Err(IssuanceApiError::PendingIssuanceInProgress);
+        }
+
+        let module_hash = module_hash_array_from_storage(storage)?;
+        let tree = load_issuance_tree(storage)?;
+        let mut preview_tree = tree.clone();
+        let receipt = preview_tree
+            .issue_unprovenanced_receipt(issuance::IssuanceInputs {
+                subject_reference: &request.subject_reference,
+                scope_reference: request.scope_reference.as_deref(),
+                transition_material: &transition_material,
+                deletion_state_material: &request.deletion_state_material,
+                certification_provenance: no_payload_certification_provenance(),
+            })
+            .map_err(map_issuance_error)?;
+
+        let target_position = record_position::compute_record_position_key(
+            &request.subject_reference,
+            request.scope_reference.as_deref(),
+        )
+        .map_err(|error| match error {
+            record_position::RecordPositionError::EmptySubjectReference => {
+                IssuanceApiError::InvalidSubjectReference
+            }
+            record_position::RecordPositionError::EmptyScopeReference => {
+                IssuanceApiError::InvalidScopeReference
+            }
+        })?;
+        let post_state_leaf = leaf_hash::compute_tombstoned_leaf(
+            &request.subject_reference,
+            request.scope_reference.as_deref(),
+            &request.deletion_state_material,
+        )
+        .map_err(|error| match error {
+            leaf_hash::LeafHashError::EmptySubjectReference => {
+                IssuanceApiError::InvalidSubjectReference
+            }
+            leaf_hash::LeafHashError::EmptyScopeReference => {
+                IssuanceApiError::InvalidScopeReference
+            }
+            leaf_hash::LeafHashError::InvalidDeletionStateMaterial(_) => {
+                IssuanceApiError::InvalidDeletionStateMaterial
+            }
+        })?;
+
+        let certified_commitment =
+            provenance::compute_tree_certified_commitment(&receipt, &module_hash)
+                .map_err(|_| IssuanceApiError::IssuanceFailed)?;
+        let pending_id = compute_pending_id(&certified_commitment);
+
+        persist_pending_issuance(
+            storage,
+            PersistedPendingIssuance {
+                pending_id: pending_id.to_vec(),
+                certified_commitment: certified_commitment.to_vec(),
+                receipt,
+                target_position: target_position.to_vec(),
+                post_state_leaf: post_state_leaf.to_vec(),
+            },
+        )?;
+
+        Ok(PendingReceiptInfo {
+            pending_id: pending_id.to_vec(),
+            certified_commitment: certified_commitment.to_vec(),
+        })
+    })
+}
+
+fn get_pending_certificate_material_impl(
+    pending_id: Vec<u8>,
+    certificate_material: Option<Vec<u8>>,
+) -> PendingCertificateMaterialResult {
+    match with_storage_api(|storage| {
+        let pending = load_pending_issuance(storage)?;
+        if pending.pending_id != pending_id {
+            return Ok(PendingCertificateMaterialResult::Err(
+                IssuanceApiError::PendingIdMismatch,
+            ));
+        }
+
+        let certificate_material = match certificate_material {
+            Some(bytes) => bytes,
+            None => {
+                return Ok(PendingCertificateMaterialResult::Err(
+                    IssuanceApiError::CertificateUnavailable,
+                ))
+            }
+        };
+
+        Ok(PendingCertificateMaterialResult::Ok(
+            PendingCertificateMaterial {
+                pending_id: pending.pending_id,
+                certified_commitment: pending.certified_commitment,
+                certificate_material,
+            },
+        ))
+    }) {
+        Ok(result) => result,
+        Err(error) => PendingCertificateMaterialResult::Err(error),
+    }
+}
+
+fn finalize_tree_receipt_impl(
+    request: FinalizeTreeReceiptRequest,
+) -> Result<FinalizeTreeReceiptResult, IssuanceApiError> {
+    with_storage_api_mut(|storage| {
+        let pending = load_pending_issuance(storage)?;
+        if pending.pending_id != request.pending_id {
+            return Ok(FinalizeTreeReceiptResult::Err(
+                IssuanceApiError::PendingIdMismatch,
+            ));
+        }
+
+        let module_hash = module_hash_array_from_storage(storage)?;
+        let mut receipt = pending.receipt.clone();
+        receipt.certification_provenance =
+            provenance::build_provenanced_certification_provenance_block(
+                &request.certificate_material,
+                &module_hash,
+            );
+
+        let certified_commitment =
+            provenance::compute_tree_certified_commitment(&receipt, &module_hash)
+                .map_err(|_| IssuanceApiError::IssuanceFailed)?;
+        if certified_commitment.to_vec() != pending.certified_commitment {
+            return Ok(FinalizeTreeReceiptResult::Err(
+                IssuanceApiError::ValidationFailed,
+            ));
+        }
+
+        verifier::validate_receipt(&receipt).map_err(|_| IssuanceApiError::ValidationFailed)?;
+
+        let mut tree = load_issuance_tree(storage)?;
+        let target_position: [u8; 32] = pending
+            .target_position
+            .as_slice()
+            .try_into()
+            .map_err(|_| IssuanceApiError::StorageUnavailable)?;
+        let post_state_leaf: [u8; 32] = pending
+            .post_state_leaf
+            .as_slice()
+            .try_into()
+            .map_err(|_| IssuanceApiError::StorageUnavailable)?;
+        tree.insert_committed_leaf(target_position, post_state_leaf)
+            .map_err(map_issuance_error)?;
+        persist_issuance_tree(storage, &tree)?;
+        persist_issued_receipt(storage, receipt.clone())?;
+        clear_pending_issuance(storage)?;
+
+        Ok(FinalizeTreeReceiptResult::Ok(receipt))
+    })
+}
+
 fn check_protocol_version_support(
     input: SemanticVersion,
 ) -> Result<VersionCheckResult, StatusSurfaceError> {
@@ -570,7 +1110,50 @@ fn get_receipt(subject_reference: Vec<u8>) -> ReceiptResult {
         return ReceiptResult::Err(ReceiptError::InvalidSubjectReference);
     }
 
-    ReceiptResult::Err(ReceiptError::NotFound)
+    match with_storage_api(|storage| {
+        if let Some(receipt) = lookup_issued_receipt(storage, &subject_reference) {
+            return Ok(ReceiptResult::Ok(receipt));
+        }
+        if pending_matches_subject(storage, &subject_reference) {
+            return Ok(ReceiptResult::Err(ReceiptError::NotYetIssued));
+        }
+        Ok(ReceiptResult::Err(ReceiptError::NotFound))
+    }) {
+        Ok(result) => result,
+        Err(_) => ic_cdk::trap("S7-36 receipt storage is unavailable"),
+    }
+}
+
+#[update]
+#[candid_method(update, rename = "begin_tree_receipt_issuance")]
+fn begin_tree_receipt_issuance(
+    request: BeginTreeReceiptIssuanceRequest,
+) -> BeginTreeReceiptIssuanceResult {
+    connect_runtime_storage();
+    match begin_tree_receipt_issuance_impl(request) {
+        Ok(info) => {
+            ic_cdk::api::certified_data_set(&info.certified_commitment);
+            BeginTreeReceiptIssuanceResult::Ok(info)
+        }
+        Err(error) => BeginTreeReceiptIssuanceResult::Err(error),
+    }
+}
+
+#[query]
+#[candid_method(query, rename = "get_pending_certificate_material")]
+fn get_pending_certificate_material(pending_id: Vec<u8>) -> PendingCertificateMaterialResult {
+    connect_runtime_storage();
+    get_pending_certificate_material_impl(pending_id, ic_cdk::api::data_certificate())
+}
+
+#[update]
+#[candid_method(update, rename = "finalize_tree_receipt")]
+fn finalize_tree_receipt(request: FinalizeTreeReceiptRequest) -> FinalizeTreeReceiptResult {
+    connect_runtime_storage();
+    match finalize_tree_receipt_impl(request) {
+        Ok(result) => result,
+        Err(error) => FinalizeTreeReceiptResult::Err(error),
+    }
 }
 
 ic_cdk::export_candid!();
@@ -595,6 +1178,16 @@ mod tests {
         f(&mut storage)
     }
 
+    fn with_connected_runtime_storage<R>(f: impl FnOnce() -> R) -> R {
+        let memory_manager = MemoryManager::init(VectorMemory::default());
+        STABLE_STORAGE.with(|storage| {
+            *storage.borrow_mut() = Some(open_storage(&memory_manager));
+        });
+        let result = f();
+        STABLE_STORAGE.with(|storage| *storage.borrow_mut() = None);
+        result
+    }
+
     fn repo_root() -> PathBuf {
         PathBuf::from(env!("CARGO_MANIFEST_DIR"))
     }
@@ -604,7 +1197,10 @@ mod tests {
             .replace("blob", "vec nat8")
             .split_whitespace()
             .collect::<Vec<_>>()
-            .join(" ");
+            .join(" ")
+            .replace("( ", "(")
+            .replace(", );", ");")
+            .replace(", )", ")");
 
         if let Some((prefix, body)) = normalized.split_once("{ ") {
             let body = body.trim_end_matches(" };").trim_end_matches(" }");
@@ -645,12 +1241,21 @@ mod tests {
             .find(method_name)
             .unwrap_or_else(|| panic!("missing service method {method_name}"));
         let remainder = &source[start..];
-        let end = remainder
-            .find("query")
-            .map(|index| index + "query".len())
-            .or_else(|| remainder.find('}'))
-            .unwrap_or_else(|| panic!("missing service terminator for {method_name}"));
-        remainder[..end].trim().to_string()
+        let mut depth = 0usize;
+        for (index, ch) in remainder.char_indices() {
+            match ch {
+                '{' => depth += 1,
+                '}' => {
+                    if depth == 0 {
+                        return remainder[..index].trim().to_string();
+                    }
+                    depth = depth.saturating_sub(1);
+                }
+                ';' if depth == 0 => return remainder[..=index].trim().to_string(),
+                _ => {}
+            }
+        }
+        panic!("missing service terminator for {method_name}")
     }
 
     #[test]
@@ -779,6 +1384,14 @@ mod tests {
             "Receipt",
             "ReceiptError",
             "ReceiptResult",
+            "BeginTreeReceiptIssuanceRequest",
+            "PendingReceiptInfo",
+            "IssuanceApiError",
+            "BeginTreeReceiptIssuanceResult",
+            "PendingCertificateMaterial",
+            "PendingCertificateMaterialResult",
+            "FinalizeTreeReceiptRequest",
+            "FinalizeTreeReceiptResult",
             "VersionInfo",
             "VersionCheckResult",
         ] {
@@ -829,6 +1442,39 @@ mod tests {
             normalize_definition(&extract_service_method(&generated, "get_receipt")),
             normalize_definition(&extract_service_method(&authoritative, "get_receipt")),
             "generated .did diverged for get_receipt",
+        );
+
+        assert_eq!(
+            normalize_definition(&extract_service_method(
+                &generated,
+                "begin_tree_receipt_issuance"
+            )),
+            normalize_definition(&extract_service_method(
+                &authoritative,
+                "begin_tree_receipt_issuance"
+            )),
+            "generated .did diverged for begin_tree_receipt_issuance",
+        );
+
+        assert_eq!(
+            normalize_definition(&extract_service_method(
+                &generated,
+                "get_pending_certificate_material"
+            )),
+            normalize_definition(&extract_service_method(
+                &authoritative,
+                "get_pending_certificate_material"
+            )),
+            "generated .did diverged for get_pending_certificate_material",
+        );
+
+        assert_eq!(
+            normalize_definition(&extract_service_method(&generated, "finalize_tree_receipt")),
+            normalize_definition(&extract_service_method(
+                &authoritative,
+                "finalize_tree_receipt"
+            )),
+            "generated .did diverged for finalize_tree_receipt",
         );
     }
 
@@ -891,5 +1537,84 @@ mod tests {
             get_receipt(vec![0x42; 32]),
             ReceiptResult::Err(ReceiptError::NotFound)
         );
+    }
+
+    #[test]
+    fn begin_tree_receipt_issuance_persists_pending_commitment_without_receipt_materialization() {
+        with_connected_runtime_storage(|| {
+            initialize_storage(module_hash(7)).expect("storage should initialize");
+
+            let result = begin_tree_receipt_issuance_impl(BeginTreeReceiptIssuanceRequest {
+                subject_reference: vec![0x42; 32],
+                scope_reference: None,
+                transition_material: vec![0x11; 32],
+                deletion_state_material: vec![0x01],
+            })
+            .expect("begin issuance should succeed");
+
+            assert_eq!(result.pending_id.len(), 32);
+            assert_eq!(result.certified_commitment.len(), 32);
+            assert!(matches!(
+                get_receipt(vec![0x42; 32]),
+                ReceiptResult::Err(ReceiptError::NotYetIssued)
+            ));
+        });
+    }
+
+    #[test]
+    fn second_begin_tree_receipt_issuance_fails_while_pending_exists() {
+        with_connected_runtime_storage(|| {
+            initialize_storage(module_hash(8)).expect("storage should initialize");
+            begin_tree_receipt_issuance_impl(BeginTreeReceiptIssuanceRequest {
+                subject_reference: vec![0x52; 32],
+                scope_reference: None,
+                transition_material: vec![0x22; 32],
+                deletion_state_material: vec![0x01],
+            })
+            .expect("first begin should succeed");
+
+            assert_eq!(
+                begin_tree_receipt_issuance_impl(BeginTreeReceiptIssuanceRequest {
+                    subject_reference: vec![0x53; 32],
+                    scope_reference: None,
+                    transition_material: vec![0x33; 32],
+                    deletion_state_material: vec![0x01],
+                }),
+                Err(IssuanceApiError::PendingIssuanceInProgress)
+            );
+        });
+    }
+
+    #[test]
+    fn finalize_tree_receipt_persists_receipt_and_tree_and_clears_pending() {
+        with_connected_runtime_storage(|| {
+            initialize_storage(module_hash(9)).expect("storage should initialize");
+            let pending = begin_tree_receipt_issuance_impl(BeginTreeReceiptIssuanceRequest {
+                subject_reference: vec![0x62; 32],
+                scope_reference: None,
+                transition_material: vec![0x44; 32],
+                deletion_state_material: vec![0x01],
+            })
+            .expect("begin issuance should succeed");
+
+            let finalize = finalize_tree_receipt_impl(FinalizeTreeReceiptRequest {
+                pending_id: pending.pending_id.clone(),
+                certificate_material: b"TEST_CERTIFICATE".to_vec(),
+            })
+            .expect("finalize should complete");
+
+            let receipt = match finalize {
+                FinalizeTreeReceiptResult::Ok(receipt) => receipt,
+                FinalizeTreeReceiptResult::Err(error) => {
+                    panic!("expected finalized receipt, got {error:?}")
+                }
+            };
+            assert_eq!(verifier::validate_receipt(&receipt), Ok(()));
+            assert!(matches!(get_receipt(vec![0x62; 32]), ReceiptResult::Ok(_)));
+            assert_eq!(
+                get_pending_certificate_material_impl(pending.pending_id, Some(vec![0x01])),
+                PendingCertificateMaterialResult::Err(IssuanceApiError::NoPendingIssuance)
+            );
+        });
     }
 }
