@@ -424,3 +424,43 @@ RST caveat:
 
 Next slice:
   - S7-36: `dfx.json`, canister public method alignment, A→B→C flow, and local deploy smoke.
+
+---
+
+## S7-36 CLOSE — local deploy + A→B→C certified-data issuance
+
+Status:
+  - S7-36 lands local dfx deployability, public method alignment, and minimal A→B→C certified-data issuance.
+  - S7-36 has two substantive commits:
+    - `canister: add dfx deploy surface alignment`
+    - `canister: add a-b-c certified-data issuance and receipt persistence`
+
+What changed:
+  - Added `dfx.json`.
+  - Aligned `.did` service constructor to the actual `init(module_hash: Vec<u8>)` contract.
+  - Implemented missing query methods:
+    - `get_evidence_readiness`
+    - `get_version_info`
+    - `get_receipt`
+  - Added public A→B→C methods:
+    - `begin_tree_receipt_issuance`
+    - `get_pending_certificate_material`
+    - `finalize_tree_receipt`
+  - Added persistent single-pending issuance state, sparse-tree state, and issued-receipt storage.
+  - Replaced deprecated certified-data API use with `certified_data_set`.
+
+RST state:
+  - Capability: landed in S7-35.
+  - Local demonstration: landed in S7-36.
+  - End-to-end verifier-side BLS authentication remains post-handoff.
+
+Known limits:
+  - Caller supplies `transition_material`.
+  - Single pending issuance only.
+  - No cancel/timeout for abandoned pending issuance.
+  - No verifier-side BLS certificate authentication.
+  - StableCell write-error propagation and upgrade persistence tests remain production hardening work.
+
+Next slice:
+  - S7-37: TinyPressZD adapter contract + integration smoke.
+  - Do not reopen verifier/provenance process work unless it directly blocks TinyPressZD handoff.

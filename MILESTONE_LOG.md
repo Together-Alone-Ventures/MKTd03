@@ -1612,3 +1612,68 @@ Carry-forward:
   - S7-36 owns `dfx.json`, public canister methods, A→B→C orchestration, and local deploy smoke.
   - Formal certified-commitment preimage documentation in `docs/spec/MKTd03_commitment_and_preimage_spec_v1.md` is a future light-touch candidate, not an S7-35 blocker.
   - `src/provenance.rs` is currently public; if later exposure proves too broad, tighten to `pub(crate)` or narrower API after S7-36/handoff review.
+
+## 2026-05-13 -- MILESTONE: S7-36 local deploy and certified-data issuance landed
+
+Decisions made:
+  - S7-36 was implemented as one slice with two substantive commits plus this continuity close.
+  - Phase 1 added `dfx.json`, aligned the public canister method surface, and implemented missing `.did`-declared query methods.
+  - Phase 1 also corrected a latent `.did` authority mismatch: the service constructor changed from `service : { ... }` to `service : (vec nat8) -> { ... }` to match the existing `init(module_hash: Vec<u8>)` contract.
+  - The `.did` constructor edit did not narrow or remove existing types or methods.
+  - Phase 2 added minimal A→B→C certified-data orchestration.
+  - New public methods:
+    - `begin_tree_receipt_issuance`
+    - `get_pending_certificate_material`
+    - `finalize_tree_receipt`
+  - Phase 2 added single-pending issuance state, sparse-tree persistence, and issued-receipt persistence.
+  - Stable memory layout after S7-36:
+    - MemoryId 0: lifecycle state
+    - MemoryId 1: module hash
+    - MemoryId 2: issuance tree
+    - MemoryId 3: pending issuance
+    - MemoryId 4: issued receipts
+  - Deprecated `ic_cdk::api::set_certified_data` use was replaced with `ic_cdk::api::certified_data_set`.
+  - No TinyPressZD work, verifier-side BLS authentication, fixture/schema/index/manifest changes, transition-material semantic derivation check, or Playbook/process work landed.
+
+RST framing:
+  - S7-35 provided issuer-side capability to compose module-hash-bound provenanced receipt structures.
+  - S7-36 demonstrates that capability in a deployed local canister:
+    - canister deploys with module_hash init argument;
+    - Phase A publishes the certified commitment;
+    - Phase B retrieves IC certificate material through `data_certificate`;
+    - Phase C embeds certificate material and module hash into the finalized receipt;
+    - finalized receipt is persisted and retrievable by subject reference.
+  - The receipt validates structurally/proof-walk-wise through the existing verifier path.
+  - End-to-end verifier-side BLS authentication against the IC root key remains post-handoff work.
+
+Validation:
+  - `cargo fmt --check` passed.
+  - `cargo test --offline` passed: 179 unit tests and 24 fixture tests.
+  - `cargo build --offline --target wasm32-unknown-unknown` passed.
+  - Clean local dfx deploy passed.
+  - Existing surface smoke passed:
+    - `get_tree_mode_status`
+    - `check_version_support`
+    - `get_evidence_readiness`
+    - `get_version_info`
+  - A→B→C local smoke passed:
+    - `begin_tree_receipt_issuance` returned `ok` with 32-byte pending_id and 32-byte certified_commitment.
+    - `get_pending_certificate_material` returned `ok` with non-empty certificate_material.
+    - `finalize_tree_receipt` returned `ok` with receipt containing certificate and module-hash provenance material.
+    - `get_receipt` returned `ok` for the same subject after finalization.
+    - pending issuance cleared after finalization with `no_pending_issuance`.
+
+Carry-forward:
+  - Verifier-side BLS certificate authentication against the IC root key remains the main RST-verifiability gap.
+  - Caller-supplied `transition_material` remains a handoff responsibility; TinyPressZD/Antoine must compute it according to the MKTd03 derivation spec.
+  - Single-pending issuance has no cancel/timeout/admin recovery method; abandoned pending issuance blocks later issuance.
+  - StableCell write errors are not yet handled with production-grade fail-loud propagation.
+  - Pending-id mismatch tests for Phase B/Phase C are a useful future unit-test addition.
+  - Upgrade persistence of MemoryIds 2/3/4 should be tested before production deployment.
+  - ReceiptError duplication between `src/lib.rs` and `src/library.rs` remains a minor cleanup candidate.
+  - `connect_runtime_storage()` per-query pattern should be reviewed post-handoff for production ergonomics.
+
+Process note:
+  - Phase 2 implementation initially moved toward smoke before C diff review.
+  - This was corrected mid-slice: Phase B/C smoke was paused, C reviewed the actual diff, the deprecated certified-data API call was fixed, and clean smoke was rerun before commit.
+  - Per-substantive-change diff review remains non-negotiable.
