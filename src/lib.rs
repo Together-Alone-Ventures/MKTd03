@@ -16,17 +16,20 @@ pub mod proof_frame;
 pub mod provenance;
 pub mod record_position;
 mod scope_encoding;
+mod state;
 pub mod state_commitment;
 pub mod tags;
 pub mod transition_material;
 pub mod verifier;
+pub use state::MKTd03State;
 
-use candid::{candid_method, decode_one, encode_one, CandidType, Deserialize};
+use candid::{candid_method, CandidType, Deserialize};
 use ic_cdk::{init, post_upgrade, query, update};
 use ic_stable_structures::memory_manager::{MemoryId, MemoryManager, VirtualMemory};
 use ic_stable_structures::storable::Bound;
 use ic_stable_structures::{Cell as StableCell, DefaultMemoryImpl, Memory, Storable};
 use serde::Serialize;
+use state::{PersistedIssuanceTree, PersistedPendingIssuance, PersistedPendingIssuanceState};
 use std::borrow::Cow;
 use std::cell::RefCell;
 use std::collections::BTreeMap;
@@ -59,10 +62,6 @@ const ISSUANCE_TREE_MEMORY_ID: MemoryId = MemoryId::new(2);
 const PENDING_ISSUANCE_MEMORY_ID: MemoryId = MemoryId::new(3);
 const ISSUED_RECEIPTS_MEMORY_ID: MemoryId = MemoryId::new(4);
 const MODULE_HASH_LENGTH: usize = 32;
-const TREE_STATE_MAX_BYTES: u32 = 1_048_576;
-const PENDING_ISSUANCE_MAX_BYTES: u32 = 262_144;
-const ISSUED_RECEIPTS_MAX_BYTES: u32 = 4_194_304;
-
 type RuntimeMemory = VirtualMemory<DefaultMemoryImpl>;
 
 thread_local! {
@@ -328,105 +327,10 @@ impl Storable for StoredModuleHash {
     };
 }
 
-#[derive(CandidType, Clone, Debug, Default, Deserialize, Eq, PartialEq)]
-struct PersistedLeafEntry {
-    position: Vec<u8>,
-    leaf_hash: Vec<u8>,
-}
-
-#[derive(CandidType, Clone, Debug, Default, Deserialize, Eq, PartialEq)]
-struct PersistedIssuanceTree {
-    committed_leaves: Vec<PersistedLeafEntry>,
-}
-
-#[derive(CandidType, Clone, Debug, Deserialize, Eq, PartialEq)]
-struct PersistedReceiptEntry {
-    subject_reference: Vec<u8>,
-    receipt: library::Receipt,
-}
-
-#[derive(CandidType, Clone, Debug, Default, Deserialize, Eq, PartialEq)]
-struct PersistedIssuedReceipts {
-    receipts: Vec<PersistedReceiptEntry>,
-}
-
-#[derive(CandidType, Clone, Debug, Deserialize, Eq, PartialEq)]
-struct PersistedPendingIssuance {
-    pending_id: Vec<u8>,
-    certified_commitment: Vec<u8>,
-    receipt: library::Receipt,
-    target_position: Vec<u8>,
-    post_state_leaf: Vec<u8>,
-}
-
-#[derive(CandidType, Clone, Debug, Default, Deserialize, Eq, PartialEq)]
-struct PersistedPendingIssuanceState {
-    pending: Option<PersistedPendingIssuance>,
-}
-
-impl Storable for PersistedIssuanceTree {
-    fn to_bytes(&self) -> Cow<'_, [u8]> {
-        Cow::Owned(encode_one(self).expect("persisted issuance tree should encode"))
-    }
-
-    fn into_bytes(self) -> Vec<u8> {
-        encode_one(self).expect("persisted issuance tree should encode")
-    }
-
-    fn from_bytes(bytes: Cow<[u8]>) -> Self {
-        decode_one(bytes.as_ref()).expect("persisted issuance tree should decode")
-    }
-
-    const BOUND: Bound = Bound::Bounded {
-        max_size: TREE_STATE_MAX_BYTES,
-        is_fixed_size: false,
-    };
-}
-
-impl Storable for PersistedPendingIssuanceState {
-    fn to_bytes(&self) -> Cow<'_, [u8]> {
-        Cow::Owned(encode_one(self).expect("persisted pending issuance should encode"))
-    }
-
-    fn into_bytes(self) -> Vec<u8> {
-        encode_one(self).expect("persisted pending issuance should encode")
-    }
-
-    fn from_bytes(bytes: Cow<[u8]>) -> Self {
-        decode_one(bytes.as_ref()).expect("persisted pending issuance should decode")
-    }
-
-    const BOUND: Bound = Bound::Bounded {
-        max_size: PENDING_ISSUANCE_MAX_BYTES,
-        is_fixed_size: false,
-    };
-}
-
-impl Storable for PersistedIssuedReceipts {
-    fn to_bytes(&self) -> Cow<'_, [u8]> {
-        Cow::Owned(encode_one(self).expect("persisted receipts should encode"))
-    }
-
-    fn into_bytes(self) -> Vec<u8> {
-        encode_one(self).expect("persisted receipts should encode")
-    }
-
-    fn from_bytes(bytes: Cow<[u8]>) -> Self {
-        decode_one(bytes.as_ref()).expect("persisted receipts should decode")
-    }
-
-    const BOUND: Bound = Bound::Bounded {
-        max_size: ISSUED_RECEIPTS_MAX_BYTES,
-        is_fixed_size: false,
-    };
-}
-
 struct StableStorage<M: Memory> {
     lifecycle_state: StableCell<StoredLifecycleState, M>,
     module_hash: StableCell<StoredModuleHash, M>,
-    issuance_tree: StableCell<PersistedIssuanceTree, M>,
-    pending_issuance: StableCell<PersistedPendingIssuanceState, M>,
-    issued_receipts: StableCell<PersistedIssuedReceipts, M>,
+    protocol_state: MKTd03State<M>,
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -575,17 +479,10 @@ fn open_storage<M: Memory>(memory_manager: &MemoryManager<M>) -> StableStorage<V
             memory_manager.get(MODULE_HASH_MEMORY_ID),
             StoredModuleHash::default(),
         ),
-        issuance_tree: StableCell::init(
+        protocol_state: MKTd03State::new(
             memory_manager.get(ISSUANCE_TREE_MEMORY_ID),
-            PersistedIssuanceTree::default(),
-        ),
-        pending_issuance: StableCell::init(
             memory_manager.get(PENDING_ISSUANCE_MEMORY_ID),
-            PersistedPendingIssuanceState::default(),
-        ),
-        issued_receipts: StableCell::init(
             memory_manager.get(ISSUED_RECEIPTS_MEMORY_ID),
-            PersistedIssuedReceipts::default(),
         ),
     }
 }
@@ -761,7 +658,12 @@ fn load_issuance_tree<M: Memory>(
     storage: &StableStorage<M>,
 ) -> Result<issuance::SparseIssuanceTree, IssuanceApiError> {
     let mut committed_leaves = BTreeMap::new();
-    for entry in &storage.issuance_tree.get().committed_leaves {
+    for entry in &storage
+        .protocol_state
+        .issuance_tree()
+        .get()
+        .committed_leaves
+    {
         let position: [u8; 32] = entry
             .position
             .as_slice()
@@ -787,13 +689,14 @@ fn persist_issuance_tree<M: Memory>(
     let committed_leaves = tree
         .committed_leaves()
         .iter()
-        .map(|(position, leaf_hash)| PersistedLeafEntry {
+        .map(|(position, leaf_hash)| state::PersistedLeafEntry {
             position: position.to_vec(),
             leaf_hash: leaf_hash.to_vec(),
         })
         .collect();
     let _ = storage
-        .issuance_tree
+        .protocol_state
+        .issuance_tree_mut()
         .set(PersistedIssuanceTree { committed_leaves });
     Ok(())
 }
@@ -802,7 +705,8 @@ fn load_pending_issuance<M: Memory>(
     storage: &StableStorage<M>,
 ) -> Result<PersistedPendingIssuance, IssuanceApiError> {
     storage
-        .pending_issuance
+        .protocol_state
+        .pending_issuance()
         .get()
         .pending
         .clone()
@@ -813,9 +717,12 @@ fn persist_pending_issuance<M: Memory>(
     storage: &mut StableStorage<M>,
     pending: PersistedPendingIssuance,
 ) -> Result<(), IssuanceApiError> {
-    let _ = storage.pending_issuance.set(PersistedPendingIssuanceState {
-        pending: Some(pending),
-    });
+    let _ = storage
+        .protocol_state
+        .pending_issuance_mut()
+        .set(PersistedPendingIssuanceState {
+            pending: Some(pending),
+        });
     Ok(())
 }
 
@@ -823,7 +730,8 @@ fn clear_pending_issuance<M: Memory>(
     storage: &mut StableStorage<M>,
 ) -> Result<(), IssuanceApiError> {
     let _ = storage
-        .pending_issuance
+        .protocol_state
+        .pending_issuance_mut()
         .set(PersistedPendingIssuanceState { pending: None });
     Ok(())
 }
@@ -832,16 +740,16 @@ fn persist_issued_receipt<M: Memory>(
     storage: &mut StableStorage<M>,
     receipt: library::Receipt,
 ) -> Result<(), IssuanceApiError> {
-    let mut state = storage.issued_receipts.get().clone();
+    let mut state = storage.protocol_state.issued_receipts().get().clone();
     let subject_reference = receipt.core_transition_evidence.subject_reference.clone();
     state
         .receipts
         .retain(|entry| entry.subject_reference != subject_reference);
-    state.receipts.push(PersistedReceiptEntry {
+    state.receipts.push(state::PersistedReceiptEntry {
         subject_reference,
         receipt,
     });
-    let _ = storage.issued_receipts.set(state);
+    let _ = storage.protocol_state.issued_receipts_mut().set(state);
     Ok(())
 }
 
@@ -850,7 +758,8 @@ fn lookup_issued_receipt<M: Memory>(
     subject_reference: &[u8],
 ) -> Option<library::Receipt> {
     storage
-        .issued_receipts
+        .protocol_state
+        .issued_receipts()
         .get()
         .receipts
         .iter()
@@ -863,7 +772,8 @@ fn pending_matches_subject<M: Memory>(
     subject_reference: &[u8],
 ) -> bool {
     storage
-        .pending_issuance
+        .protocol_state
+        .pending_issuance()
         .get()
         .pending
         .as_ref()
@@ -883,7 +793,13 @@ fn begin_tree_receipt_issuance_impl(
         .map_err(|_| IssuanceApiError::InvalidTransitionMaterial)?;
 
     with_storage_api_mut(|storage| {
-        if storage.pending_issuance.get().pending.is_some() {
+        if storage
+            .protocol_state
+            .pending_issuance()
+            .get()
+            .pending
+            .is_some()
+        {
             return Err(IssuanceApiError::PendingIssuanceInProgress);
         }
 
