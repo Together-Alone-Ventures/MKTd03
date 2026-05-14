@@ -1677,3 +1677,50 @@ Process note:
   - Phase 2 implementation initially moved toward smoke before C diff review.
   - This was corrected mid-slice: Phase B/C smoke was paused, C reviewed the actual diff, the deprecated certified-data API call was fixed, and clean smoke was rerun before commit.
   - Per-substantive-change diff review remains non-negotiable.
+
+## 2026-05-14 -- MILESTONE: S7-38 host-embeddable issuance API closed
+
+Decisions made:
+  - S7-38 was opened because TinyPressZD integration exposed a real MKTd03 gap:
+    the protocol was linkable as a Rust crate, but the issuance flow remained
+    trapped behind standalone-canister-private wrappers, fixed runtime storage,
+    stored `module_hash`, and `ic_cdk` side effects.
+  - S7-38 extracted a host-embeddable API without changing the `.did` surface.
+  - The standalone canister remains a reference host/wrapper around the same
+    protocol state and host API.
+
+What landed:
+  - Step A: `MKTd03State<M: Memory>` with host-owned storage handles.
+  - Step B: host API input/output types.
+  - Step C: `host_begin_phase_a`.
+  - Step D: `host_get_phase_b`.
+  - Step E: `host_finalize_phase_c`.
+  - Step F: `host_get_receipt`.
+  - Step G: non-canister `VectorMemory` tests.
+  - Step H: host embedding documentation.
+
+Protocol / interface outcome:
+  - `.did` surface remained unchanged through the entire S7-38 slice.
+  - No public standalone canister method signatures changed.
+  - No receipt, verifier, tag, preimage, or protocol-semantic changes were made.
+  - Host owns:
+    - storage allocation,
+    - `module_hash`,
+    - certified-data publication after Phase A,
+    - `data_certificate()` retrieval before Phase B.
+  - `MKTd03State` makes no `ic_cdk` calls.
+
+Validation:
+  - `cargo fmt --check` passed.
+  - `cargo clippy --offline` passed with pre-existing warnings only.
+  - `cargo test --offline` passed.
+  - `cargo build --offline --target wasm32-unknown-unknown` passed.
+  - `.did` diff remained empty throughout the slice.
+
+Carry-forward:
+  - TinyPressZD can resume S7-37 after this commit/push.
+  - The next TinyPressZD task is wiring `cvd_adapter` to the embedded
+    `MKTd03State` host API.
+  - Process lesson: the MKTd02 audit's "reusable-with-generalisation" A→B→C
+    classification should have been treated as a Phase 6 exit blocker before
+    TinyPressZD integration, not as a loose future-work note.

@@ -1,7 +1,10 @@
-DATE: 2026-05-13
+DATE: 2026-05-14
 
 CURRENT GOAL:
-S7-29 is complete locally pending continuity commit/push. S7-28 authority for unsupported `transition_derivation_version` runtime handling has been consumed by S7-29. Next bounded session should start with continuity-close review, then choose the next bounded slice after G/C review; do not automatically continue verifier implementation.
+S7-38 host-embeddable issuance extraction is complete locally at HEAD and
+pending push. The next bounded session should return to TinyPressZD and wire
+`cvd_adapter` to the `MKTd03State` host API; do not reopen verifier/provenance
+work unless it directly blocks that integration.
 
 IMPORTANT SCOPE RULE:
 This file is for MKTd03 protocol work only.
@@ -464,3 +467,45 @@ Known limits:
 Next slice:
   - S7-37: TinyPressZD adapter contract + integration smoke.
   - Do not reopen verifier/provenance process work unless it directly blocks TinyPressZD handoff.
+
+---
+
+## S7-38 CLOSE — host-embeddable issuance API
+
+Status:
+  - S7-38 is complete locally through Step H.
+  - Current HEAD after Step H is the Step H continuity-close commit for this
+    slice; use `git log -1 --oneline` for the exact post-close hash.
+  - TinyPressZD remains paused locally at `a956ed4` and is not pushed.
+
+What changed:
+  - Step A introduced `MKTd03State<M: Memory>` with host-owned storage handles.
+  - Step B added public host API input/output shapes.
+  - Step C added `host_begin_phase_a`.
+  - Step D added `host_get_phase_b`.
+  - Step E added `host_finalize_phase_c`.
+  - Step F added `host_get_receipt`.
+  - Step G added non-canister host API tests using `VectorMemory`.
+  - Step H added host embedding documentation.
+  - The standalone canister now acts as a reference host/wrapper over the same
+    host API.
+  - The `.did` surface remained unchanged.
+
+Validation:
+  - `cargo fmt --check` passed.
+  - `cargo clippy --offline` passed with pre-existing warnings only.
+  - `cargo test --offline` passed.
+  - `cargo build --offline --target wasm32-unknown-unknown` passed.
+  - `.did` diff remained empty.
+
+Next work:
+  - Return to TinyPressZD and wire `cvd_adapter` to the `MKTd03State` host API.
+
+Carry-forward:
+  - Clean up pre-existing clippy warnings later.
+  - Consolidate or rename the two `ReceiptResult` types later.
+  - Optionally move host-embeddability tests to integration tests later.
+  - Revisit TinyPressZD MemoryId renumber after the host-owned-storage API is
+    consumed.
+  - Phase 6 lesson: the "reusable-with-generalisation" A→B→C finding should
+    have been treated as a Phase 6 exit blocker before TinyPressZD integration.
