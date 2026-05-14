@@ -37,3 +37,23 @@ state and host API.
 - `MKTd03_Integration_Guide.md` — generated package-readiness and integration guide
 - `RESIDUAL_TRUST_STATEMENT.md` — auditor/DPO-facing trust-boundary statement
 - `docs/sections/` — source modules for the generated guide and synced trust material
+
+## Building the Integration Guide
+
+`MKTd03_Integration_Guide.md` is generated from `docs/sections/` using
+`docs/compose.yaml`.
+Do not edit the generated root guide directly.
+
+To rebuild it:
+
+```bash
+python3 docs/scripts/compose.py docs/compose.yaml
+```
+
+The compose script depends on `pyyaml`.
+
+`RESIDUAL_TRUST_STATEMENT.md` is synced from
+`docs/sections/12-residual-trust.md` and is currently maintained manually,
+matching ICP-Delete(Leaf) precedent.
+A later enhancement may extend the compose pipeline to emit the RST as a second
+output.
