@@ -1,10 +1,10 @@
 DATE: 2026-05-14
 
 CURRENT GOAL:
-S7-38 host-embeddable issuance extraction is complete locally at HEAD and
-pending push. The next bounded session should return to TinyPressZD and wire
-`cvd_adapter` to the `MKTd03State` host API; do not reopen verifier/provenance
-work unless it directly blocks that integration.
+S7-39 docs/package-readiness close is complete locally at HEAD and pending push.
+The next bounded session should return to TinyPressZD and wire `cvd_adapter` to
+the `MKTd03State` host API; do not reopen verifier/provenance work unless it
+directly blocks that integration.
 
 IMPORTANT SCOPE RULE:
 This file is for MKTd03 protocol work only.
@@ -509,3 +509,37 @@ Carry-forward:
     consumed.
   - Phase 6 lesson: the "reusable-with-generalisation" A→B→C finding should
     have been treated as a Phase 6 exit blocker before TinyPressZD integration.
+
+---
+
+## S7-39 CLOSE — generated docs/package-readiness + residual trust statement
+
+Status:
+  - S7-39 is complete locally and pending push.
+  - Current HEAD should be the S7-39 docs continuity-close commit; use
+    `git log -1 --oneline` for the exact hash.
+
+What changed:
+  - Adapted a minimal docs compose pipeline from ICP-Delete-Leaf.
+  - Added `docs/compose.yaml`, `docs/scripts/compose.py`, and `docs/sections/`.
+  - Migrated `docs/host_embedding.md` into generated section source content and
+    removed the handwritten standalone file.
+  - Generated `MKTd03_Integration_Guide.md`.
+  - Added `RESIDUAL_TRUST_STATEMENT.md`.
+  - Fixed stale README status and added docs navigation.
+
+Validation:
+  - `cargo fmt --check` passed.
+  - `cargo clippy --offline` passed with pre-existing warnings only.
+  - `cargo test --offline` passed.
+  - `cargo build --offline --target wasm32-unknown-unknown` passed.
+  - `.did` diff remained empty.
+  - `src/**` diff remained empty.
+  - `Cargo.*` diff remained empty.
+
+Next action:
+  - Return to TinyPressZD S7-37 and wire `cvd_adapter` to the `MKTd03State`
+    host API.
+
+Carry-forward:
+  - Refresh generated docs whenever protocol/package-facing behavior changes.

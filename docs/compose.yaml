@@ -1,0 +1,47 @@
+title: "MKTd03 Integration Guide"
+version: "1.0"
+date: "14 May 2026"
+output: "MKTd03_Integration_Guide.md"
+
+# Local-only composition for the current MKTd03 package-readiness slice.
+# Source files live in docs/sections/. The generated guide is committed at the
+# repo root and should not be edited directly.
+
+sections:
+  - local: 00-header.md
+  - heading: "# 1. Prerequisites"
+    local: 01-prereqs-product.md
+    strip_heading: true
+  - heading: "# 2. Add the Crate"
+    local: 02-add-crate.md
+    strip_heading: true
+  - heading: "# 3. Host Embedding Model"
+    local: 03-host-embedding.md
+    strip_heading: true
+  - heading: "# 4. Host Responsibilities"
+    local: 04-host-responsibilities.md
+    strip_heading: true
+  - heading: "# 5. Host API Flow"
+    local: 05-host-api-flow.md
+    strip_heading: true
+  - heading: "# 6. Stable Memory Layout"
+    local: 06-stable-memory.md
+    strip_heading: true
+  - heading: "# 7. Receipt Retrieval"
+    local: 07-receipt-retrieval.md
+    strip_heading: true
+  - heading: "# 8. Known Limits"
+    local: 08-known-limits.md
+    strip_heading: true
+  - heading: "# 9. Assumptions"
+    local: 09-assumptions-product.md
+    strip_heading: true
+  - heading: "# 10. Verification"
+    local: 10-verification.md
+    strip_heading: true
+  - heading: "# 11. Module Hash and Certified Data"
+    local: 11-module-hash-and-certified-data.md
+    strip_heading: true
+  - heading: "# 12. Residual Trust Statement"
+    local: 12-residual-trust.md
+    strip_heading: true

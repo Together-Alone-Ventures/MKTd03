@@ -28,4 +28,12 @@ Early TinyPress scaffolding and related artifacts began life under MKTd03. Any r
 
 Repo-boundary cleanup is complete.
 
-The dApp-agnostic MKTd03 protocol library has not yet begun.
+MKTd03 now has a host-embeddable issuance API after S7-38.
+The standalone canister remains a reference host/wrapper over the same protocol
+state and host API.
+
+## Documentation Entry Points
+
+- `MKTd03_Integration_Guide.md` — generated package-readiness and integration guide
+- `RESIDUAL_TRUST_STATEMENT.md` — auditor/DPO-facing trust-boundary statement
+- `docs/sections/` — source modules for the generated guide and synced trust material

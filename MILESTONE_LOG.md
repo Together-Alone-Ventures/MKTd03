@@ -1724,3 +1724,38 @@ Carry-forward:
   - Process lesson: the MKTd02 audit's "reusable-with-generalisation" A→B→C
     classification should have been treated as a Phase 6 exit blocker before
     TinyPressZD integration, not as a loose future-work note.
+
+## 2026-05-14 -- MILESTONE: S7-39 docs/package-readiness and RST closed
+
+Decisions made:
+  - S7-39 brought MKTd03 to the same basic package-readiness posture used by
+    ICP-Delete-Leaf, without changing protocol code.
+  - The docs compose pipeline was adapted from ICP-Delete-Leaf into a local-only
+    MKTd03 form.
+  - `docs/host_embedding.md` was migrated into generated `docs/sections/`
+    source content and removed to avoid drift.
+  - A generated root integration guide and a root residual trust statement are
+    now the primary package-readiness entry points.
+  - README status/navigation was corrected to reflect current repo reality.
+
+What landed:
+  - `docs/compose.yaml`
+  - `docs/scripts/compose.py`
+  - `docs/sections/`
+  - generated `MKTd03_Integration_Guide.md`
+  - `RESIDUAL_TRUST_STATEMENT.md`
+  - stale README status fix
+
+Validation:
+  - `cargo fmt --check` passed.
+  - `cargo clippy --offline` passed with pre-existing warnings only.
+  - `cargo test --offline` passed.
+  - `cargo build --offline --target wasm32-unknown-unknown` passed.
+  - `.did` diff remained empty.
+  - `src/**` diff remained empty.
+  - `Cargo.*` diff remained empty.
+
+Carry-forward:
+  - TinyPressZD can resume S7-37.
+  - Generated docs must be refreshed when protocol/package-facing behavior
+    changes.
