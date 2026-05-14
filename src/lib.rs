@@ -25,6 +25,7 @@ pub mod verifier;
 pub use state::MKTd03State;
 
 use candid::{candid_method, CandidType, Deserialize};
+use host_api::HostPhaseAInputs;
 use ic_cdk::{init, post_upgrade, query, update};
 use ic_stable_structures::memory_manager::{MemoryId, MemoryManager, VirtualMemory};
 use ic_stable_structures::storable::Bound;
@@ -714,19 +715,6 @@ fn load_pending_issuance<M: Memory>(
         .ok_or(IssuanceApiError::NoPendingIssuance)
 }
 
-fn persist_pending_issuance<M: Memory>(
-    storage: &mut StableStorage<M>,
-    pending: PersistedPendingIssuance,
-) -> Result<(), IssuanceApiError> {
-    let _ = storage
-        .protocol_state
-        .pending_issuance_mut()
-        .set(PersistedPendingIssuanceState {
-            pending: Some(pending),
-        });
-    Ok(())
-}
-
 fn clear_pending_issuance<M: Memory>(
     storage: &mut StableStorage<M>,
 ) -> Result<(), IssuanceApiError> {
@@ -787,84 +775,21 @@ fn pending_matches_subject<M: Memory>(
 fn begin_tree_receipt_issuance_impl(
     request: BeginTreeReceiptIssuanceRequest,
 ) -> Result<PendingReceiptInfo, IssuanceApiError> {
-    let transition_material: [u8; 32] = request
-        .transition_material
-        .as_slice()
-        .try_into()
-        .map_err(|_| IssuanceApiError::InvalidTransitionMaterial)?;
-
     with_storage_api_mut(|storage| {
-        if storage
-            .protocol_state
-            .pending_issuance()
-            .get()
-            .pending
-            .is_some()
-        {
-            return Err(IssuanceApiError::PendingIssuanceInProgress);
-        }
-
         let module_hash = module_hash_array_from_storage(storage)?;
-        let tree = load_issuance_tree(storage)?;
-        let mut preview_tree = tree.clone();
-        let receipt = preview_tree
-            .issue_unprovenanced_receipt(issuance::IssuanceInputs {
-                subject_reference: &request.subject_reference,
-                scope_reference: request.scope_reference.as_deref(),
-                transition_material: &transition_material,
-                deletion_state_material: &request.deletion_state_material,
-                certification_provenance: no_payload_certification_provenance(),
-            })
-            .map_err(map_issuance_error)?;
-
-        let target_position = record_position::compute_record_position_key(
-            &request.subject_reference,
-            request.scope_reference.as_deref(),
-        )
-        .map_err(|error| match error {
-            record_position::RecordPositionError::EmptySubjectReference => {
-                IssuanceApiError::InvalidSubjectReference
-            }
-            record_position::RecordPositionError::EmptyScopeReference => {
-                IssuanceApiError::InvalidScopeReference
-            }
-        })?;
-        let post_state_leaf = leaf_hash::compute_tombstoned_leaf(
-            &request.subject_reference,
-            request.scope_reference.as_deref(),
-            &request.deletion_state_material,
-        )
-        .map_err(|error| match error {
-            leaf_hash::LeafHashError::EmptySubjectReference => {
-                IssuanceApiError::InvalidSubjectReference
-            }
-            leaf_hash::LeafHashError::EmptyScopeReference => {
-                IssuanceApiError::InvalidScopeReference
-            }
-            leaf_hash::LeafHashError::InvalidDeletionStateMaterial(_) => {
-                IssuanceApiError::InvalidDeletionStateMaterial
-            }
-        })?;
-
-        let certified_commitment =
-            provenance::compute_tree_certified_commitment(&receipt, &module_hash)
-                .map_err(|_| IssuanceApiError::IssuanceFailed)?;
-        let pending_id = compute_pending_id(&certified_commitment);
-
-        persist_pending_issuance(
-            storage,
-            PersistedPendingIssuance {
-                pending_id: pending_id.to_vec(),
-                certified_commitment: certified_commitment.to_vec(),
-                receipt,
-                target_position: target_position.to_vec(),
-                post_state_leaf: post_state_leaf.to_vec(),
+        let outputs = storage.protocol_state.host_begin_phase_a(
+            &module_hash,
+            HostPhaseAInputs {
+                subject_reference: request.subject_reference,
+                scope_reference: request.scope_reference,
+                transition_material: request.transition_material,
+                deletion_state_material: request.deletion_state_material,
             },
         )?;
 
         Ok(PendingReceiptInfo {
-            pending_id: pending_id.to_vec(),
-            certified_commitment: certified_commitment.to_vec(),
+            pending_id: outputs.pending_id,
+            certified_commitment: outputs.certified_commitment,
         })
     })
 }
