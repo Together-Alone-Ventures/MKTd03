@@ -421,3 +421,206 @@ impl<M: Memory> MKTd03State<M> {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::transition_material::derive_transition_material;
+    use ic_stable_structures::memory_manager::{MemoryId, MemoryManager, VirtualMemory};
+    use ic_stable_structures::VectorMemory;
+
+    const HOST_TREE_MEMORY_ID: MemoryId = MemoryId::new(20);
+    const HOST_PENDING_MEMORY_ID: MemoryId = MemoryId::new(21);
+    const HOST_RECEIPTS_MEMORY_ID: MemoryId = MemoryId::new(22);
+
+    fn host_state() -> MKTd03State<VirtualMemory<VectorMemory>> {
+        let memory_manager = MemoryManager::init(VectorMemory::default());
+        MKTd03State::new(
+            memory_manager.get(HOST_TREE_MEMORY_ID),
+            memory_manager.get(HOST_PENDING_MEMORY_ID),
+            memory_manager.get(HOST_RECEIPTS_MEMORY_ID),
+        )
+    }
+
+    fn module_hash(byte: u8) -> [u8; 32] {
+        [byte; 32]
+    }
+
+    fn version_1_0_0() -> library::SemanticVersion {
+        library::SemanticVersion {
+            major: 1,
+            minor: 0,
+            patch: 0,
+        }
+    }
+
+    fn transition_material_for(source: &[u8]) -> Vec<u8> {
+        derive_transition_material(&version_1_0_0(), source).to_vec()
+    }
+
+    #[test]
+    fn host_api_round_trip_succeeds_outside_canister_context() {
+        let mut state = host_state();
+        let module_hash = module_hash(9);
+        let subject_reference = vec![0x62; 32];
+
+        let phase_a = state
+            .host_begin_phase_a(
+                &module_hash,
+                HostPhaseAInputs {
+                    subject_reference: subject_reference.clone(),
+                    scope_reference: None,
+                    transition_material: transition_material_for(b"host-round-trip"),
+                    deletion_state_material: vec![0x01],
+                },
+            )
+            .expect("phase A should succeed");
+
+        assert!(!phase_a.pending_id.is_empty());
+        assert_eq!(phase_a.certified_commitment.len(), 32);
+
+        let phase_b = state
+            .host_get_phase_b(HostPhaseBInputs {
+                pending_id: phase_a.pending_id.clone(),
+                host_data_certificate: vec![0xCA, 0xFE],
+            })
+            .expect("phase B should succeed");
+
+        let phase_c = state
+            .host_finalize_phase_c(
+                &module_hash,
+                HostPhaseCInputs {
+                    pending_id: phase_a.pending_id.clone(),
+                    certificate_material: phase_b.certificate_material,
+                },
+            )
+            .expect("phase C should succeed");
+
+        assert_eq!(
+            phase_c.receipt.core_transition_evidence.subject_reference,
+            subject_reference
+        );
+        assert_eq!(verifier::validate_receipt(&phase_c.receipt), Ok(()));
+
+        assert_eq!(
+            state.host_get_receipt(HostReceiptLookupInputs { subject_reference }),
+            library::ReceiptResult::Ok {
+                receipt: phase_c.receipt
+            }
+        );
+    }
+
+    #[test]
+    fn host_begin_phase_a_rejects_second_pending_issuance() {
+        let mut state = host_state();
+        let module_hash = module_hash(8);
+
+        state
+            .host_begin_phase_a(
+                &module_hash,
+                HostPhaseAInputs {
+                    subject_reference: vec![0x52; 32],
+                    scope_reference: None,
+                    transition_material: transition_material_for(b"first-pending"),
+                    deletion_state_material: vec![0x01],
+                },
+            )
+            .expect("first begin should succeed");
+
+        assert_eq!(
+            state.host_begin_phase_a(
+                &module_hash,
+                HostPhaseAInputs {
+                    subject_reference: vec![0x53; 32],
+                    scope_reference: None,
+                    transition_material: transition_material_for(b"second-pending"),
+                    deletion_state_material: vec![0x01],
+                },
+            ),
+            Err(HostIssuanceError::PendingIssuanceInProgress)
+        );
+    }
+
+    #[test]
+    fn host_get_phase_b_rejects_pending_id_mismatch() {
+        let mut state = host_state();
+        let module_hash = module_hash(7);
+
+        state
+            .host_begin_phase_a(
+                &module_hash,
+                HostPhaseAInputs {
+                    subject_reference: vec![0x42; 32],
+                    scope_reference: None,
+                    transition_material: transition_material_for(b"phase-b-mismatch"),
+                    deletion_state_material: vec![0x01],
+                },
+            )
+            .expect("begin should succeed");
+
+        assert_eq!(
+            state.host_get_phase_b(HostPhaseBInputs {
+                pending_id: vec![0xAA; 32],
+                host_data_certificate: vec![0xCA, 0xFE],
+            }),
+            Err(HostIssuanceError::PendingIdMismatch)
+        );
+    }
+
+    #[test]
+    fn host_get_phase_b_reports_no_pending_issuance() {
+        let state = host_state();
+
+        assert_eq!(
+            state.host_get_phase_b(HostPhaseBInputs {
+                pending_id: vec![0xAA; 32],
+                host_data_certificate: vec![0xCA, 0xFE],
+            }),
+            Err(HostIssuanceError::NoPendingIssuance)
+        );
+    }
+
+    #[test]
+    fn host_get_receipt_preserves_lookup_error_semantics() {
+        let mut state = host_state();
+        let module_hash = module_hash(6);
+        let subject_reference = vec![0x42; 32];
+
+        assert_eq!(
+            state.host_get_receipt(HostReceiptLookupInputs {
+                subject_reference: vec![],
+            }),
+            library::ReceiptResult::Err {
+                error_code: library::ReceiptError::InvalidSubjectReference,
+            }
+        );
+
+        assert_eq!(
+            state.host_get_receipt(HostReceiptLookupInputs {
+                subject_reference: subject_reference.clone(),
+            }),
+            library::ReceiptResult::Err {
+                error_code: library::ReceiptError::NotFound,
+            }
+        );
+
+        state
+            .host_begin_phase_a(
+                &module_hash,
+                HostPhaseAInputs {
+                    subject_reference: subject_reference.clone(),
+                    scope_reference: None,
+                    transition_material: transition_material_for(b"pending-receipt"),
+                    deletion_state_material: vec![0x01],
+                },
+            )
+            .expect("begin should succeed");
+
+        assert_eq!(
+            state.host_get_receipt(HostReceiptLookupInputs { subject_reference }),
+            library::ReceiptResult::Err {
+                error_code: library::ReceiptError::NotYetIssued,
+            }
+        );
+    }
+}
