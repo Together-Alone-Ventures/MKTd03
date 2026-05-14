@@ -5,6 +5,7 @@ mod deletion_state_material_check;
 pub mod empty_subtree;
 pub mod fixtures;
 pub mod hashing;
+pub mod host_api;
 pub mod internal_node;
 pub mod issuance;
 pub mod leaf_hash;
