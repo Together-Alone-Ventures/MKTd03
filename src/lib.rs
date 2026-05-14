@@ -25,16 +25,14 @@ pub mod verifier;
 pub use state::MKTd03State;
 
 use candid::{candid_method, CandidType, Deserialize};
-use host_api::{HostPhaseAInputs, HostPhaseBInputs};
+use host_api::{HostPhaseAInputs, HostPhaseBInputs, HostPhaseCInputs};
 use ic_cdk::{init, post_upgrade, query, update};
 use ic_stable_structures::memory_manager::{MemoryId, MemoryManager, VirtualMemory};
 use ic_stable_structures::storable::Bound;
 use ic_stable_structures::{Cell as StableCell, DefaultMemoryImpl, Memory, Storable};
 use serde::Serialize;
-use state::{PersistedIssuanceTree, PersistedPendingIssuanceState};
 use std::borrow::Cow;
 use std::cell::RefCell;
-use std::collections::BTreeMap;
 use std::fmt;
 
 const PROTOCOL_VERSION: SemanticVersion = SemanticVersion {
@@ -656,80 +654,6 @@ fn module_hash_array_from_storage<M: Memory>(
         .map_err(|_| IssuanceApiError::StorageUnavailable)
 }
 
-fn load_issuance_tree<M: Memory>(
-    storage: &StableStorage<M>,
-) -> Result<issuance::SparseIssuanceTree, IssuanceApiError> {
-    let mut committed_leaves = BTreeMap::new();
-    for entry in &storage
-        .protocol_state
-        .issuance_tree()
-        .get()
-        .committed_leaves
-    {
-        let position: [u8; 32] = entry
-            .position
-            .as_slice()
-            .try_into()
-            .map_err(|_| IssuanceApiError::StorageUnavailable)?;
-        let leaf_hash: [u8; 32] = entry
-            .leaf_hash
-            .as_slice()
-            .try_into()
-            .map_err(|_| IssuanceApiError::StorageUnavailable)?;
-        committed_leaves.insert(position, leaf_hash);
-    }
-
-    Ok(issuance::SparseIssuanceTree::from_committed_leaves(
-        committed_leaves,
-    ))
-}
-
-fn persist_issuance_tree<M: Memory>(
-    storage: &mut StableStorage<M>,
-    tree: &issuance::SparseIssuanceTree,
-) -> Result<(), IssuanceApiError> {
-    let committed_leaves = tree
-        .committed_leaves()
-        .iter()
-        .map(|(position, leaf_hash)| state::PersistedLeafEntry {
-            position: position.to_vec(),
-            leaf_hash: leaf_hash.to_vec(),
-        })
-        .collect();
-    let _ = storage
-        .protocol_state
-        .issuance_tree_mut()
-        .set(PersistedIssuanceTree { committed_leaves });
-    Ok(())
-}
-
-fn clear_pending_issuance<M: Memory>(
-    storage: &mut StableStorage<M>,
-) -> Result<(), IssuanceApiError> {
-    let _ = storage
-        .protocol_state
-        .pending_issuance_mut()
-        .set(PersistedPendingIssuanceState { pending: None });
-    Ok(())
-}
-
-fn persist_issued_receipt<M: Memory>(
-    storage: &mut StableStorage<M>,
-    receipt: library::Receipt,
-) -> Result<(), IssuanceApiError> {
-    let mut state = storage.protocol_state.issued_receipts().get().clone();
-    let subject_reference = receipt.core_transition_evidence.subject_reference.clone();
-    state
-        .receipts
-        .retain(|entry| entry.subject_reference != subject_reference);
-    state.receipts.push(state::PersistedReceiptEntry {
-        subject_reference,
-        receipt,
-    });
-    let _ = storage.protocol_state.issued_receipts_mut().set(state);
-    Ok(())
-}
-
 fn lookup_issued_receipt<M: Memory>(
     storage: &StableStorage<M>,
     subject_reference: &[u8],
@@ -811,50 +735,16 @@ fn finalize_tree_receipt_impl(
     request: FinalizeTreeReceiptRequest,
 ) -> Result<FinalizeTreeReceiptResult, IssuanceApiError> {
     with_storage_api_mut(|storage| {
-        let pending = storage.protocol_state.load_pending_issuance()?;
-        if pending.pending_id != request.pending_id {
-            return Ok(FinalizeTreeReceiptResult::Err(
-                IssuanceApiError::PendingIdMismatch,
-            ));
-        }
-
         let module_hash = module_hash_array_from_storage(storage)?;
-        let mut receipt = pending.receipt.clone();
-        receipt.certification_provenance =
-            provenance::build_provenanced_certification_provenance_block(
-                &request.certificate_material,
-                &module_hash,
-            );
+        let outputs = storage.protocol_state.host_finalize_phase_c(
+            &module_hash,
+            HostPhaseCInputs {
+                pending_id: request.pending_id,
+                certificate_material: request.certificate_material,
+            },
+        )?;
 
-        let certified_commitment =
-            provenance::compute_tree_certified_commitment(&receipt, &module_hash)
-                .map_err(|_| IssuanceApiError::IssuanceFailed)?;
-        if certified_commitment.to_vec() != pending.certified_commitment {
-            return Ok(FinalizeTreeReceiptResult::Err(
-                IssuanceApiError::ValidationFailed,
-            ));
-        }
-
-        verifier::validate_receipt(&receipt).map_err(|_| IssuanceApiError::ValidationFailed)?;
-
-        let mut tree = load_issuance_tree(storage)?;
-        let target_position: [u8; 32] = pending
-            .target_position
-            .as_slice()
-            .try_into()
-            .map_err(|_| IssuanceApiError::StorageUnavailable)?;
-        let post_state_leaf: [u8; 32] = pending
-            .post_state_leaf
-            .as_slice()
-            .try_into()
-            .map_err(|_| IssuanceApiError::StorageUnavailable)?;
-        tree.insert_committed_leaf(target_position, post_state_leaf)
-            .map_err(map_issuance_error)?;
-        persist_issuance_tree(storage, &tree)?;
-        persist_issued_receipt(storage, receipt.clone())?;
-        clear_pending_issuance(storage)?;
-
-        Ok(FinalizeTreeReceiptResult::Ok(receipt))
+        Ok(FinalizeTreeReceiptResult::Ok(outputs.receipt))
     })
 }
 

@@ -1,9 +1,10 @@
 use crate::host_api::{
     HostIssuanceError, HostPhaseAInputs, HostPhaseAOutputs, HostPhaseBInputs, HostPhaseBOutputs,
+    HostPhaseCInputs, HostPhaseCOutputs,
 };
 use crate::library;
 use crate::{
-    issuance, leaf_hash, no_payload_certification_provenance, provenance, record_position,
+    issuance, leaf_hash, no_payload_certification_provenance, provenance, record_position, verifier,
 };
 use candid::{decode_one, encode_one, CandidType, Deserialize};
 use ic_stable_structures::storable::Bound;
@@ -193,6 +194,48 @@ impl<M: Memory> MKTd03State<M> {
         Ok(())
     }
 
+    fn persist_issuance_tree(
+        &mut self,
+        tree: &issuance::SparseIssuanceTree,
+    ) -> Result<(), HostIssuanceError> {
+        let committed_leaves = tree
+            .committed_leaves()
+            .iter()
+            .map(|(position, leaf_hash)| PersistedLeafEntry {
+                position: position.to_vec(),
+                leaf_hash: leaf_hash.to_vec(),
+            })
+            .collect();
+        let _ = self
+            .issuance_tree_mut()
+            .set(PersistedIssuanceTree { committed_leaves });
+        Ok(())
+    }
+
+    fn persist_issued_receipt(
+        &mut self,
+        receipt: library::Receipt,
+    ) -> Result<(), HostIssuanceError> {
+        let mut state = self.issued_receipts().get().clone();
+        let subject_reference = receipt.core_transition_evidence.subject_reference.clone();
+        state
+            .receipts
+            .retain(|entry| entry.subject_reference != subject_reference);
+        state.receipts.push(PersistedReceiptEntry {
+            subject_reference,
+            receipt,
+        });
+        let _ = self.issued_receipts_mut().set(state);
+        Ok(())
+    }
+
+    fn clear_pending_issuance(&mut self) -> Result<(), HostIssuanceError> {
+        let _ = self
+            .pending_issuance_mut()
+            .set(PersistedPendingIssuanceState { pending: None });
+        Ok(())
+    }
+
     pub(crate) fn load_pending_issuance(
         &self,
     ) -> Result<PersistedPendingIssuance, HostIssuanceError> {
@@ -290,5 +333,51 @@ impl<M: Memory> MKTd03State<M> {
         Ok(HostPhaseBOutputs {
             certificate_material: inputs.host_data_certificate,
         })
+    }
+
+    pub fn host_finalize_phase_c(
+        &mut self,
+        module_hash: &[u8; 32],
+        inputs: HostPhaseCInputs,
+    ) -> Result<HostPhaseCOutputs, HostIssuanceError> {
+        let pending = self.load_pending_issuance()?;
+        if pending.pending_id != inputs.pending_id {
+            return Err(HostIssuanceError::PendingIdMismatch);
+        }
+
+        let mut receipt = pending.receipt.clone();
+        receipt.certification_provenance =
+            provenance::build_provenanced_certification_provenance_block(
+                &inputs.certificate_material,
+                module_hash,
+            );
+
+        let certified_commitment =
+            provenance::compute_tree_certified_commitment(&receipt, module_hash)
+                .map_err(|_| HostIssuanceError::IssuanceFailed)?;
+        if certified_commitment.to_vec() != pending.certified_commitment {
+            return Err(HostIssuanceError::ValidationFailed);
+        }
+
+        verifier::validate_receipt(&receipt).map_err(|_| HostIssuanceError::ValidationFailed)?;
+
+        let mut tree = self.load_issuance_tree()?;
+        let target_position: [u8; 32] = pending
+            .target_position
+            .as_slice()
+            .try_into()
+            .map_err(|_| HostIssuanceError::StorageUnavailable)?;
+        let post_state_leaf: [u8; 32] = pending
+            .post_state_leaf
+            .as_slice()
+            .try_into()
+            .map_err(|_| HostIssuanceError::StorageUnavailable)?;
+        tree.insert_committed_leaf(target_position, post_state_leaf)
+            .map_err(crate::map_issuance_error)?;
+        self.persist_issuance_tree(&tree)?;
+        self.persist_issued_receipt(receipt.clone())?;
+        self.clear_pending_issuance()?;
+
+        Ok(HostPhaseCOutputs { receipt })
     }
 }
