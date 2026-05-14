@@ -25,7 +25,7 @@ pub mod verifier;
 pub use state::MKTd03State;
 
 use candid::{candid_method, CandidType, Deserialize};
-use host_api::{HostPhaseAInputs, HostPhaseBInputs, HostPhaseCInputs};
+use host_api::{HostPhaseAInputs, HostPhaseBInputs, HostPhaseCInputs, HostReceiptLookupInputs};
 use ic_cdk::{init, post_upgrade, query, update};
 use ic_stable_structures::memory_manager::{MemoryId, MemoryManager, VirtualMemory};
 use ic_stable_structures::storable::Bound;
@@ -654,36 +654,6 @@ fn module_hash_array_from_storage<M: Memory>(
         .map_err(|_| IssuanceApiError::StorageUnavailable)
 }
 
-fn lookup_issued_receipt<M: Memory>(
-    storage: &StableStorage<M>,
-    subject_reference: &[u8],
-) -> Option<library::Receipt> {
-    storage
-        .protocol_state
-        .issued_receipts()
-        .get()
-        .receipts
-        .iter()
-        .find(|entry| entry.subject_reference == subject_reference)
-        .map(|entry| entry.receipt.clone())
-}
-
-fn pending_matches_subject<M: Memory>(
-    storage: &StableStorage<M>,
-    subject_reference: &[u8],
-) -> bool {
-    storage
-        .protocol_state
-        .pending_issuance()
-        .get()
-        .pending
-        .as_ref()
-        .map(|pending| {
-            pending.receipt.core_transition_evidence.subject_reference == subject_reference
-        })
-        .unwrap_or(false)
-}
-
 fn begin_tree_receipt_issuance_impl(
     request: BeginTreeReceiptIssuanceRequest,
 ) -> Result<PendingReceiptInfo, IssuanceApiError> {
@@ -817,20 +787,23 @@ fn get_version_info() -> VersionInfo {
 #[candid_method(query, rename = "get_receipt")]
 fn get_receipt(subject_reference: Vec<u8>) -> ReceiptResult {
     connect_runtime_storage();
-    if subject_reference.is_empty() {
-        return ReceiptResult::Err(ReceiptError::InvalidSubjectReference);
-    }
-
     match with_storage_api(|storage| {
-        if let Some(receipt) = lookup_issued_receipt(storage, &subject_reference) {
-            return Ok(ReceiptResult::Ok(receipt));
-        }
-        if pending_matches_subject(storage, &subject_reference) {
-            return Ok(ReceiptResult::Err(ReceiptError::NotYetIssued));
-        }
-        Ok(ReceiptResult::Err(ReceiptError::NotFound))
+        Ok(storage
+            .protocol_state
+            .host_get_receipt(HostReceiptLookupInputs { subject_reference }))
     }) {
-        Ok(result) => result,
+        Ok(library::ReceiptResult::Ok { receipt }) => ReceiptResult::Ok(receipt),
+        Ok(library::ReceiptResult::Err { error_code }) => {
+            let error = match error_code {
+                library::ReceiptError::NotFound => ReceiptError::NotFound,
+                library::ReceiptError::NotYetIssued => ReceiptError::NotYetIssued,
+                library::ReceiptError::InvalidSubjectReference => {
+                    ReceiptError::InvalidSubjectReference
+                }
+                library::ReceiptError::UnsupportedVersion => ReceiptError::UnsupportedVersion,
+            };
+            ReceiptResult::Err(error)
+        }
         Err(_) => ic_cdk::trap("S7-36 receipt storage is unavailable"),
     }
 }

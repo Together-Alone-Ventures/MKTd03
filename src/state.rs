@@ -1,6 +1,6 @@
 use crate::host_api::{
     HostIssuanceError, HostPhaseAInputs, HostPhaseAOutputs, HostPhaseBInputs, HostPhaseBOutputs,
-    HostPhaseCInputs, HostPhaseCOutputs,
+    HostPhaseCInputs, HostPhaseCOutputs, HostReceiptLookupInputs, HostReceiptLookupOutputs,
 };
 use crate::library;
 use crate::{
@@ -236,6 +236,26 @@ impl<M: Memory> MKTd03State<M> {
         Ok(())
     }
 
+    fn lookup_issued_receipt(&self, subject_reference: &[u8]) -> Option<library::Receipt> {
+        self.issued_receipts()
+            .get()
+            .receipts
+            .iter()
+            .find(|entry| entry.subject_reference == subject_reference)
+            .map(|entry| entry.receipt.clone())
+    }
+
+    fn pending_matches_subject(&self, subject_reference: &[u8]) -> bool {
+        self.pending_issuance()
+            .get()
+            .pending
+            .as_ref()
+            .map(|pending| {
+                pending.receipt.core_transition_evidence.subject_reference == subject_reference
+            })
+            .unwrap_or(false)
+    }
+
     pub(crate) fn load_pending_issuance(
         &self,
     ) -> Result<PersistedPendingIssuance, HostIssuanceError> {
@@ -379,5 +399,25 @@ impl<M: Memory> MKTd03State<M> {
         self.clear_pending_issuance()?;
 
         Ok(HostPhaseCOutputs { receipt })
+    }
+
+    pub fn host_get_receipt(&self, inputs: HostReceiptLookupInputs) -> HostReceiptLookupOutputs {
+        if inputs.subject_reference.is_empty() {
+            return library::ReceiptResult::Err {
+                error_code: library::ReceiptError::InvalidSubjectReference,
+            };
+        }
+
+        if let Some(receipt) = self.lookup_issued_receipt(&inputs.subject_reference) {
+            return library::ReceiptResult::Ok { receipt };
+        }
+        if self.pending_matches_subject(&inputs.subject_reference) {
+            return library::ReceiptResult::Err {
+                error_code: library::ReceiptError::NotYetIssued,
+            };
+        }
+        library::ReceiptResult::Err {
+            error_code: library::ReceiptError::NotFound,
+        }
     }
 }
