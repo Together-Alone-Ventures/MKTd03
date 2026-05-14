@@ -25,13 +25,13 @@ pub mod verifier;
 pub use state::MKTd03State;
 
 use candid::{candid_method, CandidType, Deserialize};
-use host_api::HostPhaseAInputs;
+use host_api::{HostPhaseAInputs, HostPhaseBInputs};
 use ic_cdk::{init, post_upgrade, query, update};
 use ic_stable_structures::memory_manager::{MemoryId, MemoryManager, VirtualMemory};
 use ic_stable_structures::storable::Bound;
 use ic_stable_structures::{Cell as StableCell, DefaultMemoryImpl, Memory, Storable};
 use serde::Serialize;
-use state::{PersistedIssuanceTree, PersistedPendingIssuance, PersistedPendingIssuanceState};
+use state::{PersistedIssuanceTree, PersistedPendingIssuanceState};
 use std::borrow::Cow;
 use std::cell::RefCell;
 use std::collections::BTreeMap;
@@ -703,18 +703,6 @@ fn persist_issuance_tree<M: Memory>(
     Ok(())
 }
 
-fn load_pending_issuance<M: Memory>(
-    storage: &StableStorage<M>,
-) -> Result<PersistedPendingIssuance, IssuanceApiError> {
-    storage
-        .protocol_state
-        .pending_issuance()
-        .get()
-        .pending
-        .clone()
-        .ok_or(IssuanceApiError::NoPendingIssuance)
-}
-
 fn clear_pending_issuance<M: Memory>(
     storage: &mut StableStorage<M>,
 ) -> Result<(), IssuanceApiError> {
@@ -796,30 +784,21 @@ fn begin_tree_receipt_issuance_impl(
 
 fn get_pending_certificate_material_impl(
     pending_id: Vec<u8>,
-    certificate_material: Option<Vec<u8>>,
+    host_data_certificate: Option<Vec<u8>>,
 ) -> PendingCertificateMaterialResult {
     match with_storage_api(|storage| {
-        let pending = load_pending_issuance(storage)?;
-        if pending.pending_id != pending_id {
-            return Ok(PendingCertificateMaterialResult::Err(
-                IssuanceApiError::PendingIdMismatch,
-            ));
-        }
-
-        let certificate_material = match certificate_material {
-            Some(bytes) => bytes,
-            None => {
-                return Ok(PendingCertificateMaterialResult::Err(
-                    IssuanceApiError::CertificateUnavailable,
-                ))
-            }
-        };
-
+        let pending = storage.protocol_state.load_pending_issuance()?;
+        let host_data_certificate =
+            host_data_certificate.ok_or(IssuanceApiError::CertificateUnavailable)?;
+        let outputs = storage.protocol_state.host_get_phase_b(HostPhaseBInputs {
+            pending_id,
+            host_data_certificate,
+        })?;
         Ok(PendingCertificateMaterialResult::Ok(
             PendingCertificateMaterial {
                 pending_id: pending.pending_id,
                 certified_commitment: pending.certified_commitment,
-                certificate_material,
+                certificate_material: outputs.certificate_material,
             },
         ))
     }) {
@@ -832,7 +811,7 @@ fn finalize_tree_receipt_impl(
     request: FinalizeTreeReceiptRequest,
 ) -> Result<FinalizeTreeReceiptResult, IssuanceApiError> {
     with_storage_api_mut(|storage| {
-        let pending = load_pending_issuance(storage)?;
+        let pending = storage.protocol_state.load_pending_issuance()?;
         if pending.pending_id != request.pending_id {
             return Ok(FinalizeTreeReceiptResult::Err(
                 IssuanceApiError::PendingIdMismatch,

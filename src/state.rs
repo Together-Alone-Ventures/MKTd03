@@ -1,4 +1,6 @@
-use crate::host_api::{HostIssuanceError, HostPhaseAInputs, HostPhaseAOutputs};
+use crate::host_api::{
+    HostIssuanceError, HostPhaseAInputs, HostPhaseAOutputs, HostPhaseBInputs, HostPhaseBOutputs,
+};
 use crate::library;
 use crate::{
     issuance, leaf_hash, no_payload_certification_provenance, provenance, record_position,
@@ -191,6 +193,16 @@ impl<M: Memory> MKTd03State<M> {
         Ok(())
     }
 
+    pub(crate) fn load_pending_issuance(
+        &self,
+    ) -> Result<PersistedPendingIssuance, HostIssuanceError> {
+        self.pending_issuance()
+            .get()
+            .pending
+            .clone()
+            .ok_or(HostIssuanceError::NoPendingIssuance)
+    }
+
     pub fn host_begin_phase_a(
         &mut self,
         module_hash: &[u8; 32],
@@ -263,6 +275,20 @@ impl<M: Memory> MKTd03State<M> {
         Ok(HostPhaseAOutputs {
             pending_id: pending_id.to_vec(),
             certified_commitment: certified_commitment.to_vec(),
+        })
+    }
+
+    pub fn host_get_phase_b(
+        &self,
+        inputs: HostPhaseBInputs,
+    ) -> Result<HostPhaseBOutputs, HostIssuanceError> {
+        let pending = self.load_pending_issuance()?;
+        if pending.pending_id != inputs.pending_id {
+            return Err(HostIssuanceError::PendingIdMismatch);
+        }
+
+        Ok(HostPhaseBOutputs {
+            certificate_material: inputs.host_data_certificate,
         })
     }
 }
